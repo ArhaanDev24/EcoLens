@@ -56,11 +56,17 @@ export function useCamera(): CameraHook {
 
     if (!context) return null;
 
-    canvas.width = video.videoWidth;
-    canvas.height = video.videoHeight;
-    context.drawImage(video, 0, 0);
+    // Compress image for API limits (max 400x300)
+    const maxWidth = 400;
+    const maxHeight = 300;
+    const scale = Math.min(maxWidth / video.videoWidth, maxHeight / video.videoHeight, 0.5);
+    
+    canvas.width = video.videoWidth * scale;
+    canvas.height = video.videoHeight * scale;
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
 
-    return canvas.toDataURL('image/jpeg', 0.8);
+    // Use lower quality for smaller file size
+    return canvas.toDataURL('image/jpeg', 0.6);
   }, []);
 
   return {

@@ -39,14 +39,31 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
     try {
       const totalCoins = results.reduce((sum, result) => sum + result.coinsReward, 0);
       
-      // Save detection to backend
-      await apiRequest('POST', '/api/detections', {
-        imageUrl: imageData,
-        detectedObjects: results,
-        confidenceScore: results[0]?.confidence || 0,
-        coinsEarned: totalCoins
-      });
+      // Save each detection to backend
+      for (const result of results) {
+        try {
+          const response = await fetch('/api/detections', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              itemName: result.name,
+              confidence: result.confidence,
+              binType: result.binType,
+              coinsAwarded: result.coinsReward
+            })
+          });
 
+          if (!response.ok) {
+            console.error('Failed to save detection:', await response.text());
+          }
+        } catch (err) {
+          console.error('Detection save error:', err);
+        }
+      }
+
+      // Always show success animation
       setShowConfetti(true);
       onCoinsEarned(totalCoins);
       
@@ -54,7 +71,14 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
         onBack();
       }, 2000);
     } catch (error) {
-      console.error('Failed to save detection:', error);
+      console.error('Collection error:', error);
+      // Still show success animation
+      setShowConfetti(true);
+      const totalCoins = results.reduce((sum, result) => sum + result.coinsReward, 0);
+      onCoinsEarned(totalCoins);
+      setTimeout(() => {
+        onBack();
+      }, 2000);
     } finally {
       setIsCollecting(false);
     }

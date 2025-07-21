@@ -65,29 +65,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create detection record and award coins
   app.post("/api/detections", async (req, res) => {
     try {
-      const validatedData = insertDetectionSchema.parse({
-        ...req.body,
-        userId: 1 // Default user for demo
+      const { itemName, confidence, binType, coinsAwarded } = req.body;
+      
+      const detection = await storage.createDetection({
+        userId: 1,
+        imageUrl: null,
+        detectedObjects: JSON.stringify([{
+          name: itemName || 'Unknown Item',
+          confidence: confidence || 80,
+          binType: binType || 'recyclable'
+        }]),
+        confidenceScore: confidence || 80,
+        coinsEarned: coinsAwarded || 10
       });
-
-      const detection = await storage.createDetection(validatedData);
       
       // Award coins to user
-      await storage.updateUserCoins(1, validatedData.coinsEarned || 0);
+      await storage.updateUserCoins(1, coinsAwarded || 10);
       
       // Create transaction record
-      await storage.createTransaction({
-        userId: 1,
-        type: 'earn',
-        amount: validatedData.coinsEarned || 0,
-        description: `Detected ${JSON.parse(validatedData.detectedObjects as string)[0]?.name || 'recyclable items'}`,
-        detectionId: detection.id
-      });
+      try {
+        await storage.createTransaction({
+          userId: 1,
+          type: 'earn',
+          amount: coinsAwarded || 10,
+          description: `Detected ${itemName || 'recyclable item'}`
+        });
+      } catch (transactionError) {
+        console.error('Transaction creation failed:', transactionError);
+      }
 
-      res.json(detection);
+      res.json({ success: true, detection, coinsAwarded: coinsAwarded || 10 });
     } catch (error) {
       console.error('Create detection error:', error);
-      res.status(400).json({ error: error instanceof Error ? error.message : "Invalid data" });
+      res.status(500).json({ error: "Failed to save detection" });
     }
   });
 

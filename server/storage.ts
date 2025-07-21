@@ -70,11 +70,24 @@ export class MemStorage implements IStorage {
 
   async createDetection(insertDetection: InsertDetection): Promise<Detection> {
     const id = this.currentDetectionId++;
+    
+    // Ensure detectedObjects is valid JSON
+    let detectedObjects = insertDetection.detectedObjects;
+    if (typeof detectedObjects === 'string') {
+      try {
+        JSON.parse(detectedObjects);
+      } catch {
+        detectedObjects = '[]';
+      }
+    } else if (!detectedObjects) {
+      detectedObjects = '[]';
+    }
+    
     const detection: Detection = {
       id,
       userId: insertDetection.userId || null,
       imageUrl: insertDetection.imageUrl || null,
-      detectedObjects: insertDetection.detectedObjects,
+      detectedObjects: detectedObjects,
       confidenceScore: insertDetection.confidenceScore || null,
       coinsEarned: insertDetection.coinsEarned || 0,
       createdAt: new Date()
