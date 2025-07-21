@@ -3,6 +3,7 @@ import { useCamera } from '@/hooks/use-camera';
 import { CameraViewfinder } from '@/components/ui/camera-viewfinder';
 import { Button } from '@/components/ui/button';
 import { GlassmorphicCard } from '@/components/ui/glassmorphic-card';
+import { DemoBanner } from '@/components/ui/demo-banner';
 
 interface CameraPageProps {
   onCapture: (imageData: string) => void;
@@ -66,6 +67,9 @@ export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
 
   return (
     <div className="min-h-screen flex flex-col bg-dark-bg">
+      {/* Demo Banner */}
+      <DemoBanner />
+      
       {/* Header */}
       <div className="flex justify-between items-center p-4 glassmorphic">
         <div className="flex items-center space-x-3">
