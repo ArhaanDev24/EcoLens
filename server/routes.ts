@@ -4,8 +4,43 @@ import { storage } from "./storage";
 import { insertDetectionSchema, insertTransactionSchema, insertUserSchema } from "@shared/schema";
 import { z } from "zod";
 import QRCode from 'qrcode';
+import { detectRecyclableItems } from './gemini';
 
 export async function registerRoutes(app: Express): Promise<Server> {
+  // AI Detection endpoint
+  app.post("/api/detect", async (req, res) => {
+    try {
+      const { imageData } = req.body;
+      
+      if (!imageData || typeof imageData !== 'string') {
+        return res.status(400).json({ error: "Image data is required" });
+      }
+
+      // Extract base64 data from data URL
+      const base64Data = imageData.split(',')[1];
+      if (!base64Data) {
+        return res.status(400).json({ error: "Invalid image format" });
+      }
+
+      // Use Gemini AI to detect recyclable items
+      const detections = await detectRecyclableItems(base64Data);
+      
+      // Transform to frontend format
+      const results = detections.map(item => ({
+        name: item.name,
+        confidence: item.confidence,
+        binType: item.binType,
+        binColor: getBinColor(item.binType),
+        coinsReward: getCoinsReward(item.material, item.name)
+      }));
+
+      res.json(results);
+    } catch (error) {
+      console.error('AI Detection error:', error);
+      res.status(500).json({ error: "Detection failed" });
+    }
+  });
+
   // Get or create user
   app.get("/api/user", async (req, res) => {
     try {
@@ -118,4 +153,26 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper functions for detection results
+function getBinColor(binType: string): string {
+  switch (binType) {
+    case 'recyclable': return '#00C48C';
+    case 'compost': return '#8BC34A';
+    case 'landfill': return '#6B7280';
+    default: return '#6B7280';
+  }
+}
+
+function getCoinsReward(material: string, itemName: string): number {
+  const name = itemName.toLowerCase();
+  
+  // Higher rewards for valuable recyclables
+  if (material === 'metal' || name.includes('aluminum')) return 18;
+  if (material === 'plastic' || name.includes('bottle') || name.includes('bag')) return 15;
+  if (material === 'glass') return 12;
+  if (material === 'paper' || name.includes('cardboard')) return 8;
+  
+  return 10; // Default reward
 }

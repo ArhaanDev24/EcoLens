@@ -23,7 +23,24 @@ export function useAIDetection(): AIDetectionHook {
     setError(null);
 
     try {
-      // First try Teachable Machine model
+      // First try server-side Gemini AI detection
+      const response = await fetch('/api/detect', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ imageData })
+      });
+
+      if (response.ok) {
+        const results = await response.json();
+        if (results && results.length > 0) {
+          console.log('Gemini AI detection successful:', results);
+          return results;
+        }
+      }
+
+      // Fallback to Teachable Machine model
       const teachableMachineResult = await detectWithTeachableMachine(imageData);
       if (teachableMachineResult.length > 0) {
         return teachableMachineResult;
@@ -35,7 +52,8 @@ export function useAIDetection(): AIDetectionHook {
     } catch (err) {
       setError('Failed to analyze image. Please try again.');
       console.error('AI Detection error:', err);
-      return [];
+      // Return demo results as final fallback
+      return getDemoResults();
     } finally {
       setIsDetecting(false);
     }

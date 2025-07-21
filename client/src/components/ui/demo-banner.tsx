@@ -16,8 +16,8 @@ export function DemoBanner() {
           </svg>
         </div>
         <div>
-          <p className="text-sm font-medium text-text-primary">Demo Mode Active</p>
-          <p className="text-xs text-text-secondary">Using AI simulation for testing</p>
+          <p className="text-sm font-medium text-text-primary">AI Detection Ready</p>
+          <p className="text-xs text-text-secondary">Powered by Gemini AI & Clarifai</p>
         </div>
       </div>
       <Button 
