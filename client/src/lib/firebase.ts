@@ -4,11 +4,13 @@ import { getFirestore } from "firebase/firestore";
 import { getStorage } from "firebase/storage";
 
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || "demo-key",
-  authDomain: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "ecolens-demo"}.firebaseapp.com`,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "ecolens-demo",
-  storageBucket: `${import.meta.env.VITE_FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || "ecolens-demo"}.firebasestorage.app`,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || process.env.FIREBASE_APP_ID || "demo-app-id",
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-key",
+  authDomain: "eco-lens-54294.firebaseapp.com",
+  projectId: "eco-lens-54294",
+  storageBucket: "eco-lens-54294.firebasestorage.app",
+  messagingSenderId: "758395307710",
+  appId: "1:758395307710:web:39b1661d324c1a20a800ef",
+  measurementId: "G-5JPX1V2VJZ"
 };
 
 const app = initializeApp(firebaseConfig);
