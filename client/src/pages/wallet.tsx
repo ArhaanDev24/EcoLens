@@ -62,8 +62,13 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
       {/* Header */}
       <div className="p-4 glassmorphic">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-reward-yellow rounded-full flex items-center justify-center">
-            <i className="fas fa-wallet text-dark-bg text-lg" />
+          <div className="w-10 h-10 bg-reward-yellow rounded-full flex items-center justify-center p-2">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" fill="#1A1A1A" stroke="#FFA000" strokeWidth="1"/>
+              <circle cx="12" cy="12" r="6" fill="none" stroke="#FFA000" strokeWidth="1"/>
+              <text x="12" y="16" textAnchor="middle" fill="#FFD500" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold">$</text>
+              <ellipse cx="9" cy="9" rx="2" ry="3" fill="#FFEB3B" opacity="0.6" transform="rotate(-30 9 9)"/>
+            </svg>
           </div>
           <div>
             <h2 className="text-xl font-bold">Green Wallet</h2>

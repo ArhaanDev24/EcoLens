@@ -1,0 +1,20 @@
+<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Camera body -->
+  <rect x="2" y="8" width="20" height="12" rx="3" fill="currentColor"/>
+  
+  <!-- Camera lens -->
+  <circle cx="12" cy="14" r="4" fill="none" stroke="#00C48C" stroke-width="2"/>
+  <circle cx="12" cy="14" r="2" fill="#00C48C"/>
+  
+  <!-- Flash -->
+  <rect x="16" y="6" width="2" height="2" rx="1" fill="currentColor"/>
+  
+  <!-- Top section -->
+  <path d="M8 8V6C8 5.45 8.45 5 9 5H15C15.55 5 16 5.45 16 6V8" fill="currentColor"/>
+  
+  <!-- Viewfinder corners -->
+  <path d="M7 11L9 11M7 11L7 13" stroke="#00C48C" stroke-width="1" stroke-linecap="round"/>
+  <path d="M17 11L15 11M17 11L17 13" stroke="#00C48C" stroke-width="1" stroke-linecap="round"/>
+  <path d="M7 17L9 17M7 17L7 15" stroke="#00C48C" stroke-width="1" stroke-linecap="round"/>
+  <path d="M17 17L15 17M17 17L17 15" stroke="#00C48C" stroke-width="1" stroke-linecap="round"/>
+</svg>

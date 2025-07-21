@@ -117,8 +117,12 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
             <CardContent className="p-4">
               <div className="flex items-start justify-between mb-3">
                 <div className="flex items-center space-x-3">
-                  <div className="w-12 h-12 bg-eco-green rounded-xl flex items-center justify-center">
-                    <i className="fas fa-recycle text-dark-bg text-xl" />
+                  <div className="w-12 h-12 bg-eco-green rounded-xl flex items-center justify-center p-2">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M7 6V3C7 2.45 7.45 2 8 2H16C16.55 2 17 2.45 17 3V6H19C19.55 6 20 6.45 20 7C20 7.55 19.55 8 19 8H18V19C18 20.1 17.1 21 16 21H8C6.9 21 6 20.1 6 19V8H5C4.45 8 4 7.55 4 7C4 6.45 4.45 6 5 6H7ZM8 4V6H16V4H8ZM8 8V19H16V8H8Z" fill="#1A1A1A"/>
+                      <path d="M10 12L12 10L14 12" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
+                      <path d="M12 10V16" stroke="#1A1A1A" strokeWidth="1.5" strokeLinecap="round" fill="none"/>
+                    </svg>
                   </div>
                   <div>
                     <h3 className="font-medium text-text-primary">{primaryResult.name}</h3>
@@ -199,7 +203,11 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
             disabled={isCollecting}
             className="w-full bg-eco-green text-dark-bg font-medium py-4 rounded-2xl flex items-center justify-center space-x-2 transform active:scale-98 transition-transform hover:bg-eco-green"
           >
-            <i className="fas fa-coins" />
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="9" fill="#FFD500" stroke="#FFA000" strokeWidth="1"/>
+              <circle cx="12" cy="12" r="6" fill="none" stroke="#FFA000" strokeWidth="1"/>
+              <text x="12" y="16" textAnchor="middle" fill="#1A1A1A" fontFamily="Arial, sans-serif" fontSize="6" fontWeight="bold">ECO</text>
+            </svg>
             <span>
               {isCollecting ? 'Collecting...' : `Collect ${totalCoins} Green Coins`}
             </span>

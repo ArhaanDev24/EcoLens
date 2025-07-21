@@ -69,8 +69,13 @@ export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
       {/* Header */}
       <div className="flex justify-between items-center p-4 glassmorphic">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-eco-green rounded-full flex items-center justify-center">
-            <i className="fas fa-leaf text-dark-bg text-lg" />
+          <div className="w-10 h-10 bg-eco-green rounded-full flex items-center justify-center p-1">
+            <svg width="24" height="24" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M24 8C17.5 8 12 13.5 12 20C12 26.5 17.5 32 24 32C30.5 32 36 26.5 36 20C36 13.5 30.5 8 24 8Z" fill="#1A1A1A"/>
+              <circle cx="24" cy="20" r="6" fill="none" stroke="#00C48C" strokeWidth="1.5"/>
+              <circle cx="24" cy="20" r="2" fill="#00C48C"/>
+              <path d="M20 34L24 38L28 34" stroke="#FFD500" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
           <div>
             <h1 className="text-xl font-bold text-text-primary">EcoLens</h1>
@@ -80,7 +85,11 @@ export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
         
         {/* Coin Counter */}
         <div className="flex items-center space-x-2 bg-dark-surface-variant px-3 py-2 rounded-full">
-          <i className="fas fa-coins text-reward-yellow text-sm" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <circle cx="12" cy="12" r="9" fill="#FFD500" stroke="#FFA000" strokeWidth="1"/>
+            <circle cx="12" cy="12" r="6" fill="none" stroke="#FFA000" strokeWidth="1"/>
+            <text x="12" y="16" textAnchor="middle" fill="#1A1A1A" fontFamily="Arial, sans-serif" fontSize="6" fontWeight="bold">ECO</text>
+          </svg>
           <span className="text-reward-yellow font-medium">{greenCoins.toLocaleString()}</span>
         </div>
       </div>
@@ -103,9 +112,15 @@ export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
           id="capture-btn"
           onClick={handleCapture}
           disabled={!isStreaming || isCapturing}
-          className="w-20 h-20 bg-eco-green rounded-full text-dark-bg text-2xl shadow-lg transform active:scale-95 transition-transform relative overflow-hidden hover:bg-eco-green"
+          className="w-20 h-20 bg-eco-green rounded-full text-dark-bg shadow-lg transform active:scale-95 transition-transform relative overflow-hidden hover:bg-eco-green flex items-center justify-center"
         >
-          <i className="fas fa-camera" />
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="2" y="8" width="20" height="12" rx="3" fill="currentColor"/>
+            <circle cx="12" cy="14" r="4" fill="none" stroke="#00C48C" strokeWidth="2"/>
+            <circle cx="12" cy="14" r="2" fill="#00C48C"/>
+            <rect x="16" y="6" width="2" height="2" rx="1" fill="currentColor"/>
+            <path d="M8 8V6C8 5.45 8.45 5 9 5H15C15.55 5 16 6 16 6V8" fill="currentColor"/>
+          </svg>
         </Button>
         
         {/* Find Recycler Button */}
