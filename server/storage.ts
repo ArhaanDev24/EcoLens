@@ -264,20 +264,19 @@ export class DatabaseStorage implements IStorage {
 // Import Firebase storage  
 import { FirebaseStorage } from "./firebaseStorage";
 
-// Use memory storage for now until Firebase database is set up
+// Temporarily use memory storage while Firebase permissions are configured
 export const storage = new MemStorage();
 
 // Initialize demo user and data
 async function initializeDemoData() {
   try {
-    // Create demo user
     const user = await storage.createUser({
       username: "eco_user",
       email: "user@ecolens.app",
       firebaseUid: "demo-uid"
     });
 
-    // Create some sample detections and stats
+    // Create some demo detections
     await storage.createDetection({
       userId: user.id,
       imageUrl: null,
