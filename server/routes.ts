@@ -94,6 +94,31 @@ export async function registerRoutes(app: Express): Promise<Server> {
         console.error('Transaction creation failed:', transactionError);
       }
 
+      // Update user statistics
+      try {
+        const currentStats = await storage.getUserStats(1);
+        const itemType = getItemCategory(itemName || '');
+        
+        const statsUpdate: any = {
+          totalDetections: (currentStats?.totalDetections || 0) + 1,
+          totalCoinsEarned: (currentStats?.totalCoinsEarned || 0) + (coinsAwarded || 10),
+          lastDetectionDate: new Date()
+        };
+
+        // Update specific item type counters
+        if (itemType === 'plastic') statsUpdate.plasticItemsDetected = (currentStats?.plasticItemsDetected || 0) + 1;
+        else if (itemType === 'paper') statsUpdate.paperItemsDetected = (currentStats?.paperItemsDetected || 0) + 1;
+        else if (itemType === 'glass') statsUpdate.glassItemsDetected = (currentStats?.glassItemsDetected || 0) + 1;
+        else if (itemType === 'metal') statsUpdate.metalItemsDetected = (currentStats?.metalItemsDetected || 0) + 1;
+
+        await storage.updateUserStats(1, statsUpdate);
+        
+        // Check for achievements
+        await checkAndAwardAchievements(1, statsUpdate);
+      } catch (statsError) {
+        console.error('Stats update failed:', statsError);
+      }
+
       res.json({ success: true, detection, coinsAwarded: coinsAwarded || 10 });
     } catch (error) {
       console.error('Create detection error:', error);
@@ -109,6 +134,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get transactions error:', error);
       res.status(500).json({ error: "Failed to get transactions" });
+    }
+  });
+
+  // Get user statistics
+  app.get("/api/stats", async (req, res) => {
+    try {
+      let userStats = await storage.getUserStats(1);
+      
+      // Create initial stats if they don't exist
+      if (!userStats) {
+        await storage.updateUserStats(1, {
+          totalDetections: 0,
+          totalCoinsEarned: 0,
+          totalCoinsSpent: 0,
+          streakDays: 0,
+          plasticItemsDetected: 0,
+          paperItemsDetected: 0,
+          glassItemsDetected: 0,
+          metalItemsDetected: 0
+        });
+        userStats = await storage.getUserStats(1);
+      }
+      
+      res.json(userStats);
+    } catch (error) {
+      console.error('Get stats error:', error);
+      res.status(500).json({ error: "Failed to get statistics" });
+    }
+  });
+
+  // Get user achievements
+  app.get("/api/achievements", async (req, res) => {
+    try {
+      const achievements = await storage.getUserAchievements(1);
+      res.json(achievements);
+    } catch (error) {
+      console.error('Get achievements error:', error);
+      res.status(500).json({ error: "Failed to get achievements" });
     }
   });
 
@@ -185,4 +248,65 @@ function getCoinsReward(material: string, itemName: string): number {
   if (material === 'paper' || name.includes('cardboard')) return 8;
   
   return 10; // Default reward
+}
+
+// Helper functions for statistics
+function getItemCategory(itemName: string): string {
+  const name = itemName.toLowerCase();
+  if (name.includes('plastic') || name.includes('bottle') || name.includes('bag')) return 'plastic';
+  if (name.includes('paper') || name.includes('cardboard')) return 'paper';
+  if (name.includes('glass')) return 'glass';
+  if (name.includes('metal') || name.includes('aluminum')) return 'metal';
+  return 'other';
+}
+
+async function checkAndAwardAchievements(userId: number, stats: any): Promise<void> {
+  const achievements = [];
+  
+  // First detection achievement
+  if (stats.totalDetections === 1) {
+    achievements.push({
+      userId,
+      achievementType: 'first_detection',
+      title: 'First Steps',
+      description: 'Made your first recycling detection!',
+      iconType: 'star'
+    });
+  }
+  
+  // 10 detections achievement
+  if (stats.totalDetections === 10) {
+    achievements.push({
+      userId,
+      achievementType: 'detection_10',
+      title: 'Eco Detective',
+      description: 'Completed 10 recycling detections!',
+      iconType: 'badge'
+    });
+  }
+  
+  // 100 coins earned achievement
+  if (stats.totalCoinsEarned >= 100) {
+    const currentAchievements = await storage.getUserAchievements(userId);
+    const hasCoins100 = currentAchievements.some(a => a.achievementType === 'coins_100');
+    
+    if (!hasCoins100) {
+      achievements.push({
+        userId,
+        achievementType: 'coins_100',
+        title: 'Coin Collector',
+        description: 'Earned 100 green coins!',
+        iconType: 'coins'
+      });
+    }
+  }
+  
+  // Award new achievements
+  for (const achievement of achievements) {
+    try {
+      await storage.createAchievement(achievement);
+    } catch (error) {
+      console.error('Failed to create achievement:', error);
+    }
+  }
 }

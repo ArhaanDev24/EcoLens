@@ -1,4 +1,6 @@
-import { users, detections, transactions, type User, type InsertUser, type Detection, type InsertDetection, type Transaction, type InsertTransaction } from "@shared/schema";
+import { users, detections, transactions, stats, achievements, type User, type InsertUser, type Detection, type InsertDetection, type Transaction, type InsertTransaction, type Stats, type InsertStats, type Achievement, type InsertAchievement } from "@shared/schema";
+import { db } from "./db";
+import { eq, desc, sql } from "drizzle-orm";
 
 export interface IStorage {
   getUserById(id: number): Promise<User | undefined>;
@@ -9,9 +11,20 @@ export interface IStorage {
   getUserDetections(userId: number): Promise<Detection[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getUserTransactions(userId: number): Promise<Transaction[]>;
+  getUserStats(userId: number): Promise<Stats | undefined>;
+  updateUserStats(userId: number, statsUpdate: Partial<InsertStats>): Promise<void>;
+  createAchievement(achievement: InsertAchievement): Promise<Achievement>;
+  getUserAchievements(userId: number): Promise<Achievement[]>;
 }
 
 export class MemStorage implements IStorage {
+  // Add dummy implementations for stats methods to satisfy interface
+  async getUserStats(userId: number): Promise<Stats | undefined> { return undefined; }
+  async updateUserStats(userId: number, statsUpdate: Partial<InsertStats>): Promise<void> {}
+  async createAchievement(achievement: InsertAchievement): Promise<Achievement> { 
+    return { id: 1, ...achievement, unlockedAt: new Date(), userId: achievement.userId || null };
+  }
+  async getUserAchievements(userId: number): Promise<Achievement[]> { return []; }
   private users: Map<number, User>;
   private detections: Map<number, Detection>;
   private transactions: Map<number, Transaction>;
@@ -125,4 +138,127 @@ export class MemStorage implements IStorage {
   }
 }
 
-export const storage = new MemStorage();
+// Database Storage Implementation
+export class DatabaseStorage implements IStorage {
+  async getUserById(id: number): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.id, id));
+    return user || undefined;
+  }
+
+  async getUserByUsername(username: string): Promise<User | undefined> {
+    const [user] = await db.select().from(users).where(eq(users.username, username));
+    return user || undefined;
+  }
+
+  async createUser(insertUser: InsertUser): Promise<User> {
+    const [user] = await db
+      .insert(users)
+      .values(insertUser)
+      .returning();
+    
+    // Create initial stats for new user
+    await db.insert(stats).values({
+      userId: user.id,
+      totalDetections: 0,
+      totalCoinsEarned: 0,
+      totalCoinsSpent: 0,
+      streakDays: 0,
+      plasticItemsDetected: 0,
+      paperItemsDetected: 0,
+      glassItemsDetected: 0,
+      metalItemsDetected: 0
+    });
+    
+    return user;
+  }
+
+  async updateUserCoins(userId: number, coinsChange: number): Promise<void> {
+    await db
+      .update(users)
+      .set({
+        greenCoins: sql`${users.greenCoins} + ${coinsChange}`,
+        totalEarned: coinsChange > 0 ? sql`${users.totalEarned} + ${coinsChange}` : users.totalEarned
+      })
+      .where(eq(users.id, userId));
+  }
+
+  async createDetection(insertDetection: InsertDetection): Promise<Detection> {
+    // Ensure detectedObjects is valid JSON
+    let detectedObjects = insertDetection.detectedObjects;
+    if (typeof detectedObjects === 'string') {
+      try {
+        JSON.parse(detectedObjects);
+      } catch {
+        detectedObjects = '[]';
+      }
+    } else if (!detectedObjects) {
+      detectedObjects = '[]';
+    }
+
+    const [detection] = await db
+      .insert(detections)
+      .values({
+        ...insertDetection,
+        detectedObjects
+      })
+      .returning();
+    return detection;
+  }
+
+  async getUserDetections(userId: number): Promise<Detection[]> {
+    return await db
+      .select()
+      .from(detections)
+      .where(eq(detections.userId, userId))
+      .orderBy(desc(detections.createdAt));
+  }
+
+  async createTransaction(insertTransaction: InsertTransaction): Promise<Transaction> {
+    const [transaction] = await db
+      .insert(transactions)
+      .values(insertTransaction)
+      .returning();
+    return transaction;
+  }
+
+  async getUserTransactions(userId: number): Promise<Transaction[]> {
+    return await db
+      .select()
+      .from(transactions)
+      .where(eq(transactions.userId, userId))
+      .orderBy(desc(transactions.createdAt));
+  }
+
+  async getUserStats(userId: number): Promise<Stats | undefined> {
+    const [userStats] = await db.select().from(stats).where(eq(stats.userId, userId));
+    return userStats || undefined;
+  }
+
+  async updateUserStats(userId: number, statsUpdate: Partial<InsertStats>): Promise<void> {
+    await db
+      .update(stats)
+      .set({
+        ...statsUpdate,
+        updatedAt: new Date()
+      })
+      .where(eq(stats.userId, userId));
+  }
+
+  async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
+    const [newAchievement] = await db
+      .insert(achievements)
+      .values(achievement)
+      .returning();
+    return newAchievement;
+  }
+
+  async getUserAchievements(userId: number): Promise<Achievement[]> {
+    return await db
+      .select()
+      .from(achievements)
+      .where(eq(achievements.userId, userId))
+      .orderBy(desc(achievements.unlockedAt));
+  }
+}
+
+export const storage = new DatabaseStorage();

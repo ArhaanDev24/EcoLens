@@ -122,6 +122,14 @@ The application uses a monorepo structure with shared TypeScript types and schem
 
 ## Recent Changes
 
+### July 27, 2025
+- **PostgreSQL Database**: Migrated from memory storage to real PostgreSQL database
+- **Statistics System**: Added comprehensive stats tracking (detections, coins, item types)
+- **Achievement System**: Implemented unlockable achievements for user engagement
+- **Stats Dashboard**: Created `/stats` page with detailed analytics and progress tracking
+- **Teachable Machine Primary**: Set Teachable Machine as primary AI detection method  
+- **Database Schema**: Added stats and achievements tables with full user progress tracking
+
 ### January 21, 2025
 - **Custom Branding**: Added professional SVG logos throughout the app
 - **Enhanced UI**: Replaced Font Awesome icons with custom-designed SVG icons  

@@ -33,6 +33,33 @@ export const transactions = pgTable("transactions", {
   createdAt: timestamp("created_at").defaultNow(),
 });
 
+export const stats = pgTable("stats", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  totalDetections: integer("total_detections").notNull().default(0),
+  totalCoinsEarned: integer("total_coins_earned").notNull().default(0),
+  totalCoinsSpent: integer("total_coins_spent").notNull().default(0),
+  favoriteItemType: text("favorite_item_type"),
+  streakDays: integer("streak_days").notNull().default(0),
+  lastDetectionDate: timestamp("last_detection_date"),
+  plasticItemsDetected: integer("plastic_items_detected").notNull().default(0),
+  paperItemsDetected: integer("paper_items_detected").notNull().default(0),
+  glassItemsDetected: integer("glass_items_detected").notNull().default(0),
+  metalItemsDetected: integer("metal_items_detected").notNull().default(0),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+export const achievements = pgTable("achievements", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  achievementType: text("achievement_type").notNull(), // 'first_detection', 'streak_7', 'coins_100', etc.
+  title: text("title").notNull(),
+  description: text("description").notNull(),
+  iconType: text("icon_type").notNull(),
+  unlockedAt: timestamp("unlocked_at").defaultNow(),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -56,9 +83,35 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   qrCode: true,
 });
 
+export const insertStatsSchema = createInsertSchema(stats).pick({
+  userId: true,
+  totalDetections: true,
+  totalCoinsEarned: true,
+  totalCoinsSpent: true,
+  favoriteItemType: true,
+  streakDays: true,
+  lastDetectionDate: true,
+  plasticItemsDetected: true,
+  paperItemsDetected: true,
+  glassItemsDetected: true,
+  metalItemsDetected: true,
+});
+
+export const insertAchievementSchema = createInsertSchema(achievements).pick({
+  userId: true,
+  achievementType: true,
+  title: true,
+  description: true,
+  iconType: true,
+});
+
 export type InsertUser = z.infer<typeof insertUserSchema>;
 export type User = typeof users.$inferSelect;
 export type InsertDetection = z.infer<typeof insertDetectionSchema>;
 export type Detection = typeof detections.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type Transaction = typeof transactions.$inferSelect;
+export type InsertStats = z.infer<typeof insertStatsSchema>;
+export type Stats = typeof stats.$inferSelect;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+export type Achievement = typeof achievements.$inferSelect;
