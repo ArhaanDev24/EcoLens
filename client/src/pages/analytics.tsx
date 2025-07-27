@@ -490,13 +490,14 @@ export default function AnalyticsPage() {
               <form onSubmit={(e) => {
                 e.preventDefault();
                 const formData = new FormData(e.target as HTMLFormElement);
+                const endDateValue = formData.get('endDate') as string;
                 createGoalMutation.mutate({
-                  title: formData.get('title'),
-                  description: formData.get('description'),
-                  goalType: formData.get('goalType'),
-                  targetType: formData.get('targetType'),
+                  title: formData.get('title') as string,
+                  description: formData.get('description') as string,
+                  goalType: formData.get('goalType') as string,
+                  targetType: formData.get('targetType') as string,
                   targetValue: parseInt(formData.get('targetValue') as string),
-                  endDate: formData.get('endDate') ? new Date(formData.get('endDate') as string) : null
+                  endDate: endDateValue && endDateValue.trim() ? endDateValue : null
                 });
               }} className="space-y-4">
                 <div>

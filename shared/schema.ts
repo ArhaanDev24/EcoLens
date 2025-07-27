@@ -143,6 +143,8 @@ export const insertPersonalGoalSchema = createInsertSchema(personalGoals).pick({
   title: true,
   description: true,
   endDate: true,
+}).extend({
+  endDate: z.string().nullable().transform(val => val ? new Date(val) : null)
 });
 
 export const insertEnvironmentalImpactSchema = createInsertSchema(environmentalImpact).pick({
