@@ -1,5 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { TrendingUp, Award, Zap, Target, Recycle, Trophy, Coins, BarChart3 } from 'lucide-react';
+import { EnhancedCard, EnhancedCardHeader, EnhancedCardContent } from "@/components/ui/enhanced-card";
+import { LoadingCard } from "@/components/ui/enhanced-loading";
+import { EnhancedAchievementSystem } from "@/components/ui/enhanced-achievement-system";
 import { cn } from '@/lib/utils';
 
 interface Stats {
@@ -34,16 +37,16 @@ export default function EnhancedStatsPage() {
 
   if (statsLoading || achievementsLoading) {
     return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
-        <div className="text-center fade-in-scale">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 mx-auto bg-eco-green/20 rounded-full flex items-center justify-center floating-animation">
-              <div className="w-8 h-8 border-3 border-eco-green border-t-transparent rounded-full animate-spin" />
-            </div>
-            <div className="absolute inset-0 w-16 h-16 mx-auto border border-eco-green/30 rounded-full animate-ping" />
+      <div className="min-h-screen bg-dark-bg pb-20">
+        <div className="container mx-auto px-4 py-8">
+          <LoadingCard />
+          <div className="grid grid-cols-2 gap-4 mt-6">
+            <LoadingCard />
+            <LoadingCard />
           </div>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">Loading Stats</h2>
-          <p className="text-text-secondary">Calculating your impact...</p>
+          <div className="mt-6">
+            <LoadingCard />
+          </div>
         </div>
       </div>
     );

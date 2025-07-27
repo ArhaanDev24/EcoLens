@@ -5,6 +5,8 @@ import { WalletPage } from './wallet';
 import EnhancedStatsPage from './enhanced-stats';
 import Profile from './profile';
 import { EnhancedBottomNav } from '@/components/ui/enhanced-bottom-nav';
+import { EnhancedLoading } from '@/components/ui/enhanced-loading';
+import { NotificationProvider } from '@/components/ui/enhanced-notifications';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -68,20 +70,7 @@ export default function Home() {
   };
 
   if (isLoading) {
-    return (
-      <div className="min-h-screen bg-dark-bg flex items-center justify-center">
-        <div className="text-center fade-in-scale">
-          <div className="relative mb-6">
-            <div className="w-16 h-16 mx-auto bg-eco-green/20 rounded-full flex items-center justify-center floating-animation">
-              <div className="w-8 h-8 border-3 border-eco-green border-t-transparent rounded-full animate-spin" />
-            </div>
-            <div className="absolute inset-0 w-16 h-16 mx-auto border border-eco-green/30 rounded-full animate-ping" />
-          </div>
-          <h2 className="text-xl font-semibold text-text-primary mb-2">EcoLens</h2>
-          <p className="text-text-secondary">Initializing AI Scanner...</p>
-        </div>
-      </div>
-    );
+    return <EnhancedLoading />;
   }
 
   const greenCoins = user?.greenCoins || 0;
@@ -122,15 +111,17 @@ export default function Home() {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg">
-      {renderActiveTab()}
-      
-      {activeTab !== 'results' && (
-        <EnhancedBottomNav
-          activeTab={activeTab}
-          onTabChange={setActiveTab}
-        />
-      )}
-    </div>
+    <NotificationProvider>
+      <div className="min-h-screen bg-dark-bg">
+        {renderActiveTab()}
+        
+        {activeTab !== 'results' && (
+          <EnhancedBottomNav
+            activeTab={activeTab}
+            onTabChange={setActiveTab}
+          />
+        )}
+      </div>
+    </NotificationProvider>
   );
 }
