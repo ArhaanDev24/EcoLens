@@ -279,6 +279,18 @@ export class DatabaseStorage implements IStorage {
       .where(eq(achievements.userId, userId))
       .orderBy(desc(achievements.unlockedAt));
   }
+
+  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
+    const [updatedUser] = await db
+      .update(users)
+      .set({
+        ...updates,
+        updatedAt: new Date()
+      })
+      .where(eq(users.id, id))
+      .returning();
+    return updatedUser;
+  }
 }
 
 // Use PostgreSQL database storage

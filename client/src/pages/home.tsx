@@ -3,6 +3,7 @@ import { EnhancedCamera } from '@/components/ui/enhanced-camera';
 import { EnhancedResults } from '@/components/ui/enhanced-results';
 import { WalletPage } from './wallet';
 import EnhancedStatsPage from './enhanced-stats';
+import Profile from './profile';
 import { EnhancedBottomNav } from '@/components/ui/enhanced-bottom-nav';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -113,8 +114,8 @@ export default function Home() {
         );
       case 'stats':
         return <EnhancedStatsPage />;
-      case 'achievements':
-        return <EnhancedStatsPage />;
+      case 'profile':
+        return <Profile />;
       default:
         return null;
     }

@@ -167,6 +167,22 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Update user profile
+  app.put("/api/user", async (req, res) => {
+    try {
+      const { username, email } = z.object({
+        username: z.string().min(1),
+        email: z.string().email()
+      }).parse(req.body);
+
+      const updatedUser = await storage.updateUser(1, { username, email });
+      res.json(updatedUser);
+    } catch (error) {
+      console.error('Update user error:', error);
+      res.status(500).json({ error: "Failed to update user" });
+    }
+  });
+
   // Generate QR code for reward redemption
   app.post("/api/transactions/qr", async (req, res) => {
     try {
