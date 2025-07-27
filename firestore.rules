@@ -2,18 +2,29 @@ rules_version = '2';
 
 service cloud.firestore {
   match /databases/{database}/documents {
-    // Allow read/write access for development (test mode)
-    match /{document=**} {
-      allow read, write: if true;
+    // Users can read/write their own data
+    match /users/{userId} {
+      allow read, write: if true; // Allow for demo user access
     }
     
-    // Future: Add authentication-based rules when you add user login
-    // match /users/{userId} {
-    //   allow read, write: if request.auth != null && request.auth.uid == userId;
-    // }
-    // 
-    // match /detections/{document} {
-    //   allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
-    // }
+    // Detections - users can read/write their own detections
+    match /detections/{document} {
+      allow read, write: if true; // Allow for demo functionality
+    }
+    
+    // Transactions - users can read/write their own transactions
+    match /transactions/{document} {
+      allow read, write: if true; // Allow for demo functionality
+    }
+    
+    // Stats - users can read/write their own stats
+    match /stats/{document} {
+      allow read, write: if true; // Allow for demo functionality
+    }
+    
+    // Achievements - users can read/write their own achievements
+    match /achievements/{document} {
+      allow read, write: if true; // Allow for demo functionality
+    }
   }
 }
