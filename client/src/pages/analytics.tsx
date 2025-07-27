@@ -111,19 +111,19 @@ export default function AnalyticsPage() {
     },
   });
 
-  // Auto-create smart reminders based on user behavior
-  useEffect(() => {
-    if (analytics?.habits.currentStreak === 0 && analytics?.reminders.active.length === 0) {
-      // Create a reminder if user hasn't recycled in a while
-      createReminderMutation.mutate({
-        reminderType: 'recycling',
-        frequency: 'daily',
-        message: "Haven't recycled in 3 days - find something to recycle today!",
-        isActive: true,
-        nextScheduled: new Date(Date.now() + 24 * 60 * 60 * 1000)
-      });
-    }
-  }, [analytics]);
+  // Auto-create smart reminders based on user behavior - disabled for now
+  // useEffect(() => {
+  //   if (analytics?.habits.currentStreak === 0 && analytics?.reminders.active.length === 0) {
+  //     // Create a reminder if user hasn't recycled in a while
+  //     createReminderMutation.mutate({
+  //       reminderType: 'recycling',
+  //       frequency: 'daily',
+  //       message: "Haven't recycled in 3 days - find something to recycle today!",
+  //       isActive: true,
+  //       nextScheduled: new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString()
+  //     });
+  //   }
+  // }, [analytics]);
 
   const getTimeIcon = (time: string) => {
     switch (time) {
@@ -472,9 +472,19 @@ export default function AnalyticsPage() {
 
       {/* Goal Creation Form Modal */}
       {showGoalForm && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div 
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) {
+              setShowGoalForm(false);
+            }
+          }}
+        >
           <FadeIn>
-            <EnhancedCard className="w-full max-w-md p-6">
+            <EnhancedCard 
+              className="w-full max-w-md p-6 relative"
+              onClick={(e) => e.stopPropagation()}
+            >
               <h3 className="text-lg font-semibold text-white mb-4">Create New Goal</h3>
               
               <form onSubmit={(e) => {
@@ -498,7 +508,8 @@ export default function AnalyticsPage() {
                     type="text"
                     required
                     placeholder="e.g., Recycle 50 items this month"
-                    className="w-full p-3 bg-dark-surface/50 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-eco-green focus:outline-none"
+                    className="w-full p-3 bg-gray-800/90 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-eco-green focus:outline-none focus:ring-1 focus:ring-eco-green"
+                    style={{ zIndex: 60 }}
                   />
                 </div>
 
@@ -509,8 +520,9 @@ export default function AnalyticsPage() {
                   <textarea
                     name="description"
                     placeholder="Optional description..."
-                    className="w-full p-3 bg-dark-surface/50 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-eco-green focus:outline-none"
+                    className="w-full p-3 bg-gray-800/90 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-eco-green focus:outline-none focus:ring-1 focus:ring-eco-green"
                     rows={3}
+                    style={{ zIndex: 60 }}
                   />
                 </div>
 
@@ -522,7 +534,8 @@ export default function AnalyticsPage() {
                     <select
                       name="goalType"
                       required
-                      className="w-full p-3 bg-dark-surface/50 border border-white/10 rounded-lg text-white focus:border-eco-green focus:outline-none"
+                      className="w-full p-3 bg-gray-800/90 border border-gray-600 rounded-lg text-white focus:border-eco-green focus:outline-none focus:ring-1 focus:ring-eco-green"
+                      style={{ zIndex: 60 }}
                     >
                       <option value="daily">Daily</option>
                       <option value="weekly">Weekly</option>
@@ -538,7 +551,8 @@ export default function AnalyticsPage() {
                     <select
                       name="targetType"
                       required
-                      className="w-full p-3 bg-dark-surface/50 border border-white/10 rounded-lg text-white focus:border-eco-green focus:outline-none"
+                      className="w-full p-3 bg-gray-800/90 border border-gray-600 rounded-lg text-white focus:border-eco-green focus:outline-none focus:ring-1 focus:ring-eco-green"
+                      style={{ zIndex: 60 }}
                     >
                       <option value="detections">Items Recycled</option>
                       <option value="coins">Green Coins</option>
@@ -557,7 +571,8 @@ export default function AnalyticsPage() {
                     required
                     min="1"
                     placeholder="e.g., 50"
-                    className="w-full p-3 bg-dark-surface/50 border border-white/10 rounded-lg text-white placeholder-gray-400 focus:border-eco-green focus:outline-none"
+                    className="w-full p-3 bg-gray-800/90 border border-gray-600 rounded-lg text-white placeholder-gray-400 focus:border-eco-green focus:outline-none focus:ring-1 focus:ring-eco-green"
+                    style={{ zIndex: 60 }}
                   />
                 </div>
 
@@ -568,7 +583,8 @@ export default function AnalyticsPage() {
                   <input
                     name="endDate"
                     type="date"
-                    className="w-full p-3 bg-dark-surface/50 border border-white/10 rounded-lg text-white focus:border-eco-green focus:outline-none"
+                    className="w-full p-3 bg-gray-800/90 border border-gray-600 rounded-lg text-white focus:border-eco-green focus:outline-none focus:ring-1 focus:ring-eco-green"
+                    style={{ zIndex: 60 }}
                   />
                 </div>
 
