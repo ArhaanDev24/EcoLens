@@ -188,64 +188,64 @@ export default function AnalyticsPage() {
           </h2>
           
           <div className="grid grid-cols-2 lg:grid-cols-3 gap-4">
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-green-500 to-eco-green rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-green-500 to-eco-green rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <Leaf className="w-6 h-6 text-white" />
               </div>
               <div className="text-2xl font-bold text-eco-green mb-1">
                 <CountUp end={analytics.environmentalImpact.totalCO2Saved} duration={1500} />g
               </div>
-              <div className="text-xs text-gray-300">CO₂ Saved</div>
+              <div className="text-sm text-white font-medium">CO₂ Saved</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-blue-500 to-cyan-500 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <Droplet className="w-6 h-6 text-white" />
               </div>
               <div className="text-2xl font-bold text-blue-400 mb-1">
                 <CountUp end={analytics.environmentalImpact.totalWaterSaved} duration={1500} />L
               </div>
-              <div className="text-xs text-gray-300">Water Saved</div>
+              <div className="text-sm text-white font-medium">Water Saved</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <Zap className="w-6 h-6 text-white" />
               </div>
               <div className="text-2xl font-bold text-yellow-400 mb-1">
                 <CountUp end={analytics.environmentalImpact.totalEnergySaved} duration={1500} />Wh
               </div>
-              <div className="text-xs text-gray-300">Energy Saved</div>
+              <div className="text-sm text-white font-medium">Energy Saved</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-emerald-500 to-green-600 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <TreePine className="w-6 h-6 text-white" />
               </div>
               <div className="text-2xl font-bold text-emerald-400 mb-1">
                 <CountUp end={analytics.environmentalImpact.treesSaved} duration={1500} />
               </div>
-              <div className="text-xs text-gray-300">Trees Saved</div>
+              <div className="text-sm text-white font-medium">Trees Saved</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-purple-500 to-pink-500 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <Trash2 className="w-6 h-6 text-white" />
               </div>
               <div className="text-2xl font-bold text-purple-400 mb-1">
                 <CountUp end={analytics.environmentalImpact.landfillDiverted} duration={1500} />g
               </div>
-              <div className="text-xs text-gray-300">Waste Diverted</div>
+              <div className="text-sm text-white font-medium">Waste Diverted</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-12 h-12 mx-auto bg-gradient-to-br from-indigo-500 to-blue-600 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <TrendingUp className="w-6 h-6 text-white" />
               </div>
               <div className="text-2xl font-bold text-indigo-400 mb-1">
                 <CountUp end={analytics.environmentalImpact.recyclingScore} duration={1500} />
               </div>
-              <div className="text-xs text-gray-300">Eco Score</div>
+              <div className="text-sm text-white font-medium">Eco Score</div>
             </EnhancedCard>
           </div>
         </div>
@@ -280,35 +280,35 @@ export default function AnalyticsPage() {
               </EnhancedCard>
             ) : (
               analytics.goals.active.map((goal) => (
-                <EnhancedCard key={goal.id} className="p-4">
+                <EnhancedCard key={goal.id} className="p-4 bg-gray-800/80 border-gray-600/50">
                   <div className="flex items-center justify-between mb-3">
-                    <h3 className="font-semibold text-white">{goal.title}</h3>
-                    <span className="text-xs text-gray-400 flex items-center">
+                    <h3 className="font-semibold text-white text-base">{goal.title}</h3>
+                    <span className="text-xs text-gray-200 flex items-center bg-gray-700/50 px-2 py-1 rounded">
                       <Calendar className="w-3 h-3 mr-1" />
                       {goal.endDate ? new Date(goal.endDate).toLocaleDateString() : 'Ongoing'}
                     </span>
                   </div>
                   
-                  <p className="text-sm text-gray-300 mb-4">{goal.description}</p>
+                  <p className="text-sm text-gray-200 mb-4 font-medium">{goal.description}</p>
                   
                   <div className="mb-3">
-                    <div className="flex justify-between text-sm mb-1">
-                      <span className="text-gray-300">Progress</span>
-                      <span className="text-eco-green">
+                    <div className="flex justify-between text-sm mb-2">
+                      <span className="text-gray-200 font-medium">Progress</span>
+                      <span className="text-eco-green font-bold">
                         {goal.currentProgress} / {goal.targetValue} {goal.targetType}
                       </span>
                     </div>
                     <EnhancedProgress 
                       value={(goal.currentProgress / goal.targetValue) * 100}
-                      className="h-2"
+                      className="h-3"
                     />
                   </div>
                   
                   <div className="flex items-center justify-between">
-                    <span className="text-xs px-2 py-1 bg-eco-green/20 text-eco-green rounded-full">
+                    <span className="text-xs px-3 py-1 bg-eco-green/30 text-eco-green rounded-full font-medium border border-eco-green/20">
                       {goal.goalType} Goal
                     </span>
-                    <EnhancedButton size="sm" variant="ghost" icon={Edit}>
+                    <EnhancedButton size="sm" variant="ghost" icon={Edit} className="text-gray-200 hover:text-white">
                       Edit
                     </EnhancedButton>
                   </div>
@@ -352,49 +352,49 @@ export default function AnalyticsPage() {
           </h2>
 
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-orange-500 to-red-500 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <Award className="w-5 h-5 text-white" />
               </div>
               <div className="text-xl font-bold text-orange-400 mb-1">
                 <CountUp end={analytics.habits.currentStreak} duration={1000} />
               </div>
-              <div className="text-xs text-gray-300">Current Streak</div>
+              <div className="text-xs text-gray-200 font-medium">Current Streak</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-purple-500 to-indigo-500 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <TrendingUp className="w-5 h-5 text-white" />
               </div>
               <div className="text-xl font-bold text-purple-400 mb-1">
                 <CountUp end={analytics.habits.insights.bestStreak} duration={1000} />
               </div>
-              <div className="text-xs text-gray-300">Best Streak</div>
+              <div className="text-xs text-gray-200 font-medium">Best Streak</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-green-500 to-teal-500 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 <BarChart3 className="w-5 h-5 text-white" />
               </div>
               <div className="text-xl font-bold text-green-400 mb-1">
                 <CountUp end={analytics.habits.insights.averageDaily} duration={1000} />
               </div>
-              <div className="text-xs text-gray-300">Daily Average</div>
+              <div className="text-xs text-gray-200 font-medium">Daily Average</div>
             </EnhancedCard>
 
-            <EnhancedCard className="p-4 text-center">
-              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-3">
+            <EnhancedCard className="p-4 text-center bg-gray-800/80 border-gray-600/50">
+              <div className="w-10 h-10 mx-auto bg-gradient-to-br from-yellow-500 to-orange-500 rounded-full flex items-center justify-center mb-3 shadow-lg">
                 {React.createElement(getTimeIcon(analytics.habits.insights.favoriteTime), { className: "w-5 h-5 text-white" })}
               </div>
               <div className="text-sm font-bold text-yellow-400 mb-1 capitalize">
                 {analytics.habits.insights.favoriteTime}
               </div>
-              <div className="text-xs text-gray-300">Favorite Time</div>
+              <div className="text-xs text-gray-200 font-medium">Favorite Time</div>
             </EnhancedCard>
           </div>
 
           {/* Weekly Pattern */}
-          <EnhancedCard className="p-4">
+          <EnhancedCard className="p-4 bg-gray-800/80 border-gray-600/50">
             <h3 className="font-semibold text-white mb-4 flex items-center">
               <Calendar className="mr-2 text-eco-green" />
               Weekly Activity Pattern
@@ -402,18 +402,18 @@ export default function AnalyticsPage() {
             <div className="space-y-3">
               {Object.entries(analytics.habits.insights.weeklyPattern).map(([day, count]) => (
                 <div key={day} className="flex items-center justify-between">
-                  <span className="text-sm text-gray-300 w-20">{day}</span>
+                  <span className="text-sm text-white font-medium w-20">{day}</span>
                   <div className="flex-1 mx-3">
-                    <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div className="w-full bg-gray-600 rounded-full h-3">
                       <div 
-                        className="bg-gradient-to-r from-eco-green to-emerald-400 h-2 rounded-full transition-all duration-1000"
+                        className="bg-gradient-to-r from-eco-green to-emerald-400 h-3 rounded-full transition-all duration-1000"
                         style={{ 
                           width: `${Math.max((count / Math.max(...Object.values(analytics.habits.insights.weeklyPattern))) * 100, 5)}%` 
                         }}
                       />
                     </div>
                   </div>
-                  <span className="text-sm text-eco-green font-medium w-8 text-right">{count}</span>
+                  <span className="text-sm text-eco-green font-bold w-8 text-right">{count}</span>
                 </div>
               ))}
             </div>
