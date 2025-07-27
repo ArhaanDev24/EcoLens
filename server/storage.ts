@@ -279,11 +279,6 @@ export class DatabaseStorage implements IStorage {
       .where(eq(achievements.userId, userId))
       .orderBy(desc(achievements.unlockedAt));
   }
-
-  async getUserStats(userId: number): Promise<Stats | undefined> {
-    const [userStats] = await db.select().from(stats).where(eq(stats.userId, userId));
-    return userStats || undefined;
-  }
 }
 
 // Use PostgreSQL database storage
