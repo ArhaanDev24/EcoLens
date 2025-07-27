@@ -67,62 +67,81 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const { itemName, confidence, binType, coinsAwarded } = req.body;
       
+      // Create detection record
       const detection = await storage.createDetection({
         userId: 1,
         imageUrl: null,
         detectedObjects: JSON.stringify([{
           name: itemName || 'Unknown Item',
           confidence: confidence || 80,
-          binType: binType || 'recyclable'
+          binType: binType || 'landfill',
+          coinsReward: coinsAwarded || 0
         }]),
-        confidenceScore: confidence || 80,
-        coinsEarned: coinsAwarded || 10
+        coinsEarned: coinsAwarded || 0
       });
       
       // Award coins to user
-      await storage.updateUserCoins(1, coinsAwarded || 10);
-      
-      // Create transaction record
-      try {
+      if (coinsAwarded > 0) {
         await storage.createTransaction({
           userId: 1,
           type: 'earn',
-          amount: coinsAwarded || 10,
-          description: `Detected ${itemName || 'recyclable item'}`
+          amount: coinsAwarded,
+          description: `Detected ${itemName}`,
+          detectionId: detection.id
         });
-      } catch (transactionError) {
-        console.error('Transaction creation failed:', transactionError);
-      }
-
-      // Update user statistics
-      try {
-        const currentStats = await storage.getUserStats(1);
-        const itemType = getItemCategory(itemName || '');
         
-        const statsUpdate: any = {
-          totalDetections: (currentStats?.totalDetections || 0) + 1,
-          totalCoinsEarned: (currentStats?.totalCoinsEarned || 0) + (coinsAwarded || 10),
-          lastDetectionDate: new Date()
-        };
-
-        // Update specific item type counters
-        if (itemType === 'plastic') statsUpdate.plasticItemsDetected = (currentStats?.plasticItemsDetected || 0) + 1;
-        else if (itemType === 'paper') statsUpdate.paperItemsDetected = (currentStats?.paperItemsDetected || 0) + 1;
-        else if (itemType === 'glass') statsUpdate.glassItemsDetected = (currentStats?.glassItemsDetected || 0) + 1;
-        else if (itemType === 'metal') statsUpdate.metalItemsDetected = (currentStats?.metalItemsDetected || 0) + 1;
-
-        await storage.updateUserStats(1, statsUpdate);
-        
-        // Check for achievements
-        await checkAndAwardAchievements(1, statsUpdate);
-      } catch (statsError) {
-        console.error('Stats update failed:', statsError);
+        // Update user's coin balance
+        await storage.updateUserCoins(1, coinsAwarded);
       }
-
-      res.json({ success: true, detection, coinsAwarded: coinsAwarded || 10 });
+      
+      res.json({ success: true, detection, coinsAwarded });
     } catch (error) {
       console.error('Create detection error:', error);
-      res.status(500).json({ error: "Failed to save detection" });
+      res.status(500).json({ error: "Failed to create detection record" });
+    }
+  });
+
+  // Get user stats
+  app.get("/api/user/:userId/stats", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const stats = await storage.getUserStats(userId);
+      res.json(stats);
+    } catch (error) {
+      console.error('Get stats error:', error);
+      res.status(500).json({ error: "Failed to get user stats" });
+    }
+  });
+
+  // Get user achievements  
+  app.get("/api/user/:userId/achievements", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const achievements = await storage.getUserAchievements(userId);
+      res.json(achievements);
+    } catch (error) {
+      console.error('Get achievements error:', error);
+      res.status(500).json({ error: "Failed to get user achievements" });
+    }
+  });
+
+  // Get or create user
+  app.get("/api/user", async (req, res) => {
+    try {
+      let user = await storage.getUserById(1);
+      
+      if (!user) {
+        user = await storage.createUser({
+          username: "eco_user",
+          email: "user@ecolens.app",
+          firebaseUid: "demo-uid"
+        });
+      }
+
+      res.json(user);
+    } catch (error) {
+      console.error('Get user error:', error);
+      res.status(500).json({ error: "Failed to get user" });
     }
   });
 
@@ -134,33 +153,6 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get transactions error:', error);
       res.status(500).json({ error: "Failed to get transactions" });
-    }
-  });
-
-  // Get user statistics
-  app.get("/api/stats", async (req, res) => {
-    try {
-      let userStats = await storage.getUserStats(1);
-      
-      // Create initial stats if they don't exist
-      if (!userStats) {
-        await storage.updateUserStats(1, {
-          totalDetections: 0,
-          totalCoinsEarned: 0,
-          totalCoinsSpent: 0,
-          streakDays: 0,
-          plasticItemsDetected: 0,
-          paperItemsDetected: 0,
-          glassItemsDetected: 0,
-          metalItemsDetected: 0
-        });
-        userStats = await storage.getUserStats(1);
-      }
-      
-      res.json(userStats);
-    } catch (error) {
-      console.error('Get stats error:', error);
-      res.status(500).json({ error: "Failed to get statistics" });
     }
   });
 

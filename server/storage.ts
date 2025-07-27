@@ -230,26 +230,46 @@ export class DatabaseStorage implements IStorage {
   }
 
   async getUserStats(userId: number): Promise<Stats | undefined> {
-    const [userStats] = await db.select().from(stats).where(eq(stats.userId, userId));
+    const [userStats] = await db
+      .select()
+      .from(stats)
+      .where(eq(stats.userId, userId));
     return userStats || undefined;
   }
 
   async updateUserStats(userId: number, statsUpdate: Partial<InsertStats>): Promise<void> {
-    await db
-      .update(stats)
-      .set({
-        ...statsUpdate,
-        updatedAt: new Date()
-      })
-      .where(eq(stats.userId, userId));
+    // First check if stats exist
+    const existingStats = await this.getUserStats(userId);
+    
+    if (!existingStats) {
+      // Create initial stats
+      await db.insert(stats).values({
+        userId: userId,
+        totalDetections: 0,
+        totalCoinsEarned: 0,
+        totalCoinsSpent: 0,
+        streakDays: 0,
+        plasticItemsDetected: 0,
+        paperItemsDetected: 0,
+        glassItemsDetected: 0,
+        metalItemsDetected: 0,
+        ...statsUpdate
+      });
+    } else {
+      // Update existing stats
+      await db
+        .update(stats)
+        .set(statsUpdate)
+        .where(eq(stats.userId, userId));
+    }
   }
 
-  async createAchievement(achievement: InsertAchievement): Promise<Achievement> {
-    const [newAchievement] = await db
+  async createAchievement(insertAchievement: InsertAchievement): Promise<Achievement> {
+    const [achievement] = await db
       .insert(achievements)
-      .values(achievement)
+      .values(insertAchievement)
       .returning();
-    return newAchievement;
+    return achievement;
   }
 
   async getUserAchievements(userId: number): Promise<Achievement[]> {
@@ -259,10 +279,12 @@ export class DatabaseStorage implements IStorage {
       .where(eq(achievements.userId, userId))
       .orderBy(desc(achievements.unlockedAt));
   }
-}
 
-// Import Firebase storage  
-import { FirebaseStorage } from "./firebaseStorage";
+  async getUserStats(userId: number): Promise<Stats | undefined> {
+    const [userStats] = await db.select().from(stats).where(eq(stats.userId, userId));
+    return userStats || undefined;
+  }
+}
 
 // Use PostgreSQL database storage
 export const storage = new DatabaseStorage();

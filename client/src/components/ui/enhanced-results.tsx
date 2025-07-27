@@ -21,29 +21,62 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const { detect, isDetecting, error } = useAIDetection();
   const [detectionResult, setDetectionResult] = useState<any[]>([]);
 
-  // Run detection on mount
+  // Run detection on mount - only once
   useEffect(() => {
+    let isDetectionComplete = false;
+    
     const runDetection = async () => {
+      if (isDetectionComplete) return;
+      
       try {
         const results = await detect(imageData);
+        if (isDetectionComplete) return; // Prevent duplicate processing
+        
+        isDetectionComplete = true;
         setDetectionResult(results);
         
-        const totalCoins = results.reduce((sum, item) => sum + item.coinsReward, 0);
-        onCoinsEarned(totalCoins);
-        setCoinsAnimation(true);
-        setShowConfetti(true);
-        
-        setTimeout(() => {
-          setCoinsAnimation(false);
-          setShowConfetti(false);
-        }, 2000);
+        if (results && results.length > 0) {
+          // Create detection records in database first
+          await Promise.all(results.map(async (item) => {
+            try {
+              await fetch('/api/detections', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  itemName: item.name,
+                  confidence: item.confidence,
+                  binType: item.binType,
+                  coinsAwarded: item.coinsReward
+                })
+              });
+            } catch (err) {
+              console.error('Failed to save detection:', err);
+            }
+          }));
+          
+          // Award coins after successful database storage
+          const totalCoins = results.reduce((sum, item) => sum + item.coinsReward, 0);
+          onCoinsEarned(totalCoins);
+          setCoinsAnimation(true);
+          setShowConfetti(true);
+          
+          setTimeout(() => {
+            setCoinsAnimation(false);
+            setShowConfetti(false);
+          }, 2000);
+        }
       } catch (error) {
         console.error('Detection failed:', error);
+        isDetectionComplete = true;
       }
     };
     
     runDetection();
-  }, [imageData, detect, onCoinsEarned]);
+    
+    return () => {
+      isDetectionComplete = true; // Cleanup
+    };
+  }, [imageData]); // Remove detect and onCoinsEarned from dependencies
 
   useEffect(() => {
     if (detectionResult && !isDetecting) {
