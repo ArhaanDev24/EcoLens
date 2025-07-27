@@ -3,6 +3,7 @@ import { TrendingUp, Award, Zap, Target, Recycle, Trophy, Coins, BarChart3 } fro
 import { EnhancedCard, EnhancedCardHeader, EnhancedCardContent } from "@/components/ui/enhanced-card";
 import { LoadingCard } from "@/components/ui/enhanced-loading";
 import { EnhancedAchievementSystem } from "@/components/ui/enhanced-achievement-system";
+import { EnhancedDashboard } from "@/components/ui/enhanced-dashboard";
 import { cn } from '@/lib/utils';
 
 interface Stats {
