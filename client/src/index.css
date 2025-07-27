@@ -71,6 +71,27 @@
 }
 
 @layer utilities {
+  /* Mobile-first responsive text sizes */
+  .text-responsive-xs { @apply text-xs sm:text-sm md:text-base lg:text-lg xl:text-xl 2xl:text-2xl 4k:text-3xl 8k:text-4xl; }
+  .text-responsive-sm { @apply text-sm sm:text-base md:text-lg lg:text-xl xl:text-2xl 2xl:text-3xl 4k:text-4xl 8k:text-5xl; }
+  .text-responsive-base { @apply text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl 2xl:text-4xl 4k:text-5xl 8k:text-6xl; }
+  .text-responsive-lg { @apply text-lg sm:text-xl md:text-2xl lg:text-3xl xl:text-4xl 2xl:text-5xl 4k:text-6xl 8k:text-7xl; }
+  .text-responsive-xl { @apply text-xl sm:text-2xl md:text-3xl lg:text-4xl xl:text-5xl 2xl:text-6xl 4k:text-7xl 8k:text-8xl; }
+  
+  /* Mobile-first responsive spacing */
+  .padding-responsive { @apply p-3 sm:p-4 md:p-6 lg:p-8 xl:p-10 2xl:p-12 4k:p-16 8k:p-20; }
+  .padding-responsive-sm { @apply p-2 sm:p-3 md:p-4 lg:p-6 xl:p-8 2xl:p-10 4k:p-12 8k:p-16; }
+  .margin-responsive { @apply m-3 sm:m-4 md:m-6 lg:m-8 xl:m-10 2xl:m-12 4k:m-16 8k:m-20; }
+  .gap-responsive { @apply gap-2 sm:gap-3 md:gap-4 lg:gap-6 xl:gap-8 2xl:gap-10 4k:gap-12 8k:gap-16; }
+  
+  /* Mobile-first responsive icon sizes */
+  .icon-responsive-sm { @apply w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6 lg:w-7 lg:h-7 xl:w-8 xl:h-8 2xl:w-9 2xl:h-9 4k:w-12 4k:h-12 8k:w-16 8k:h-16; }
+  .icon-responsive { @apply w-5 h-5 sm:w-6 sm:h-6 md:w-7 md:h-7 lg:w-8 lg:h-8 xl:w-9 xl:h-9 2xl:w-10 2xl:h-10 4k:w-14 4k:h-14 8k:w-20 8k:h-20; }
+  .icon-responsive-lg { @apply w-6 h-6 sm:w-7 sm:h-7 md:w-8 md:h-8 lg:w-10 lg:h-10 xl:w-12 xl:h-12 2xl:w-14 2xl:h-14 4k:w-20 4k:h-20 8k:w-24 8k:h-24; }
+  
+  /* Mobile-first responsive containers */
+  .container-responsive { @apply w-full max-w-sm sm:max-w-md md:max-w-lg lg:max-w-xl xl:max-w-2xl 2xl:max-w-4xl mx-auto px-4 sm:px-6 md:px-8 lg:px-10 xl:px-12; }
+  
   .glassmorphic {
     background: linear-gradient(135deg, rgba(30, 30, 30, 0.9), rgba(20, 20, 20, 0.8));
     backdrop-filter: blur(20px) saturate(1.8);

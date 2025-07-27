@@ -6,8 +6,14 @@ export default {
   theme: {
     extend: {
       screens: {
-        '4k': '2560px',
-        '8k': '3840px',
+        'xs': '475px',      // Extra small phones
+        'sm': '640px',      // Small tablets
+        'md': '768px',      // Medium tablets
+        'lg': '1024px',     // Small laptops
+        'xl': '1280px',     // Desktop
+        '2xl': '1536px',    // Large desktop
+        '4k': '2560px',     // 4K displays
+        '8k': '3840px',     // 8K displays
       },
       borderRadius: {
         lg: "var(--radius)",
