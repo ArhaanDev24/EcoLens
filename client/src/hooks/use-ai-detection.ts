@@ -23,7 +23,14 @@ export function useAIDetection(): AIDetectionHook {
     setError(null);
 
     try {
-      // First try server-side Gemini AI detection
+      // First try Teachable Machine model (primary method)
+      const teachableMachineResult = await detectWithTeachableMachine(imageData);
+      if (teachableMachineResult.length > 0) {
+        console.log('Teachable Machine detection successful:', teachableMachineResult);
+        return teachableMachineResult;
+      }
+
+      // Fallback to server-side Gemini AI detection
       const response = await fetch('/api/detect', {
         method: 'POST',
         headers: {
@@ -40,13 +47,7 @@ export function useAIDetection(): AIDetectionHook {
         }
       }
 
-      // Fallback to Teachable Machine model
-      const teachableMachineResult = await detectWithTeachableMachine(imageData);
-      if (teachableMachineResult.length > 0) {
-        return teachableMachineResult;
-      }
-
-      // Fallback to Clarifai
+      // Final fallback to Clarifai
       const clarifaiResult = await detectWithClarifai(imageData);
       return clarifaiResult;
     } catch (err) {
@@ -72,10 +73,10 @@ async function detectWithTeachableMachine(imageData: string): Promise<DetectionR
     const response = await fetch(imageData);
     const blob = await response.blob();
     
-    // Load Teachable Machine model
-    const modelURL = import.meta.env.VITE_TEACHABLE_MACHINE_MODEL_URL || 'https://teachablemachine.withgoogle.com/models/YOUR_MODEL_ID/';
+    // Load Teachable Machine model - use a working recycling detection model
+    const modelURL = import.meta.env.VITE_TEACHABLE_MACHINE_MODEL_URL || 'https://teachablemachine.withgoogle.com/models/eMGpeBDY8/';
     
-    if (!modelURL.includes('YOUR_MODEL_ID')) {
+    if (modelURL && !modelURL.includes('YOUR_MODEL_ID')) {
       const tmImage = await import('@teachablemachine/image');
       const model = await tmImage.load(modelURL + 'model.json', modelURL + 'metadata.json');
       
@@ -86,9 +87,11 @@ async function detectWithTeachableMachine(imageData: string): Promise<DetectionR
       const predictions = await model.predict(img);
       
       return predictions
-        .filter(p => p.probability > 0.7)
+        .filter(p => p.probability > 0.5) // Lower threshold for better detection
+        .sort((a, b) => b.probability - a.probability) // Sort by confidence
+        .slice(0, 3) // Top 3 results
         .map(prediction => ({
-          name: prediction.className,
+          name: mapTeachableMachineClass(prediction.className),
           confidence: Math.round(prediction.probability * 100),
           binType: getBinType(prediction.className),
           binColor: getBinColor(prediction.className),
@@ -204,6 +207,26 @@ function getCoinsReward(itemName: string): number {
   if (name.includes('paper') || name.includes('cardboard')) return 8;
   
   return 10; // Default reward
+}
+
+function mapTeachableMachineClass(className: string): string {
+  // Map Teachable Machine class names to user-friendly names
+  const classMap: { [key: string]: string } = {
+    'Plastic': 'plastic bottle',
+    'Paper': 'paper waste',
+    'Glass': 'glass container',
+    'Metal': 'metal can',
+    'Cardboard': 'cardboard box',
+    'Organic': 'organic waste',
+    'plastic': 'plastic item',
+    'paper': 'paper item',
+    'glass': 'glass item',
+    'metal': 'metal item',
+    'cardboard': 'cardboard item',
+    'organic': 'organic waste'
+  };
+  
+  return classMap[className] || className.toLowerCase();
 }
 
 function getDemoResults(): DetectionResult[] {
