@@ -261,4 +261,27 @@ export class DatabaseStorage implements IStorage {
   }
 }
 
-export const storage = new DatabaseStorage();
+// Import Firebase storage
+import { FirebaseStorage } from "./firebaseStorage";
+
+export const storage = new FirebaseStorage();
+
+// Initialize demo user
+async function initializeDemoUser() {
+  try {
+    const existingUser = await storage.getUserById(1);
+    if (!existingUser) {
+      await storage.createUser({
+        username: "eco_user",
+        email: "user@ecolens.app",
+        firebaseUid: "demo-uid"
+      });
+      console.log("Demo user created in Firebase");
+    }
+  } catch (error) {
+    console.log("Demo user initialization:", error);
+  }
+}
+
+// Initialize on startup
+initializeDemoUser();
