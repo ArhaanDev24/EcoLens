@@ -264,6 +264,7 @@ export class DatabaseStorage implements IStorage {
 // Import Firebase storage
 import { FirebaseStorage } from "./firebaseStorage";
 
+// Use Firebase storage for production, fallback to memory for development
 export const storage = new FirebaseStorage();
 
 // Initialize demo user

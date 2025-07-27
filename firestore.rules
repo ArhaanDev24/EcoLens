@@ -1,0 +1,19 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow read/write access for development (test mode)
+    match /{document=**} {
+      allow read, write: if true;
+    }
+    
+    // Future: Add authentication-based rules when you add user login
+    // match /users/{userId} {
+    //   allow read, write: if request.auth != null && request.auth.uid == userId;
+    // }
+    // 
+    // match /detections/{document} {
+    //   allow read, write: if request.auth != null && resource.data.userId == request.auth.uid;
+    // }
+  }
+}
