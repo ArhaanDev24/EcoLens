@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { CameraPage } from './camera';
-import { ResultsPage } from './results';
+import { EnhancedCamera } from '@/components/ui/enhanced-camera';
+import { EnhancedResults } from '@/components/ui/enhanced-results';
 import { WalletPage } from './wallet';
-import { BottomNavigation } from '@/components/ui/bottom-navigation';
+import { EnhancedBottomNav } from '@/components/ui/enhanced-bottom-nav';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
 
@@ -68,9 +68,15 @@ export default function Home() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-dark-bg flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin w-12 h-12 border-4 border-eco-green border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-text-secondary">Loading EcoLens...</p>
+        <div className="text-center fade-in-scale">
+          <div className="relative mb-6">
+            <div className="w-16 h-16 mx-auto bg-eco-green/20 rounded-full flex items-center justify-center floating-animation">
+              <div className="w-8 h-8 border-3 border-eco-green border-t-transparent rounded-full animate-spin" />
+            </div>
+            <div className="absolute inset-0 w-16 h-16 mx-auto border border-eco-green/30 rounded-full animate-ping" />
+          </div>
+          <h2 className="text-xl font-semibold text-text-primary mb-2">EcoLens</h2>
+          <p className="text-text-secondary">Initializing AI Scanner...</p>
         </div>
       </div>
     );
@@ -81,7 +87,7 @@ export default function Home() {
   const renderActiveTab = () => {
     if (activeTab === 'results' && capturedImage) {
       return (
-        <ResultsPage
+        <EnhancedResults
           imageData={capturedImage}
           onBack={handleBackToCamera}
           onCoinsEarned={handleCoinsEarned}
@@ -92,7 +98,7 @@ export default function Home() {
     switch (activeTab) {
       case 'camera':
         return (
-          <CameraPage
+          <EnhancedCamera
             onCapture={handleCapture}
             greenCoins={greenCoins}
           />
@@ -138,7 +144,7 @@ export default function Home() {
       {renderActiveTab()}
       
       {activeTab !== 'results' && (
-        <BottomNavigation
+        <EnhancedBottomNav
           activeTab={activeTab}
           onTabChange={setActiveTab}
         />

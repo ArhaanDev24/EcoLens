@@ -1,0 +1,305 @@
+import { useState, useEffect, useRef } from 'react';
+import { useCamera } from '@/hooks/use-camera';
+import { Button } from '@/components/ui/button';
+import { Camera, Focus, Maximize2, RotateCcw, Zap, ZapOff } from 'lucide-react';
+import { cn } from '@/lib/utils';
+
+interface EnhancedCameraProps {
+  onCapture: (imageData: string) => void;
+  greenCoins: number;
+}
+
+export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
+  const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage, error } = useCamera();
+  const [isCapturing, setIsCapturing] = useState(false);
+  const [showGrid, setShowGrid] = useState(true);
+  const [isLiveDetecting, setIsLiveDetecting] = useState(false);
+  const [detectedItems, setDetectedItems] = useState<string[]>([]);
+  const detectionIntervalRef = useRef<NodeJS.Timeout>();
+
+  useEffect(() => {
+    startCamera();
+    return () => {
+      stopCamera();
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+      }
+    };
+  }, [startCamera, stopCamera]);
+
+  // Live detection preview (simplified for demo)
+  useEffect(() => {
+    if (isLiveDetecting && isStreaming) {
+      detectionIntervalRef.current = setInterval(() => {
+        // Simulate live detection results
+        const mockItems = ['plastic bottle', 'paper cup', 'snack bag', 'aluminum can'];
+        const randomItem = mockItems[Math.floor(Math.random() * mockItems.length)];
+        setDetectedItems(prev => [randomItem, ...prev.slice(0, 2)]);
+      }, 3000);
+    } else {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+      }
+      setDetectedItems([]);
+    }
+
+    return () => {
+      if (detectionIntervalRef.current) {
+        clearInterval(detectionIntervalRef.current);
+      }
+    };
+  }, [isLiveDetecting, isStreaming]);
+
+  const handleCapture = async () => {
+    setIsCapturing(true);
+    
+    // Enhanced capture animation
+    const viewfinder = document.querySelector('.camera-viewfinder');
+    if (viewfinder) {
+      const flash = document.createElement('div');
+      flash.className = 'camera-flash';
+      viewfinder.appendChild(flash);
+      
+      // Add detection pulse effect
+      const pulse = document.createElement('div');
+      pulse.className = 'detection-pulse';
+      viewfinder.appendChild(pulse);
+      
+      setTimeout(() => {
+        flash.remove();
+        pulse.remove();
+      }, 1000);
+    }
+
+    const imageData = captureImage();
+    if (imageData) {
+      // Add coin particles animation
+      createCoinParticles();
+      
+      setTimeout(() => {
+        onCapture(imageData);
+        setIsCapturing(false);
+      }, 1000);
+    } else {
+      setIsCapturing(false);
+    }
+  };
+
+  const createCoinParticles = () => {
+    const container = document.querySelector('.camera-container');
+    if (!container) return;
+
+    for (let i = 0; i < 8; i++) {
+      const particle = document.createElement('div');
+      particle.className = 'coin-particle';
+      particle.style.left = `${Math.random() * 100}%`;
+      particle.style.top = `${Math.random() * 100}%`;
+      particle.style.animationDelay = `${i * 0.1}s`;
+      container.appendChild(particle);
+      
+      setTimeout(() => particle.remove(), 1200);
+    }
+  };
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="glassmorphic p-8 text-center max-w-md fade-in-scale">
+          <div className="w-16 h-16 mx-auto mb-4 bg-red-500/20 rounded-full flex items-center justify-center">
+            <Camera className="w-8 h-8 text-red-400" />
+          </div>
+          <h2 className="text-xl font-semibold mb-2 text-text-primary">Camera Access Required</h2>
+          <p className="text-sm text-text-secondary mb-6">{error}</p>
+          <Button onClick={startCamera} className="w-full">
+            <Camera className="w-4 h-4 mr-2" />
+            Try Again
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-dark-bg flex flex-col camera-container">
+      {/* Enhanced Header */}
+      <div className="glassmorphic-intense p-4 slide-in-up">
+        <div className="flex justify-between items-center">
+          <div className="flex items-center space-x-3">
+            <div className="w-12 h-12 bg-eco-green/20 rounded-full flex items-center justify-center floating-animation">
+              <Camera className="w-6 h-6 text-eco-green" />
+            </div>
+            <div>
+              <h2 className="text-lg font-semibold text-text-primary">EcoLens Scanner</h2>
+              <p className="text-sm text-text-secondary">Detect recyclable items</p>
+            </div>
+          </div>
+          <div className="flex items-center space-x-2">
+            <div className="text-right">
+              <p className="text-sm text-text-secondary">Green Coins</p>
+              <p className="text-xl font-bold text-reward-yellow">{greenCoins}</p>
+            </div>
+            <div className="w-8 h-8 bg-reward-yellow/20 rounded-full flex items-center justify-center">
+              <span className="text-reward-yellow text-lg">🪙</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Enhanced Camera Viewfinder */}
+      <div className="flex-1 p-4 flex flex-col">
+        <div className="relative flex-1 rounded-3xl overflow-hidden camera-viewfinder fade-in-scale">
+          {/* Video Stream */}
+          <video
+            ref={videoRef}
+            autoPlay
+            playsInline
+            muted
+            className="w-full h-full object-cover"
+          />
+          
+          {/* Canvas for capture */}
+          <canvas ref={canvasRef} className="hidden" />
+          
+          {/* Enhanced Scan Line */}
+          <div className="scan-line" />
+          
+          {/* Camera Grid */}
+          {showGrid && (
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="w-full h-full grid grid-cols-3 grid-rows-3 opacity-30">
+                {Array.from({ length: 9 }).map((_, i) => (
+                  <div key={i} className="border border-white/20" />
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {/* Live Detection Overlay */}
+          {isLiveDetecting && detectedItems.length > 0 && (
+            <div className="absolute top-4 left-4 right-4">
+              <div className="glassmorphic p-3 rounded-xl bounce-in">
+                <p className="text-xs text-text-secondary mb-2">Live Detection:</p>
+                <div className="flex flex-wrap gap-2">
+                  {detectedItems.map((item, index) => (
+                    <span
+                      key={`${item}-${index}`}
+                      className="px-2 py-1 bg-eco-green/20 text-eco-green rounded-full text-xs border border-eco-green/30"
+                    >
+                      {item}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Focus Points */}
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="absolute top-1/4 left-1/4 w-8 h-8">
+              <Focus className="w-full h-full text-eco-green/60 animate-pulse" />
+            </div>
+            <div className="absolute top-1/4 right-1/4 w-8 h-8">
+              <Focus className="w-full h-full text-eco-green/60 animate-pulse" style={{ animationDelay: '0.5s' }} />
+            </div>
+            <div className="absolute bottom-1/4 left-1/4 w-8 h-8">
+              <Focus className="w-full h-full text-eco-green/60 animate-pulse" style={{ animationDelay: '1s' }} />
+            </div>
+            <div className="absolute bottom-1/4 right-1/4 w-8 h-8">
+              <Focus className="w-full h-full text-eco-green/60 animate-pulse" style={{ animationDelay: '1.5s' }} />
+            </div>
+          </div>
+        </div>
+
+        {/* Enhanced Camera Controls */}
+        <div className="mt-6 slide-in-up" style={{ animationDelay: '0.2s' }}>
+          <div className="flex justify-center items-center space-x-4 mb-4">
+            {/* Settings */}
+            <div className="flex space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setShowGrid(!showGrid)}
+                className={cn(
+                  "glassmorphic w-12 h-12 rounded-full",
+                  showGrid && "bg-eco-green/20 text-eco-green"
+                )}
+              >
+                <Maximize2 className="w-5 h-5" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => setIsLiveDetecting(!isLiveDetecting)}
+                className={cn(
+                  "glassmorphic w-12 h-12 rounded-full",
+                  isLiveDetecting && "bg-eco-green/20 text-eco-green"
+                )}
+              >
+                <Zap className="w-5 h-5" />
+              </Button>
+            </div>
+
+            {/* Main Capture Button */}
+            <Button
+              onClick={handleCapture}
+              disabled={!isStreaming || isCapturing}
+              className={cn(
+                "w-20 h-20 rounded-full bg-eco-green hover:bg-eco-green/90 text-white shadow-lg",
+                "disabled:opacity-50 transition-all duration-300",
+                "hover:shadow-eco-green/50 hover:shadow-2xl hover:scale-105",
+                isCapturing && "animate-pulse"
+              )}
+              id="capture-btn"
+            >
+              {isCapturing ? (
+                <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Camera className="w-8 h-8" />
+              )}
+            </Button>
+
+            {/* Additional Controls */}
+            <div className="flex space-x-2">
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={startCamera}
+                className="glassmorphic w-12 h-12 rounded-full"
+              >
+                <RotateCcw className="w-5 h-5" />
+              </Button>
+              
+              <Button
+                variant="ghost"
+                size="icon"
+                className="glassmorphic w-12 h-12 rounded-full"
+              >
+                <ZapOff className="w-5 h-5" />
+              </Button>
+            </div>
+          </div>
+
+          {/* Status Indicator */}
+          <div className="text-center">
+            <div className="flex items-center justify-center space-x-2 mb-2">
+              <div className={cn(
+                "w-2 h-2 rounded-full",
+                isStreaming ? "bg-eco-green animate-pulse" : "bg-red-500"
+              )} />
+              <span className="text-sm text-text-secondary">
+                {isStreaming ? "Camera Active" : "Connecting..."}
+              </span>
+            </div>
+            
+            {isLiveDetecting && (
+              <p className="text-xs text-eco-green">
+                ✨ Live detection enabled
+              </p>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
