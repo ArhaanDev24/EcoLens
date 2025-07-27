@@ -92,7 +92,7 @@ export default function AnalyticsPage() {
 
   const createGoalMutation = useMutation({
     mutationFn: async (goalData: any) => {
-      return apiRequest('/api/user/1/goals', 'POST', goalData);
+      return apiRequest('POST', '/api/user/1/goals', goalData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user/1/analytics-dashboard'] });
@@ -103,7 +103,7 @@ export default function AnalyticsPage() {
 
   const createReminderMutation = useMutation({
     mutationFn: async (reminderData: any) => {
-      return apiRequest('/api/user/1/reminders', 'POST', reminderData);
+      return apiRequest('POST', '/api/user/1/reminders', reminderData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user/1/analytics-dashboard'] });
