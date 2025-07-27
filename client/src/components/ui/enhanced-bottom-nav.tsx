@@ -1,5 +1,5 @@
 import { cn } from '@/lib/utils';
-import { Camera, Wallet, BarChart3, User } from 'lucide-react';
+import { Camera, Wallet, BarChart3, User, TrendingUp } from 'lucide-react';
 
 interface EnhancedBottomNavProps {
   activeTab: string;
@@ -24,6 +24,12 @@ const navItems = [
     label: 'Stats',
     icon: BarChart3,
     gradient: 'from-blue-500 to-cyan-400',
+  },
+  {
+    id: 'analytics',
+    label: 'Analytics',
+    icon: TrendingUp,
+    gradient: 'from-indigo-500 to-purple-400',
   },
   {
     id: 'profile',

@@ -60,6 +60,67 @@ export const achievements = pgTable("achievements", {
   unlockedAt: timestamp("unlocked_at").defaultNow(),
 });
 
+// Personal Goals System
+export const personalGoals = pgTable("personal_goals", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  goalType: text("goal_type").notNull(), // 'daily', 'weekly', 'monthly', 'custom'
+  targetType: text("target_type").notNull(), // 'detections', 'coins', 'items', 'streak'
+  targetValue: integer("target_value").notNull(),
+  currentProgress: integer("current_progress").notNull().default(0),
+  title: text("title").notNull(),
+  description: text("description"),
+  isActive: boolean("is_active").notNull().default(true),
+  startDate: timestamp("start_date").defaultNow(),
+  endDate: timestamp("end_date"),
+  completedAt: timestamp("completed_at"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Environmental Impact Tracking
+export const environmentalImpact = pgTable("environmental_impact", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  totalCO2Saved: integer("total_co2_saved").notNull().default(0), // in grams
+  totalWaterSaved: integer("total_water_saved").notNull().default(0), // in ml
+  totalEnergySaved: integer("total_energy_saved").notNull().default(0), // in wh
+  treesSaved: integer("trees_saved").notNull().default(0), // equivalent trees
+  landfillDiverted: integer("landfill_diverted").notNull().default(0), // in grams
+  recyclingScore: integer("recycling_score").notNull().default(0), // 0-1000 scale
+  weeklyImpactData: jsonb("weekly_impact_data"), // {week: "2025-01", co2: 100, water: 500, ...}
+  monthlyImpactData: jsonb("monthly_impact_data"),
+  lastUpdated: timestamp("last_updated").defaultNow(),
+});
+
+// Smart Reminders & Notifications
+export const userReminders = pgTable("user_reminders", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  reminderType: text("reminder_type").notNull(), // 'recycling', 'goal', 'streak', 'achievement'
+  frequency: text("frequency").notNull(), // 'daily', 'weekly', 'custom'
+  message: text("message").notNull(),
+  isActive: boolean("is_active").notNull().default(true),
+  lastSent: timestamp("last_sent"),
+  nextScheduled: timestamp("next_scheduled"),
+  customSchedule: jsonb("custom_schedule"), // for complex scheduling
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Habit Tracking & Analytics
+export const habitAnalytics = pgTable("habit_analytics", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").references(() => users.id),
+  date: timestamp("date").notNull(),
+  detectionsCount: integer("detections_count").notNull().default(0),
+  coinsEarned: integer("coins_earned").notNull().default(0),
+  timeSpentMinutes: integer("time_spent_minutes").notNull().default(0),
+  favoriteTime: text("favorite_time"), // 'morning', 'afternoon', 'evening', 'night'
+  locationData: jsonb("location_data"), // anonymized location patterns
+  itemTypes: jsonb("item_types"), // {plastic: 3, paper: 2, glass: 1}
+  moodRating: integer("mood_rating"), // 1-5 scale for recycling satisfaction
+  notes: text("notes"),
+});
+
 export const insertUserSchema = createInsertSchema(users).pick({
   username: true,
   email: true,
@@ -73,6 +134,53 @@ export const insertDetectionSchema = createInsertSchema(detections).pick({
   confidenceScore: true,
   coinsEarned: true,
 });
+
+export const insertPersonalGoalSchema = createInsertSchema(personalGoals).pick({
+  userId: true,
+  goalType: true,
+  targetType: true,
+  targetValue: true,
+  title: true,
+  description: true,
+  endDate: true,
+});
+
+export const insertEnvironmentalImpactSchema = createInsertSchema(environmentalImpact).pick({
+  userId: true,
+  totalCO2Saved: true,
+  totalWaterSaved: true,
+  totalEnergySaved: true,
+  treesSaved: true,
+  landfillDiverted: true,
+  recyclingScore: true,
+});
+
+export const insertHabitAnalyticsSchema = createInsertSchema(habitAnalytics).pick({
+  userId: true,
+  date: true,
+  detectionsCount: true,
+  coinsEarned: true,
+  timeSpentMinutes: true,
+  favoriteTime: true,
+  itemTypes: true,
+  moodRating: true,
+  notes: true,
+});
+
+// Type exports
+export type User = typeof users.$inferSelect;
+export type Detection = typeof detections.$inferSelect;
+export type Transaction = typeof transactions.$inferSelect;
+export type Stats = typeof stats.$inferSelect;
+export type Achievement = typeof achievements.$inferSelect;
+export type PersonalGoal = typeof personalGoals.$inferSelect;
+export type EnvironmentalImpact = typeof environmentalImpact.$inferSelect;
+export type UserReminder = typeof userReminders.$inferSelect;
+export type HabitAnalytics = typeof habitAnalytics.$inferSelect;
+
+export type InsertPersonalGoal = z.infer<typeof insertPersonalGoalSchema>;
+export type InsertEnvironmentalImpact = z.infer<typeof insertEnvironmentalImpactSchema>;
+export type InsertHabitAnalytics = z.infer<typeof insertHabitAnalyticsSchema>;
 
 export const insertTransactionSchema = createInsertSchema(transactions).pick({
   userId: true,

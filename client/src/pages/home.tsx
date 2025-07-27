@@ -4,6 +4,7 @@ import { EnhancedResults } from '@/components/ui/enhanced-results';
 import { WalletPage } from './wallet';
 import EnhancedStatsPage from './enhanced-stats';
 import Profile from './profile';
+import AnalyticsPage from './analytics';
 import { EnhancedBottomNav } from '@/components/ui/enhanced-bottom-nav';
 import { EnhancedLoading } from '@/components/ui/enhanced-loading';
 import { NotificationProvider } from '@/components/ui/enhanced-notifications';
@@ -103,6 +104,8 @@ export default function Home() {
         );
       case 'stats':
         return <EnhancedStatsPage />;
+      case 'analytics':
+        return <AnalyticsPage />;
       case 'profile':
         return <Profile />;
       default:

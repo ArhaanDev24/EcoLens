@@ -1,6 +1,33 @@
-import { users, detections, transactions, stats, achievements, type User, type InsertUser, type Detection, type InsertDetection, type Transaction, type InsertTransaction, type Stats, type InsertStats, type Achievement, type InsertAchievement } from "@shared/schema";
+import { 
+  users, 
+  detections, 
+  transactions, 
+  stats, 
+  achievements,
+  personalGoals,
+  environmentalImpact,
+  userReminders,
+  habitAnalytics,
+  type User, 
+  type InsertUser, 
+  type Detection, 
+  type InsertDetection, 
+  type Transaction, 
+  type InsertTransaction, 
+  type Stats, 
+  type InsertStats, 
+  type Achievement, 
+  type InsertAchievement,
+  type PersonalGoal,
+  type EnvironmentalImpact,
+  type UserReminder,
+  type HabitAnalytics,
+  type InsertPersonalGoal,
+  type InsertEnvironmentalImpact,
+  type InsertHabitAnalytics
+} from "@shared/schema";
 import { db } from "./db";
-import { eq, desc, sql } from "drizzle-orm";
+import { eq, desc, sql, and, gte, lte } from "drizzle-orm";
 
 export interface IStorage {
   getUserById(id: number): Promise<User | undefined>;
@@ -15,6 +42,31 @@ export interface IStorage {
   updateUserStats(userId: number, statsUpdate: Partial<InsertStats>): Promise<void>;
   createAchievement(achievement: InsertAchievement): Promise<Achievement>;
   getUserAchievements(userId: number): Promise<Achievement[]>;
+  
+  // Personal Goals
+  createPersonalGoal(goal: InsertPersonalGoal): Promise<PersonalGoal>;
+  getUserGoals(userId: number): Promise<PersonalGoal[]>;
+  updateGoalProgress(goalId: number, progress: number): Promise<void>;
+  completeGoal(goalId: number): Promise<void>;
+  
+  // Environmental Impact
+  getUserEnvironmentalImpact(userId: number): Promise<EnvironmentalImpact | undefined>;
+  updateEnvironmentalImpact(userId: number, impact: Partial<InsertEnvironmentalImpact>): Promise<void>;
+  
+  // Smart Reminders
+  createUserReminder(reminder: Omit<UserReminder, 'id' | 'createdAt'>): Promise<UserReminder>;
+  getUserReminders(userId: number): Promise<UserReminder[]>;
+  updateReminderSchedule(reminderId: number, nextScheduled: Date): Promise<void>;
+  
+  // Habit Analytics
+  createHabitEntry(habit: InsertHabitAnalytics): Promise<HabitAnalytics>;
+  getUserHabitData(userId: number, startDate?: Date, endDate?: Date): Promise<HabitAnalytics[]>;
+  getHabitInsights(userId: number): Promise<{
+    averageDaily: number;
+    bestStreak: number;
+    favoriteTime: string;
+    weeklyPattern: Record<string, number>;
+  }>;
 }
 
 export class MemStorage implements IStorage {
@@ -25,6 +77,65 @@ export class MemStorage implements IStorage {
     return { id: 1, ...achievement, unlockedAt: new Date(), userId: achievement.userId || null };
   }
   async getUserAchievements(userId: number): Promise<Achievement[]> { return []; }
+  
+  // Personal Goals dummy implementations
+  async createPersonalGoal(goal: InsertPersonalGoal): Promise<PersonalGoal> {
+    return { 
+      id: 1, 
+      userId: goal.userId || 1, 
+      goalType: goal.goalType,
+      targetType: goal.targetType,
+      targetValue: goal.targetValue,
+      title: goal.title,
+      description: goal.description || null,
+      currentProgress: 0, 
+      isActive: true, 
+      startDate: new Date(), 
+      endDate: goal.endDate || null, 
+      completedAt: null, 
+      createdAt: new Date() 
+    };
+  }
+  async getUserGoals(userId: number): Promise<PersonalGoal[]> { return []; }
+  async updateGoalProgress(goalId: number, progress: number): Promise<void> {}
+  async completeGoal(goalId: number): Promise<void> {}
+  
+  // Environmental Impact dummy implementations
+  async getUserEnvironmentalImpact(userId: number): Promise<EnvironmentalImpact | undefined> { return undefined; }
+  async updateEnvironmentalImpact(userId: number, impact: Partial<InsertEnvironmentalImpact>): Promise<void> {}
+  
+  // Smart Reminders dummy implementations
+  async createUserReminder(reminder: Omit<UserReminder, 'id' | 'createdAt'>): Promise<UserReminder> {
+    return { id: 1, ...reminder, createdAt: new Date() };
+  }
+  async getUserReminders(userId: number): Promise<UserReminder[]> { return []; }
+  async updateReminderSchedule(reminderId: number, nextScheduled: Date): Promise<void> {}
+  
+  // Habit Analytics dummy implementations
+  async createHabitEntry(habit: InsertHabitAnalytics): Promise<HabitAnalytics> {
+    return { 
+      id: 1, 
+      userId: habit.userId || 1,
+      date: habit.date,
+      detectionsCount: habit.detectionsCount || 0,
+      coinsEarned: habit.coinsEarned || 0,
+      timeSpentMinutes: habit.timeSpentMinutes || 0,
+      favoriteTime: habit.favoriteTime || null,
+      locationData: null,
+      itemTypes: habit.itemTypes || null,
+      moodRating: habit.moodRating || null,
+      notes: habit.notes || null
+    };
+  }
+  async getUserHabitData(userId: number, startDate?: Date, endDate?: Date): Promise<HabitAnalytics[]> { return []; }
+  async getHabitInsights(userId: number): Promise<{
+    averageDaily: number;
+    bestStreak: number;
+    favoriteTime: string;
+    weeklyPattern: Record<string, number>;
+  }> {
+    return { averageDaily: 0, bestStreak: 0, favoriteTime: 'morning', weeklyPattern: {} };
+  }
   private users: Map<number, User>;
   private detections: Map<number, Detection>;
   private transactions: Map<number, Transaction>;
@@ -169,6 +280,17 @@ export class DatabaseStorage implements IStorage {
       metalItemsDetected: 0
     });
     
+    // Create initial environmental impact for new user
+    await db.insert(environmentalImpact).values({
+      userId: user.id,
+      totalCO2Saved: 0,
+      totalWaterSaved: 0,
+      totalEnergySaved: 0,
+      treesSaved: 0,
+      landfillDiverted: 0,
+      recyclingScore: 0
+    });
+    
     return user;
   }
 
@@ -287,6 +409,181 @@ export class DatabaseStorage implements IStorage {
       .where(eq(users.id, id))
       .returning();
     return updatedUser;
+  }
+
+  // Personal Goals Implementation
+  async createPersonalGoal(goal: InsertPersonalGoal): Promise<PersonalGoal> {
+    const [newGoal] = await db
+      .insert(personalGoals)
+      .values(goal)
+      .returning();
+    return newGoal;
+  }
+
+  async getUserGoals(userId: number): Promise<PersonalGoal[]> {
+    return await db
+      .select()
+      .from(personalGoals)
+      .where(eq(personalGoals.userId, userId))
+      .orderBy(desc(personalGoals.createdAt));
+  }
+
+  async updateGoalProgress(goalId: number, progress: number): Promise<void> {
+    await db
+      .update(personalGoals)
+      .set({ 
+        currentProgress: progress
+      })
+      .where(eq(personalGoals.id, goalId));
+  }
+
+  async completeGoal(goalId: number): Promise<void> {
+    await db
+      .update(personalGoals)
+      .set({ 
+        completedAt: new Date(),
+        isActive: false
+      })
+      .where(eq(personalGoals.id, goalId));
+  }
+
+  // Environmental Impact Implementation
+  async getUserEnvironmentalImpact(userId: number): Promise<EnvironmentalImpact | undefined> {
+    const [impact] = await db
+      .select()
+      .from(environmentalImpact)
+      .where(eq(environmentalImpact.userId, userId));
+    return impact || undefined;
+  }
+
+  async updateEnvironmentalImpact(userId: number, impact: Partial<InsertEnvironmentalImpact>): Promise<void> {
+    await db
+      .update(environmentalImpact)
+      .set({
+        ...impact,
+        lastUpdated: new Date()
+      })
+      .where(eq(environmentalImpact.userId, userId));
+  }
+
+  // Smart Reminders Implementation
+  async createUserReminder(reminder: Omit<UserReminder, 'id' | 'createdAt'>): Promise<UserReminder> {
+    const [newReminder] = await db
+      .insert(userReminders)
+      .values(reminder)
+      .returning();
+    return newReminder;
+  }
+
+  async getUserReminders(userId: number): Promise<UserReminder[]> {
+    return await db
+      .select()
+      .from(userReminders)
+      .where(and(
+        eq(userReminders.userId, userId),
+        eq(userReminders.isActive, true)
+      ));
+  }
+
+  async updateReminderSchedule(reminderId: number, nextScheduled: Date): Promise<void> {
+    await db
+      .update(userReminders)
+      .set({ 
+        nextScheduled,
+        lastSent: new Date()
+      })
+      .where(eq(userReminders.id, reminderId));
+  }
+
+  // Habit Analytics Implementation
+  async createHabitEntry(habit: InsertHabitAnalytics): Promise<HabitAnalytics> {
+    const [newHabit] = await db
+      .insert(habitAnalytics)
+      .values(habit)
+      .returning();
+    return newHabit;
+  }
+
+  async getUserHabitData(userId: number, startDate?: Date, endDate?: Date): Promise<HabitAnalytics[]> {
+    let query = db
+      .select()
+      .from(habitAnalytics)
+      .where(eq(habitAnalytics.userId, userId));
+    
+    if (startDate && endDate) {
+      return await db
+        .select()
+        .from(habitAnalytics)
+        .where(
+          and(
+            eq(habitAnalytics.userId, userId),
+            gte(habitAnalytics.date, startDate),
+            lte(habitAnalytics.date, endDate)
+          )
+        )
+        .orderBy(desc(habitAnalytics.date));
+    }
+    
+    return await query.orderBy(desc(habitAnalytics.date));
+  }
+
+  async getHabitInsights(userId: number): Promise<{
+    averageDaily: number;
+    bestStreak: number;
+    favoriteTime: string;
+    weeklyPattern: Record<string, number>;
+  }> {
+    const habits = await this.getUserHabitData(userId);
+    
+    if (habits.length === 0) {
+      return {
+        averageDaily: 0,
+        bestStreak: 0,
+        favoriteTime: 'morning',
+        weeklyPattern: {}
+      };
+    }
+
+    // Calculate average daily detections
+    const totalDetections = habits.reduce((sum, h) => sum + h.detectionsCount, 0);
+    const averageDaily = Math.round(totalDetections / habits.length);
+
+    // Calculate best streak (simplified)
+    let currentStreak = 0;
+    let bestStreak = 0;
+    habits.reverse().forEach(habit => {
+      if (habit.detectionsCount > 0) {
+        currentStreak++;
+        bestStreak = Math.max(bestStreak, currentStreak);
+      } else {
+        currentStreak = 0;
+      }
+    });
+
+    // Find favorite time
+    const timeCount: Record<string, number> = {};
+    habits.forEach(habit => {
+      if (habit.favoriteTime) {
+        timeCount[habit.favoriteTime] = (timeCount[habit.favoriteTime] || 0) + 1;
+      }
+    });
+    const favoriteTime = Object.keys(timeCount).reduce((a, b) => 
+      timeCount[a] > timeCount[b] ? a : b, 'morning'
+    );
+
+    // Weekly pattern (day of week)
+    const weeklyPattern: Record<string, number> = {};
+    habits.forEach(habit => {
+      const dayOfWeek = new Date(habit.date).toLocaleDateString('en', { weekday: 'long' });
+      weeklyPattern[dayOfWeek] = (weeklyPattern[dayOfWeek] || 0) + habit.detectionsCount;
+    });
+
+    return {
+      averageDaily,
+      bestStreak,
+      favoriteTime,
+      weeklyPattern
+    };
   }
 }
 
