@@ -361,3 +361,93 @@
     opacity: 0;
   }
 }
+
+/* 4K Display Optimizations */
+@media (min-width: 2560px) {
+  /* Scale up for 4K displays */
+  html {
+    font-size: 18px; /* Increase base font size */
+  }
+  
+  /* Enhanced glassmorphic effects */
+  .glassmorphic-card, .glassmorphic-intense {
+    backdrop-filter: blur(30px);
+    box-shadow: 
+      0 12px 48px rgba(0, 0, 0, 0.15),
+      inset 0 2px 0 rgba(255, 255, 255, 0.25);
+  }
+  
+  /* Better button scaling */
+  button, .btn {
+    min-height: 3rem;
+    font-size: 1.1rem;
+    padding: 0.75rem 1.5rem;
+  }
+  
+  /* Enhanced spacing for large screens */
+  .container {
+    max-width: 2200px;
+    padding: 0 3rem;
+  }
+  
+  /* Scale up icons and interactive elements */
+  .lucide {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+  }
+  
+  /* Enhanced camera interface for 4K */
+  .camera-container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+  
+  /* Better card spacing */
+  .grid {
+    gap: 2rem;
+  }
+  
+  /* Enhanced text scaling */
+  .text-xl { font-size: 1.5rem; }
+  .text-2xl { font-size: 2rem; }
+  .text-3xl { font-size: 2.5rem; }
+  .text-4xl { font-size: 3rem; }
+}
+
+/* Ultra-wide and 8K support */
+@media (min-width: 3840px) {
+  html {
+    font-size: 20px;
+  }
+  
+  .container {
+    max-width: 3200px;
+    padding: 0 4rem;
+  }
+  
+  /* Enhanced glassmorphic effects for ultra-high resolution */
+  .glassmorphic-card, .glassmorphic-intense {
+    backdrop-filter: blur(40px);
+    box-shadow: 
+      0 16px 64px rgba(0, 0, 0, 0.2),
+      inset 0 3px 0 rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Ultra-high resolution icons */
+  .lucide {
+    width: 2rem !important;
+    height: 2rem !important;
+  }
+  
+  button, .btn {
+    min-height: 3.5rem;
+    font-size: 1.25rem;
+    padding: 1rem 2rem;
+  }
+  
+  /* Enhanced text scaling for 8K */
+  .text-xl { font-size: 1.75rem; }
+  .text-2xl { font-size: 2.25rem; }
+  .text-3xl { font-size: 3rem; }
+  .text-4xl { font-size: 3.5rem; }
+}
