@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { EnhancedCamera } from '@/components/ui/enhanced-camera';
 import { EnhancedResults } from '@/components/ui/enhanced-results';
 import { WalletPage } from './wallet';
+import EnhancedStatsPage from './enhanced-stats';
 import { EnhancedBottomNav } from '@/components/ui/enhanced-bottom-nav';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { apiRequest } from '@/lib/queryClient';
@@ -111,29 +112,9 @@ export default function Home() {
           />
         );
       case 'stats':
-        return (
-          <div className="min-h-screen bg-dark-bg flex items-center justify-center pb-24">
-            <div className="text-center p-8">
-              <i className="fas fa-chart-line text-6xl text-eco-green mb-4" />
-              <h2 className="text-xl font-bold mb-2">Stats Coming Soon</h2>
-              <p className="text-text-secondary">
-                Track your recycling impact and environmental contribution
-              </p>
-            </div>
-          </div>
-        );
-      case 'profile':
-        return (
-          <div className="min-h-screen bg-dark-bg flex items-center justify-center pb-24">
-            <div className="text-center p-8">
-              <i className="fas fa-user text-6xl text-eco-green mb-4" />
-              <h2 className="text-xl font-bold mb-2">Profile Coming Soon</h2>
-              <p className="text-text-secondary">
-                Manage your account and preferences
-              </p>
-            </div>
-          </div>
-        );
+        return <EnhancedStatsPage />;
+      case 'achievements':
+        return <EnhancedStatsPage />;
       default:
         return null;
     }
