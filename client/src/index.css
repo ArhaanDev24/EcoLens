@@ -126,9 +126,10 @@
     left: 0;
     right: 0;
     height: 3px;
-    background: linear-gradient(90deg, transparent, var(--eco-green), var(--reward-yellow), var(--eco-green), transparent);
-    animation: scan-line 2.5s ease-in-out infinite;
-    box-shadow: 0 0 10px var(--eco-green);
+    background: linear-gradient(90deg, transparent, var(--eco-green) 50%, transparent);
+    animation: scan-line 3s ease-in-out infinite;
+    box-shadow: 0 0 8px var(--eco-green);
+    z-index: 20;
   }
 
   .detection-pulse {
@@ -221,9 +222,10 @@
 
 /* Enhanced Animations */
 @keyframes scan-line {
-  0% { transform: translateY(0); opacity: 1; }
-  50% { opacity: 0.8; }
-  100% { transform: translateY(400px); opacity: 0; }
+  0% { transform: translateY(-3px); opacity: 0; }
+  5% { opacity: 1; }
+  95% { opacity: 0.8; }
+  100% { transform: translateY(calc(100vh - 300px)); opacity: 0; }
 }
 
 @keyframes detection-pulse {

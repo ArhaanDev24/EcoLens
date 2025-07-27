@@ -118,28 +118,30 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
 
       {/* Enhanced Camera Viewfinder */}
       <div className="flex-1 p-4 flex flex-col">
-        <div className="relative flex-1 rounded-3xl overflow-hidden camera-viewfinder fade-in-scale">
+        <div className="relative flex-1 min-h-[400px] rounded-3xl overflow-hidden camera-viewfinder fade-in-scale bg-black border-2 border-eco-green/30">
           {/* Video Stream */}
           <video
             ref={videoRef}
             autoPlay
             playsInline
             muted
-            className="w-full h-full object-cover"
+            className="absolute inset-0 w-full h-full object-cover"
           />
           
           {/* Canvas for capture */}
           <canvas ref={canvasRef} className="hidden" />
           
           {/* Enhanced Scan Line */}
-          <div className="scan-line" />
+          <div className="absolute inset-0 pointer-events-none">
+            <div className="scan-line" />
+          </div>
           
           {/* Camera Grid */}
           {showGrid && (
             <div className="absolute inset-0 pointer-events-none">
-              <div className="w-full h-full grid grid-cols-3 grid-rows-3 opacity-30">
+              <div className="w-full h-full grid grid-cols-3 grid-rows-3">
                 {Array.from({ length: 9 }).map((_, i) => (
-                  <div key={i} className="border border-white/20" />
+                  <div key={i} className="border border-white/10" />
                 ))}
               </div>
             </div>
@@ -147,23 +149,23 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
           
           {/* Focus Points */}
           <div className="absolute inset-0 pointer-events-none">
-            <div className="absolute top-1/4 left-1/4 w-8 h-8">
-              <Focus className="w-full h-full text-eco-green/60 animate-pulse" />
+            <div className="absolute top-6 left-6 w-6 h-6">
+              <Focus className="w-full h-full text-eco-green/80 animate-pulse" />
             </div>
-            <div className="absolute top-1/4 right-1/4 w-8 h-8">
-              <Focus className="w-full h-full text-eco-green/60 animate-pulse" style={{ animationDelay: '0.5s' }} />
+            <div className="absolute top-6 right-6 w-6 h-6">
+              <Focus className="w-full h-full text-eco-green/80 animate-pulse" style={{ animationDelay: '0.5s' }} />
             </div>
-            <div className="absolute bottom-1/4 left-1/4 w-8 h-8">
-              <Focus className="w-full h-full text-eco-green/60 animate-pulse" style={{ animationDelay: '1s' }} />
+            <div className="absolute bottom-6 left-6 w-6 h-6">
+              <Focus className="w-full h-full text-eco-green/80 animate-pulse" style={{ animationDelay: '1s' }} />
             </div>
-            <div className="absolute bottom-1/4 right-1/4 w-8 h-8">
-              <Focus className="w-full h-full text-eco-green/60 animate-pulse" style={{ animationDelay: '1.5s' }} />
+            <div className="absolute bottom-6 right-6 w-6 h-6">
+              <Focus className="w-full h-full text-eco-green/80 animate-pulse" style={{ animationDelay: '1.5s' }} />
             </div>
           </div>
         </div>
 
         {/* Enhanced Camera Controls */}
-        <div className="mt-6 slide-in-up" style={{ animationDelay: '0.2s' }}>
+        <div className="mt-4 pb-24 slide-in-up" style={{ animationDelay: '0.2s' }}>
           <div className="flex justify-center items-center space-x-4 mb-4">
             {/* Settings */}
             <div className="flex space-x-2">

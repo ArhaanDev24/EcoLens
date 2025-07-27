@@ -35,8 +35,8 @@ const navItems = [
 
 export function EnhancedBottomNav({ activeTab, onTabChange }: EnhancedBottomNavProps) {
   return (
-    <div className="fixed bottom-0 left-0 right-0 z-50 slide-in-up">
-      <div className="glassmorphic-intense border-t border-white/20 backdrop-blur-xl">
+    <div className="fixed bottom-0 left-0 right-0 z-40 slide-in-up">
+      <div className="glassmorphic-intense border-t border-white/20 backdrop-blur-xl bg-dark-bg/80">
         <div className="flex justify-around items-center py-3 px-4">
           {navItems.map((item) => {
             const isActive = activeTab === item.id;
