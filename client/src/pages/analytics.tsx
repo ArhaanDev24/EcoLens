@@ -5,7 +5,7 @@ import { FadeIn, SlideIn } from '@/components/ui/enhanced-animations';
 import { EnhancedProgress } from '@/components/ui/enhanced-progress';
 import { EnhancedButton } from '@/components/ui/enhanced-button';
 import { EnhancedCard } from '@/components/ui/enhanced-card';
-import { addNotification } from '@/components/ui/enhanced-notifications';
+import { notify, NotificationProvider } from '@/components/ui/enhanced-notifications';
 import { CountUp } from '@/components/ui/count-up';
 import { 
   Target, 
@@ -97,7 +97,7 @@ export default function AnalyticsPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user/1/analytics-dashboard'] });
       setShowGoalForm(false);
-      addNotification('Goal created successfully!', 'success');
+      notify.success('Success', 'Goal created successfully!');
     },
   });
 
@@ -107,7 +107,7 @@ export default function AnalyticsPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['/api/user/1/analytics-dashboard'] });
-      addNotification('Smart reminder created!', 'success');
+      notify.success('Success', 'Smart reminder created!');
     },
   });
 
@@ -162,7 +162,8 @@ export default function AnalyticsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-dark-bg text-white">
+    <NotificationProvider>
+      <div className="min-h-screen bg-dark-bg text-white">
       
       {/* Header */}
       <FadeIn>
@@ -593,6 +594,7 @@ export default function AnalyticsPage() {
           </FadeIn>
         </div>
       )}
-    </div>
+      </div>
+    </NotificationProvider>
   );
 }
