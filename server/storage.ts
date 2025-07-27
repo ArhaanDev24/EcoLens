@@ -264,25 +264,32 @@ export class DatabaseStorage implements IStorage {
 // Import Firebase storage  
 import { FirebaseStorage } from "./firebaseStorage";
 
-// Use Firebase storage now that rules are fixed
-export const storage = new FirebaseStorage();
+// Use memory storage until Firebase rules are properly published
+export const storage = new MemStorage();
 
-// Initialize demo user in Firebase
-async function initializeFirebaseUser() {
+// Initialize demo data
+async function initializeDemoData() {
   try {
-    const existingUser = await storage.getUserById(1);
-    if (!existingUser) {
-      await storage.createUser({
-        username: "eco_user",
-        email: "user@ecolens.app",
-        firebaseUid: "demo-uid"
-      });
-      console.log("Demo user created in Firebase");
-    }
+    const user = await storage.createUser({
+      username: "eco_user",
+      email: "user@ecolens.app",
+      firebaseUid: "demo-uid"
+    });
+
+    // Create sample detection
+    await storage.createDetection({
+      userId: user.id,
+      imageUrl: null,
+      detectedObjects: [{ name: "plastic bottle", confidence: 85, binType: "recyclable" }],
+      confidenceScore: 85,
+      coinsEarned: 10
+    });
+
+    console.log("Demo data initialized");
   } catch (error) {
-    console.log("Firebase user initialization:", error);
+    console.log("Demo initialization:", error);
   }
 }
 
 // Initialize on startup
-initializeFirebaseUser();
+initializeDemoData();
