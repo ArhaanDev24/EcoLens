@@ -264,31 +264,25 @@ export class DatabaseStorage implements IStorage {
 // Import Firebase storage  
 import { FirebaseStorage } from "./firebaseStorage";
 
-// Use memory storage - Firebase rules not taking effect yet
-export const storage = new MemStorage();
+// Use PostgreSQL database storage
+export const storage = new DatabaseStorage();
 
-// Initialize demo data
-async function initializeDemoData() {
+// Initialize PostgreSQL demo user
+async function initializePostgreSQLUser() {
   try {
-    const user = await storage.createUser({
-      username: "eco_user",
-      email: "user@ecolens.app",
-      firebaseUid: "demo-uid"
-    });
-
-    await storage.createDetection({
-      userId: user.id,
-      imageUrl: null,
-      detectedObjects: [{ name: "plastic bottle", confidence: 85, binType: "recyclable" }],
-      confidenceScore: 85,
-      coinsEarned: 10
-    });
-
-    console.log("Demo data initialized");
+    const existingUser = await storage.getUserById(1);
+    if (!existingUser) {
+      await storage.createUser({
+        username: "eco_user",
+        email: "user@ecolens.app",
+        firebaseUid: "demo-uid"
+      });
+      console.log("Demo user created in PostgreSQL");
+    }
   } catch (error) {
-    console.log("Demo initialization:", error);
+    console.log("PostgreSQL user initialization:", error);
   }
 }
 
 // Initialize on startup
-initializeDemoData();
+initializePostgreSQLUser();
