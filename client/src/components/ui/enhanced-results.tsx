@@ -18,22 +18,32 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const [showResults, setShowResults] = useState(false);
   const [coinsAnimation, setCoinsAnimation] = useState(false);
   
-  const { detectionResult, isDetecting, error } = useAIDetection(imageData);
+  const { detect, isDetecting, error } = useAIDetection();
+  const [detectionResult, setDetectionResult] = useState<any[]>([]);
 
-  // Handle coins earned when detection completes
+  // Run detection on mount
   useEffect(() => {
-    if (detectionResult && !isDetecting) {
-      const totalCoins = detectionResult.reduce((sum, item) => sum + item.coinsReward, 0);
-      onCoinsEarned(totalCoins);
-      setCoinsAnimation(true);
-      setShowConfetti(true);
-      
-      setTimeout(() => {
-        setCoinsAnimation(false);
-        setShowConfetti(false);
-      }, 2000);
-    }
-  }, [detectionResult, isDetecting, onCoinsEarned]);
+    const runDetection = async () => {
+      try {
+        const results = await detect(imageData);
+        setDetectionResult(results);
+        
+        const totalCoins = results.reduce((sum, item) => sum + item.coinsReward, 0);
+        onCoinsEarned(totalCoins);
+        setCoinsAnimation(true);
+        setShowConfetti(true);
+        
+        setTimeout(() => {
+          setCoinsAnimation(false);
+          setShowConfetti(false);
+        }, 2000);
+      } catch (error) {
+        console.error('Detection failed:', error);
+      }
+    };
+    
+    runDetection();
+  }, [imageData, detect, onCoinsEarned]);
 
   useEffect(() => {
     if (detectionResult && !isDetecting) {

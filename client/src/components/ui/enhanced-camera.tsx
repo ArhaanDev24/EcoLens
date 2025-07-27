@@ -1,7 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useCamera } from '@/hooks/use-camera';
 import { Button } from '@/components/ui/button';
-import { Camera, Focus, Maximize2, RotateCcw, Zap, ZapOff } from 'lucide-react';
+import { Camera, Focus, Maximize2, RotateCcw, ZapOff } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface EnhancedCameraProps {
@@ -13,42 +13,13 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
   const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage, error } = useCamera();
   const [isCapturing, setIsCapturing] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
-  const [isLiveDetecting, setIsLiveDetecting] = useState(false);
-  const [detectedItems, setDetectedItems] = useState<string[]>([]);
-  const detectionIntervalRef = useRef<NodeJS.Timeout>();
 
   useEffect(() => {
     startCamera();
     return () => {
       stopCamera();
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
     };
   }, [startCamera, stopCamera]);
-
-  // Live detection preview (simplified for demo)
-  useEffect(() => {
-    if (isLiveDetecting && isStreaming) {
-      detectionIntervalRef.current = setInterval(() => {
-        // Simulate live detection results
-        const mockItems = ['plastic bottle', 'paper cup', 'snack bag', 'aluminum can'];
-        const randomItem = mockItems[Math.floor(Math.random() * mockItems.length)];
-        setDetectedItems(prev => [randomItem, ...prev.slice(0, 2)]);
-      }, 3000);
-    } else {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
-      setDetectedItems([]);
-    }
-
-    return () => {
-      if (detectionIntervalRef.current) {
-        clearInterval(detectionIntervalRef.current);
-      }
-    };
-  }, [isLiveDetecting, isStreaming]);
 
   const handleCapture = async () => {
     setIsCapturing(true);
@@ -174,25 +145,6 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
             </div>
           )}
           
-          {/* Live Detection Overlay */}
-          {isLiveDetecting && detectedItems.length > 0 && (
-            <div className="absolute top-4 left-4 right-4">
-              <div className="glassmorphic p-3 rounded-xl bounce-in">
-                <p className="text-xs text-text-secondary mb-2">Live Detection:</p>
-                <div className="flex flex-wrap gap-2">
-                  {detectedItems.map((item, index) => (
-                    <span
-                      key={`${item}-${index}`}
-                      className="px-2 py-1 bg-eco-green/20 text-eco-green rounded-full text-xs border border-eco-green/30"
-                    >
-                      {item}
-                    </span>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-          
           {/* Focus Points */}
           <div className="absolute inset-0 pointer-events-none">
             <div className="absolute top-1/4 left-1/4 w-8 h-8">
@@ -225,18 +177,6 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
                 )}
               >
                 <Maximize2 className="w-5 h-5" />
-              </Button>
-              
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => setIsLiveDetecting(!isLiveDetecting)}
-                className={cn(
-                  "glassmorphic w-12 h-12 rounded-full",
-                  isLiveDetecting && "bg-eco-green/20 text-eco-green"
-                )}
-              >
-                <Zap className="w-5 h-5" />
               </Button>
             </div>
 
@@ -291,12 +231,6 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
                 {isStreaming ? "Camera Active" : "Connecting..."}
               </span>
             </div>
-            
-            {isLiveDetecting && (
-              <p className="text-xs text-eco-green">
-                ✨ Live detection enabled
-              </p>
-            )}
           </div>
         </div>
       </div>
