@@ -11,7 +11,7 @@ interface CameraPageProps {
 }
 
 export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
-  const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage, error } = useCamera();
+  const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage, error, facingMode, switchCamera } = useCamera();
   const [isCapturing, setIsCapturing] = useState(false);
 
   useEffect(() => {
@@ -66,7 +66,7 @@ export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-dark-bg">
+    <div className="min-h-screen flex flex-col bg-dark-bg relative">
       {/* Demo Banner */}
       <DemoBanner />
       
@@ -104,6 +104,23 @@ export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
         <canvas ref={canvasRef} style={{ display: 'none' }} />
       </div>
       
+      {/* Camera Flip Button - Floating */}
+      <div className="absolute top-20 right-4 z-10">
+        <Button 
+          variant="ghost" 
+          size="icon" 
+          onClick={switchCamera}
+          disabled={!isStreaming}
+          className="w-12 h-12 bg-dark-surface-variant/80 backdrop-blur-md rounded-xl border border-white/10 hover:bg-dark-surface-variant/90 transition-all"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M20 4h-3.17L15 2H9L7.17 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2z" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+            <circle cx="12" cy="12" r="4" fill="none" stroke="currentColor" strokeWidth="1.5"/>
+            <path d="M8 12l4-4 4 4" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
+          </svg>
+        </Button>
+      </div>
+
       {/* Bottom Controls */}
       <div className="p-6 flex justify-center items-center space-x-8 pb-24">
         {/* Gallery Button */}

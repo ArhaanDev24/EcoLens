@@ -8,6 +8,8 @@ export interface CameraHook {
   stopCamera: () => void;
   captureImage: () => string | null;
   error: string | null;
+  facingMode: 'user' | 'environment';
+  switchCamera: () => Promise<void>;
 }
 
 export function useCamera(): CameraHook {
@@ -15,14 +17,17 @@ export function useCamera(): CameraHook {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [isStreaming, setIsStreaming] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const streamRef = useRef<MediaStream | null>(null);
 
-  const startCamera = useCallback(async () => {
+  const startCamera = useCallback(async (requestedFacingMode?: 'user' | 'environment') => {
     try {
       setError(null);
+      const currentFacingMode = requestedFacingMode || facingMode;
+      
       const stream = await navigator.mediaDevices.getUserMedia({
         video: {
-          facingMode: 'environment', // Use back camera on mobile
+          facingMode: currentFacingMode,
           width: { ideal: 1280 },
           height: { ideal: 720 }
         }
@@ -32,12 +37,13 @@ export function useCamera(): CameraHook {
         videoRef.current.srcObject = stream;
         streamRef.current = stream;
         setIsStreaming(true);
+        setFacingMode(currentFacingMode);
       }
     } catch (err) {
       setError('Failed to access camera. Please ensure camera permissions are granted.');
       console.error('Camera access error:', err);
     }
-  }, []);
+  }, [facingMode]);
 
   const stopCamera = useCallback(() => {
     if (streamRef.current) {
@@ -69,6 +75,14 @@ export function useCamera(): CameraHook {
     return canvas.toDataURL('image/jpeg', 0.6);
   }, []);
 
+  const switchCamera = useCallback(async () => {
+    if (streamRef.current) {
+      stopCamera();
+    }
+    const newFacingMode = facingMode === 'environment' ? 'user' : 'environment';
+    await startCamera(newFacingMode);
+  }, [facingMode, startCamera, stopCamera]);
+
   return {
     videoRef,
     canvasRef,
@@ -76,6 +90,8 @@ export function useCamera(): CameraHook {
     startCamera,
     stopCamera,
     captureImage,
-    error
+    error,
+    facingMode,
+    switchCamera
   };
 }
