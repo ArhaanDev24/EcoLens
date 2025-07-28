@@ -98,22 +98,22 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
 
       <div className="px-2 -mt-4">
         <Tabs defaultValue="wallet" className="w-full max-w-full">
-          <TabsList className="items-center justify-center text-muted-foreground w-full grid grid-cols-3 glassmorphic border border-eco-green/20 bg-dark-surface-variant/60 rounded-xl p-0.5 h-11 mx-0 mt-[11px] mb-[11px] pl-[5px] pr-[5px] pt-[0px] pb-[0px] ml-[0px] mr-[0px] text-center text-[18px]">
+          <TabsList className="items-center justify-center text-muted-foreground w-full grid grid-cols-3 glassmorphic border border-eco-green/20 bg-dark-surface-variant/60 rounded-xl p-1 h-12 mx-0 mt-[11px] mb-[11px] overflow-hidden">
             <TabsTrigger 
               value="wallet" 
-              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-1 py-2 h-10"
+              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-2 py-1 h-10 flex items-center justify-center"
             >
               Wallet
             </TabsTrigger>
             <TabsTrigger 
               value="rewards" 
-              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-1 py-2 h-10"
+              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-2 py-1 h-10 flex items-center justify-center"
             >
               Rewards
             </TabsTrigger>
             <TabsTrigger 
               value="history" 
-              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-1 py-2 h-10"
+              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-2 py-1 h-10 flex items-center justify-center"
             >
               History
             </TabsTrigger>
