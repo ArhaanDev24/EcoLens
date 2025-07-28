@@ -69,52 +69,64 @@ export function useAIDetection(): AIDetectionHook {
 
 async function detectWithTeachableMachine(imageData: string): Promise<DetectionResult[]> {
   try {
+    // Check if model URL is configured
+    const modelURL = import.meta.env.VITE_TEACHABLE_MACHINE_MODEL_URL;
+    
+    if (!modelURL || modelURL.includes('YOUR_MODEL_ID') || modelURL === 'demo-model') {
+      console.log('Teachable Machine model URL not configured, skipping...');
+      return [];
+    }
+    
     // Convert base64 to blob for Teachable Machine
     const response = await fetch(imageData);
     const blob = await response.blob();
     
-    // Load Teachable Machine model - use a working recycling detection model
-    const modelURL = import.meta.env.VITE_TEACHABLE_MACHINE_MODEL_URL || 'https://teachablemachine.withgoogle.com/models/eMGpeBDY8/';
+    const tmImage = await import('@teachablemachine/image');
+    const model = await tmImage.load(
+      modelURL.endsWith('/') ? modelURL + 'model.json' : modelURL + '/model.json',
+      modelURL.endsWith('/') ? modelURL + 'metadata.json' : modelURL + '/metadata.json'
+    );
     
-    if (modelURL && !modelURL.includes('YOUR_MODEL_ID')) {
-      const tmImage = await import('@teachablemachine/image');
-      const model = await tmImage.load(modelURL + 'model.json', modelURL + 'metadata.json');
-      
-      const img = new Image();
-      img.src = imageData;
-      await new Promise(resolve => img.onload = resolve);
-      
-      const predictions = await model.predict(img);
-      
-      return predictions
-        .filter(p => p.probability > 0.5) // Lower threshold for better detection
-        .sort((a, b) => b.probability - a.probability) // Sort by confidence
-        .slice(0, 3) // Top 3 results
-        .map(prediction => ({
-          name: mapTeachableMachineClass(prediction.className),
-          confidence: Math.round(prediction.probability * 100),
-          binType: getBinType(prediction.className),
-          binColor: getBinColor(prediction.className),
-          coinsReward: getCoinsReward(prediction.className)
-        }));
-    }
+    const img = new Image();
+    img.src = imageData;
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+      setTimeout(reject, 5000); // 5 second timeout
+    });
+    
+    const predictions = await model.predict(img);
+    
+    return predictions
+      .filter(p => p.probability > 0.5)
+      .sort((a, b) => b.probability - a.probability)
+      .slice(0, 3)
+      .map(prediction => ({
+        name: mapTeachableMachineClass(prediction.className),
+        confidence: Math.round(prediction.probability * 100),
+        binType: getBinType(prediction.className),
+        binColor: getBinColor(prediction.className),
+        coinsReward: getCoinsReward(prediction.className)
+      }));
   } catch (err) {
     console.error('Teachable Machine detection failed:', err);
+    return [];
   }
-  
-  return [];
 }
 
 async function detectWithClarifai(imageData: string): Promise<DetectionResult[]> {
   try {
     const apiKey = import.meta.env.VITE_CLARIFAI_API_KEY;
     
-    if (!apiKey || apiKey === 'demo-key') {
-      // Return demo results for testing when no API key is provided
+    if (!apiKey || apiKey === 'demo-key' || apiKey.startsWith('demo')) {
+      console.log('Clarifai API key not configured, using demo results...');
       return getDemoResults();
     }
     
     const base64Data = imageData.split(',')[1];
+    if (!base64Data) {
+      throw new Error('Invalid image data format');
+    }
     
     const response = await fetch('https://api.clarifai.com/v2/models/aaa03c23b3724a16a56b629203edc62c/outputs', {
       method: 'POST',
@@ -133,17 +145,22 @@ async function detectWithClarifai(imageData: string): Promise<DetectionResult[]>
       })
     });
 
-    const data = await response.json();
-    
     if (!response.ok) {
-      throw new Error(data.status?.description || 'Clarifai API error');
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(`Clarifai API error: ${response.status} - ${errorData.status?.description || 'Unknown error'}`);
     }
 
+    const data = await response.json();
     const concepts = data.outputs?.[0]?.data?.concepts || [];
     
-    return concepts
-      .filter((concept: any) => concept.value > 0.7 && isRecyclableItem(concept.name))
-      .slice(0, 3) // Top 3 results
+    if (concepts.length === 0) {
+      console.log('No items detected by Clarifai, using demo results...');
+      return getDemoResults();
+    }
+    
+    const results = concepts
+      .filter((concept: any) => concept.value > 0.6 && isRecyclableItem(concept.name))
+      .slice(0, 3)
       .map((concept: any) => ({
         name: concept.name,
         confidence: Math.round(concept.value * 100),
@@ -151,9 +168,10 @@ async function detectWithClarifai(imageData: string): Promise<DetectionResult[]>
         binColor: getBinColor(concept.name),
         coinsReward: getCoinsReward(concept.name)
       }));
+
+    return results.length > 0 ? results : getDemoResults();
   } catch (err) {
     console.error('Clarifai detection failed:', err);
-    // Return demo results as fallback
     return getDemoResults();
   }
 }

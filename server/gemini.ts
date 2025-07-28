@@ -13,7 +13,8 @@ export interface RecyclableDetection {
 export async function detectRecyclableItems(imageBase64: string): Promise<RecyclableDetection[]> {
   try {
     if (!process.env.GEMINI_API_KEY) {
-      throw new Error("Gemini API key not configured");
+      console.error("Gemini API key not configured");
+      return [];
     }
 
     const prompt = `Analyze this image and identify any recyclable items. For each item detected, provide:
@@ -67,14 +68,21 @@ Only include items you can clearly identify with confidence above 70%.`;
 
     const result = response.text;
     if (!result) {
-      throw new Error("Empty response from Gemini");
+      console.error("Empty response from Gemini");
+      return [];
     }
 
-    const detections: RecyclableDetection[] = JSON.parse(result);
-    return detections.filter(item => item.confidence >= 70);
+    try {
+      const detections: RecyclableDetection[] = JSON.parse(result);
+      return detections.filter(item => item.confidence >= 70);
+    } catch (parseError) {
+      console.error("Failed to parse Gemini response:", parseError);
+      console.error("Raw response:", result);
+      return [];
+    }
 
   } catch (error) {
     console.error("Gemini detection failed:", error);
-    throw error;
+    return [];
   }
 }
