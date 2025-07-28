@@ -72,6 +72,24 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
     }
   };
 
+  const handleDemoMode = () => {
+    // Create a demo image data (placeholder for demo purposes)
+    const canvas = document.createElement('canvas');
+    canvas.width = 400;
+    canvas.height = 300;
+    const ctx = canvas.getContext('2d');
+    if (ctx) {
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, 400, 300);
+      ctx.fillStyle = '#00C48C';
+      ctx.font = '20px Arial';
+      ctx.textAlign = 'center';
+      ctx.fillText('Demo Plastic Bottle', 200, 150);
+      const demoImageData = canvas.toDataURL('image/jpeg', 0.8);
+      onCapture(demoImageData);
+    }
+  };
+
   if (error) {
     return (
       <div className="min-h-screen flex items-center justify-center p-4">
@@ -81,10 +99,22 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
           </div>
           <h2 className="text-xl font-semibold mb-2 text-text-primary">Camera Access Required</h2>
           <p className="text-sm text-text-secondary mb-6">{error}</p>
-          <Button onClick={startCamera} className="w-full">
-            <Camera className="w-4 h-4 mr-2" />
-            Try Again
-          </Button>
+          <div className="space-y-3">
+            <Button onClick={startCamera} className="w-full">
+              <Camera className="w-4 h-4 mr-2" />
+              Try Again
+            </Button>
+            <Button 
+              onClick={handleDemoMode}
+              variant="outline"
+              className="w-full border-eco-green text-eco-green hover:bg-eco-green/10"
+            >
+              Try Demo Mode
+            </Button>
+          </div>
+          <p className="text-xs text-text-secondary mt-4">
+            Enable camera permissions to scan real items, or use demo mode to test the enhanced reward system
+          </p>
         </div>
       </div>
     );

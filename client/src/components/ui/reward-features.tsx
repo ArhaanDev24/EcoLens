@@ -87,16 +87,16 @@ export function RewardFeatures({ greenCoins }: RewardFeaturesProps) {
                     <div className="flex items-center space-x-2">
                       <span className="font-medium text-text-primary">{item.name}</span>
                       {item.popular && (
-                        <Badge variant="secondary" className="bg-reward-yellow/20 text-reward-yellow border-reward-yellow/30 text-xs">
+                        <div className="inline-flex items-center bg-reward-yellow/20 text-reward-yellow border border-reward-yellow/30 text-xs px-2 py-1 rounded-full">
                           <Star className="w-3 h-3 mr-1" />
                           Popular
-                        </Badge>
+                        </div>
                       )}
                       {item.premium && (
-                        <Badge variant="secondary" className="bg-purple-500/20 text-purple-400 border-purple-500/30 text-xs">
+                        <div className="inline-flex items-center bg-purple-500/20 text-purple-400 border border-purple-500/30 text-xs px-2 py-1 rounded-full">
                           <Crown className="w-3 h-3 mr-1" />
                           Premium
-                        </Badge>
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center space-x-3 mt-1">
@@ -142,7 +142,7 @@ export function RewardFeatures({ greenCoins }: RewardFeaturesProps) {
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="font-medium text-text-primary">Eco Hero Bundle</span>
-                    <Badge className="bg-reward-yellow text-dark-bg text-xs">50% OFF</Badge>
+                    <div className="bg-reward-yellow text-dark-bg text-xs px-2 py-1 rounded-full font-bold">50% OFF</div>
                   </div>
                   <p className="text-sm text-eco-green font-medium">₹500 worth of rewards</p>
                   <p className="text-xs text-text-secondary">Restaurant + Shopping + Transport vouchers</p>
@@ -161,7 +161,7 @@ export function RewardFeatures({ greenCoins }: RewardFeaturesProps) {
                 <div>
                   <div className="flex items-center space-x-2">
                     <span className="font-medium text-text-primary">Green Champion Package</span>
-                    <Badge className="bg-purple-500 text-white text-xs">EXCLUSIVE</Badge>
+                    <div className="bg-purple-500 text-white text-xs px-2 py-1 rounded-full font-bold">EXCLUSIVE</div>
                   </div>
                   <p className="text-sm text-eco-green font-medium">₹1000 value pack</p>
                   <p className="text-xs text-text-secondary">Premium rewards + bonus credits</p>

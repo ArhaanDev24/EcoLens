@@ -88,10 +88,10 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
       </div>
 
       <Tabs defaultValue="wallet" className="px-4">
-        <TabsList className="grid w-full grid-cols-3 glassmorphic border-dark-border mb-6">
-          <TabsTrigger value="wallet" className="text-sm">Wallet</TabsTrigger>
-          <TabsTrigger value="rewards" className="text-sm">Rewards</TabsTrigger>
-          <TabsTrigger value="history" className="text-sm">History</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-3 glassmorphic border-dark-border mb-6 bg-dark-surface-variant">
+          <TabsTrigger value="wallet" className="text-sm text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20">Wallet</TabsTrigger>
+          <TabsTrigger value="rewards" className="text-sm text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20">Rewards</TabsTrigger>
+          <TabsTrigger value="history" className="text-sm text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20">History</TabsTrigger>
         </TabsList>
 
         <TabsContent value="wallet">
@@ -198,12 +198,12 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
       
         </TabsContent>
 
-        <TabsContent value="rewards">
+        <TabsContent value="rewards" className="space-y-4">
           <RewardFeatures greenCoins={greenCoins} />
         </TabsContent>
 
-        <TabsContent value="history">
-          <h3 className="font-medium mb-4">Recent Activity</h3>
+        <TabsContent value="history" className="space-y-4">
+          <h3 className="font-medium mb-4 text-text-primary">Recent Activity</h3>
         
         {isLoading ? (
           <div className="space-y-3">
