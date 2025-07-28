@@ -29,19 +29,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(400).json({ error: "Invalid image format" });
       }
 
-      // Use Gemini AI to detect recyclable items
+      // Try Gemini AI to detect recyclable items
       const detections = await detectRecyclableItems(base64Data);
       
-      // Transform to frontend format
-      const results = detections.map(item => ({
-        name: item.name,
-        confidence: item.confidence,
-        binType: item.binType,
-        binColor: getBinColor(item.binType),
-        coinsReward: getCoinsReward(item.material, item.name)
-      }));
-
-      res.json(results);
+      if (detections.length > 0) {
+        // Transform to frontend format
+        const results = detections.map(item => ({
+          name: item.name,
+          confidence: item.confidence,
+          binType: item.binType,
+          binColor: getBinColor(item.binType),
+          coinsReward: getCoinsReward(item.material, item.name)
+        }));
+        res.json(results);
+      } else {
+        // Return empty array to trigger client-side fallbacks
+        console.log('Gemini returned no detections, client will use fallbacks');
+        res.json([]);
+      }
     } catch (error) {
       console.error('AI Detection error:', error);
       res.status(500).json({ error: "Detection failed" });

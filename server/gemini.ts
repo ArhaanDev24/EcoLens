@@ -12,10 +12,12 @@ export interface RecyclableDetection {
 
 export async function detectRecyclableItems(imageBase64: string): Promise<RecyclableDetection[]> {
   try {
-    if (!process.env.GEMINI_API_KEY) {
-      console.error("Gemini API key not configured");
+    if (!process.env.GEMINI_API_KEY || process.env.GEMINI_API_KEY === 'demo-key') {
+      console.log("Gemini API key not configured properly");
       return [];
     }
+
+    console.log('Attempting Gemini detection...');
 
     const prompt = `Analyze this image and identify any recyclable items. For each item detected, provide:
 1. Item name (e.g., "plastic bottle", "aluminum can", "cardboard box")
