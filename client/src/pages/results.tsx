@@ -44,8 +44,8 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
     try {
       const totalCoins = results.reduce((sum, result) => sum + result.coinsReward, 0);
       
-      // Check if this is a high-value detection that needs verification
-      const highValueThreshold = 20; // coins
+      // Check if this is a high-value detection that needs verification  
+      const highValueThreshold = 15; // coins (lowered from 20)
       const needsVerify = totalCoins >= highValueThreshold;
       
       if (needsVerify) {

@@ -225,12 +225,18 @@ function getBinColor(itemName: string): string {
 function getCoinsReward(itemName: string): number {
   const name = itemName.toLowerCase();
   
+  // No coins for landfill/non-recyclable items
+  if (name.includes('tobacco') || name.includes('cigarette') || name.includes('trash') || 
+      name.includes('waste') || name.includes('garbage') || name.includes('pack')) {
+    return 0;
+  }
+  
   if (name.includes('plastic') || name.includes('bottle') || name.includes('bag')) return 15;
   if (name.includes('glass')) return 12;
   if (name.includes('metal') || name.includes('aluminum')) return 18;
   if (name.includes('paper') || name.includes('cardboard')) return 8;
   
-  return 10; // Default reward
+  return 5; // Small reward for unknown recyclables
 }
 
 function mapTeachableMachineClass(className: string): string {

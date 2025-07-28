@@ -518,13 +518,25 @@ function getBinColor(binType: string): string {
 function getCoinsReward(material: string, itemName: string): number {
   const name = itemName.toLowerCase();
   
+  // No coins for landfill/non-recyclable items
+  if (name.includes('tobacco') || name.includes('cigarette') || name.includes('trash') || 
+      name.includes('waste') || name.includes('garbage') || name.includes('pack') ||
+      material === 'landfill' || material === 'non-recyclable') {
+    return 0;
+  }
+  
   // Higher rewards for valuable recyclables
   if (material === 'metal' || name.includes('aluminum')) return 18;
   if (material === 'plastic' || name.includes('bottle') || name.includes('bag')) return 15;
   if (material === 'glass') return 12;
   if (material === 'paper' || name.includes('cardboard')) return 8;
   
-  return 10; // Default reward
+  // Only give default reward if it's actually recyclable
+  if (material === 'recyclable' || material === 'compost') {
+    return 5; // Small reward for unknown recyclables
+  }
+  
+  return 0; // No reward for unknown/non-recyclable items
 }
 
 // Helper functions for statistics
