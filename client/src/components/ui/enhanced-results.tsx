@@ -74,6 +74,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const [showConfetti, setShowConfetti] = useState(false);
   const [showResults, setShowResults] = useState(false);
   const [coinsAnimation, setCoinsAnimation] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
   
   const { detect, isDetecting, error } = useAIDetection();
   const [detectionResult, setDetectionResult] = useState<any[]>([]);
@@ -93,34 +94,68 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
         setDetectionResult(results);
         
         if (results && results.length > 0) {
-          // Create detection records in database first
-          await Promise.all(results.map(async (item) => {
+          const totalCoins = results.reduce((sum, item) => sum + item.coinsReward, 0);
+          const highValueThreshold = 12; // coins
+          const needsVerify = totalCoins >= highValueThreshold;
+          
+          if (needsVerify) {
+            // High-value items need verification - don't award coins yet
+            console.log('High-value detection requires verification:', totalCoins, 'coins');
+            
+            // Save detection as pending verification
+            const item = results[0]; // Take first result for simplicity
             try {
-              await fetch('/api/detections', {
+              const response = await fetch('/api/detections', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
                   itemName: item.name,
                   confidence: item.confidence,
                   binType: item.binType,
-                  coinsAwarded: item.coinsReward
+                  coinsAwarded: item.coinsReward,
+                  needsVerification: true
                 })
               });
+              
+              if (response.ok) {
+                // Show verification required message instead of coins
+                setNeedsVerification(true);
+                setShowResults(true);
+                return; // Don't award coins or show confetti
+              }
             } catch (err) {
-              console.error('Failed to save detection:', err);
+              console.error('Failed to save detection for verification:', err);
             }
-          }));
-          
-          // Award coins after successful database storage
-          const totalCoins = results.reduce((sum, item) => sum + item.coinsReward, 0);
-          onCoinsEarned(totalCoins);
-          setCoinsAnimation(true);
-          setShowConfetti(true);
-          
-          setTimeout(() => {
-            setCoinsAnimation(false);
-            setShowConfetti(false);
-          }, 2000);
+          } else {
+            // Low-value items get coins immediately
+            await Promise.all(results.map(async (item) => {
+              try {
+                await fetch('/api/detections', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    itemName: item.name,
+                    confidence: item.confidence,
+                    binType: item.binType,
+                    coinsAwarded: item.coinsReward,
+                    needsVerification: false
+                  })
+                });
+              } catch (err) {
+                console.error('Failed to save detection:', err);
+              }
+            }));
+            
+            // Award coins after successful database storage
+            onCoinsEarned(totalCoins);
+            setCoinsAnimation(true);
+            setShowConfetti(true);
+            
+            setTimeout(() => {
+              setCoinsAnimation(false);
+              setShowConfetti(false);
+            }, 2000);
+          }
         }
       } catch (error) {
         console.error('Detection failed:', error);
@@ -316,30 +351,58 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                 </div>
               </div>
               
-              {/* Reward Section */}
-              <div className={cn(
-                "bg-gradient-to-r from-reward-yellow/20 to-eco-green/20 p-4 rounded-xl border border-reward-yellow/30",
-                coinsAnimation && "animate-pulse"
-              )}>
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-reward-yellow/20 rounded-full flex items-center justify-center">
-                      <Coins className="w-5 h-5 text-reward-yellow" />
+              {/* Reward/Verification Section */}
+              {needsVerification ? (
+                <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 p-4 rounded-xl border border-orange-500/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
+                        <Camera className="w-5 h-5 text-orange-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-text-secondary">Verification Required</p>
+                        <p className="text-lg font-bold text-orange-500">
+                          {detection.coinsReward} coins pending
+                        </p>
+                        <p className="text-xs text-text-secondary mt-1">
+                          Take photo of item in recycling bin to earn coins
+                        </p>
+                      </div>
                     </div>
-                    <div>
-                      <p className="text-sm text-text-secondary">Reward Earned</p>
-                      <p className="text-lg font-bold text-reward-yellow">
-                        +{detection.coinsReward} Green Coins
-                      </p>
+                    
+                    <div className="text-right">
+                      <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-1">
+                        <span className="text-orange-500 text-lg">⚠️</span>
+                      </div>
+                      <p className="text-xs text-text-secondary">High value</p>
                     </div>
-                  </div>
-                  
-                  <div className="text-right">
-                    <Trophy className="w-8 h-8 text-reward-yellow mx-auto mb-1" />
-                    <p className="text-xs text-text-secondary">Great job!</p>
                   </div>
                 </div>
-              </div>
+              ) : (
+                <div className={cn(
+                  "bg-gradient-to-r from-reward-yellow/20 to-eco-green/20 p-4 rounded-xl border border-reward-yellow/30",
+                  coinsAnimation && "animate-pulse"
+                )}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-reward-yellow/20 rounded-full flex items-center justify-center">
+                        <Coins className="w-5 h-5 text-reward-yellow" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-text-secondary">Reward Earned</p>
+                        <p className="text-lg font-bold text-reward-yellow">
+                          +{detection.coinsReward} Green Coins
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <Trophy className="w-8 h-8 text-reward-yellow mx-auto mb-1" />
+                      <p className="text-xs text-text-secondary">Great job!</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           ))}
           
