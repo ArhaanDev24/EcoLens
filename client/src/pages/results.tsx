@@ -45,7 +45,7 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
       const totalCoins = results.reduce((sum, result) => sum + result.coinsReward, 0);
       
       // Check if this is a high-value detection that needs disposal verification  
-      const highValueThreshold = 12; // coins (lowered to catch more items)
+      const highValueThreshold = 25; // coins (increased due to higher rewards)
       const needsVerify = totalCoins >= highValueThreshold;
       
       if (needsVerify) {

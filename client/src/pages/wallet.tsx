@@ -2,8 +2,10 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { GlassmorphicCard } from '@/components/ui/glassmorphic-card';
 import { CardContent } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiRequest } from '@/lib/queryClient';
 import { useQuery } from '@tanstack/react-query';
+import { RewardFeatures } from '@/components/ui/reward-features';
 
 interface WalletPageProps {
   greenCoins: number;
@@ -26,9 +28,17 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
     queryKey: ['/api/transactions'],
   });
 
-  const generateQRCode = async () => {
-    if (greenCoins < 50) {
-      alert('Insufficient coins! You need 50 coins to generate a ₹20 QR code.');
+  const generateQRCode = async (rewardTier: 'small' | 'medium' | 'large') => {
+    const tiers = {
+      small: { coins: 100, value: 50 },   // ₹50 for 100 coins
+      medium: { coins: 250, value: 150 }, // ₹150 for 250 coins  
+      large: { coins: 500, value: 350 }   // ₹350 for 500 coins (bonus value!)
+    };
+
+    const tier = tiers[rewardTier];
+    
+    if (greenCoins < tier.coins) {
+      alert(`Insufficient coins! You need ${tier.coins} coins to generate a ₹${tier.value} QR code.`);
       return;
     }
 
@@ -36,13 +46,13 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
     
     try {
       const response = await apiRequest('POST', '/api/transactions/qr', {
-        amount: 50,
-        value: 20 // ₹20 value
+        amount: tier.coins,
+        value: tier.value
       });
       
       const data = await response.json();
       setQrCode(data.qrCode);
-      onCoinsSpent(50);
+      onCoinsSpent(tier.coins);
     } catch (error) {
       console.error('Failed to generate QR code:', error);
       alert('Failed to generate QR code. Please try again.');
@@ -55,7 +65,7 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
     setQrCode(null);
   };
 
-  const equivalentValue = (greenCoins * 0.02).toFixed(2); // 1 coin = ₹0.02
+  const equivalentValue = (greenCoins * 0.5).toFixed(2); // 1 coin = ₹0.5 (increased value!)
 
   return (
     <div className="min-h-screen bg-dark-bg pb-24">
@@ -76,87 +86,124 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
           </div>
         </div>
       </div>
-      
-      {/* Balance Card */}
-      <div className="p-4">
-        <GlassmorphicCard className="p-6 rounded-3xl bg-gradient-to-br from-eco-green to-reward-yellow bg-opacity-10">
-          <div className="text-center">
-            <div className="text-3xl font-bold text-reward-yellow mb-2">
-              {greenCoins.toLocaleString()}
-            </div>
-            <div className="text-text-secondary mb-4">Green Coins Available</div>
-            
-            {/* Balance in currency */}
-            <div className="bg-dark-surface-variant p-3 rounded-xl">
-              <div className="text-sm text-text-secondary">Equivalent Value</div>
-              <div className="text-lg font-medium text-eco-green">₹{equivalentValue}</div>
-            </div>
-          </div>
-        </GlassmorphicCard>
-      </div>
-      
-      {/* QR Code Generation */}
-      <div className="px-4 mb-6">
-        <GlassmorphicCard>
-          <CardContent className="p-4">
-            <h3 className="font-medium mb-4 flex items-center space-x-2">
-              <i className="fas fa-qrcode text-eco-green" />
-              <span>Generate QR Reward</span>
-            </h3>
-            
-            <div className="text-center">
-              {qrCode ? (
-                <div className="mb-4">
-                  <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center p-4">
-                    <img src={qrCode} alt="QR Code" className="w-full h-full" />
-                  </div>
-                  <Button
-                    onClick={resetQR}
-                    variant="outline"
-                    className="mb-2"
-                  >
-                    Generate New QR
-                  </Button>
-                  <p className="text-xs text-text-secondary">
-                    Present this QR code at participating stores
-                  </p>
+
+      <Tabs defaultValue="wallet" className="px-4">
+        <TabsList className="grid w-full grid-cols-3 glassmorphic border-dark-border mb-6">
+          <TabsTrigger value="wallet" className="text-sm">Wallet</TabsTrigger>
+          <TabsTrigger value="rewards" className="text-sm">Rewards</TabsTrigger>
+          <TabsTrigger value="history" className="text-sm">History</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="wallet">
+          {/* Balance Card */}
+          <div className="mb-6">
+            <GlassmorphicCard className="p-6 rounded-3xl bg-gradient-to-br from-eco-green to-reward-yellow bg-opacity-10">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-reward-yellow mb-2">
+                  {greenCoins.toLocaleString()}
                 </div>
-              ) : (
-                <>
-                  <Button
-                    onClick={generateQRCode}
-                    disabled={isGeneratingQR || greenCoins < 50}
-                    className="bg-eco-green text-dark-bg font-medium py-3 px-8 rounded-2xl hover:bg-eco-green"
-                  >
-                    {isGeneratingQR ? (
-                      <>
-                        <div className="animate-spin w-4 h-4 border-2 border-dark-bg border-t-transparent rounded-full mr-2" />
-                        Generating...
-                      </>
-                    ) : (
-                      'Generate ₹20 QR Code (50 coins)'
-                    )}
-                  </Button>
-                  
-                  <p className="text-xs text-text-secondary mt-3">
-                    Present this QR code at participating stores
-                  </p>
-                  
-                  {greenCoins < 50 && (
-                    <p className="text-xs text-red-400 mt-2">
-                      You need {50 - greenCoins} more coins to generate a QR code
-                    </p>
+                <div className="text-text-secondary mb-4">Green Coins Available</div>
+                
+                {/* Balance in currency */}
+                <div className="bg-dark-surface-variant p-3 rounded-xl">
+                  <div className="text-sm text-text-secondary">Equivalent Value</div>
+                  <div className="text-lg font-medium text-eco-green">₹{equivalentValue}</div>
+                </div>
+              </div>
+            </GlassmorphicCard>
+          </div>
+          
+          {/* QR Code Generation */}
+          <div className="mb-6">
+            <GlassmorphicCard>
+              <CardContent className="p-4">
+                <h3 className="font-medium mb-4 flex items-center space-x-2">
+                  <i className="fas fa-qrcode text-eco-green" />
+                  <span>Generate QR Reward</span>
+                </h3>
+                
+                <div className="text-center">
+                  {qrCode ? (
+                    <div className="mb-4">
+                      <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center p-4">
+                        <img src={qrCode} alt="QR Code" className="w-full h-full" />
+                      </div>
+                      <Button
+                        onClick={resetQR}
+                        variant="outline"
+                        className="mb-2"
+                      >
+                        Generate New QR
+                      </Button>
+                      <p className="text-xs text-text-secondary">
+                        Present this QR code at participating stores
+                      </p>
+                    </div>
+                  ) : (
+                    <>
+                      <div className="space-y-3">
+                        {/* Small Reward Tier */}
+                        <Button
+                          onClick={() => generateQRCode('small')}
+                          disabled={isGeneratingQR || greenCoins < 100}
+                          className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white font-medium py-3 px-4 rounded-2xl"
+                        >
+                          {isGeneratingQR ? (
+                            <>
+                              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
+                              Generating...
+                            </>
+                          ) : (
+                            '₹50 QR Code (100 coins)'
+                          )}
+                        </Button>
+                        
+                        {/* Medium Reward Tier */}
+                        <Button
+                          onClick={() => generateQRCode('medium')}
+                          disabled={isGeneratingQR || greenCoins < 250}
+                          className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium py-3 px-4 rounded-2xl"
+                        >
+                          ₹150 QR Code (250 coins)
+                        </Button>
+                        
+                        {/* Large Reward Tier - Best Value! */}
+                        <Button
+                          onClick={() => generateQRCode('large')}
+                          disabled={isGeneratingQR || greenCoins < 500}
+                          className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium py-3 px-4 rounded-2xl relative"
+                        >
+                          ₹350 QR Code (500 coins)
+                          <span className="absolute -top-2 -right-2 bg-reward-yellow text-dark-bg text-xs px-2 py-1 rounded-full font-bold">
+                            BEST VALUE!
+                          </span>
+                        </Button>
+                      </div>
+                      
+                      <p className="text-xs text-text-secondary mt-3 text-center">
+                        Present QR codes at participating stores, cafes, and online shops
+                      </p>
+                      
+                      {greenCoins < 100 && (
+                        <p className="text-xs text-red-400 mt-2 text-center">
+                          You need {100 - greenCoins} more coins for the smallest reward
+                        </p>
+                      )}
+                    </>
                   )}
-                </>
-              )}
-            </div>
-          </CardContent>
-        </GlassmorphicCard>
-      </div>
+                </div>
+              </CardContent>
+            </GlassmorphicCard>
+          </div>
       
-      {/* Recent Transactions */}
-      <div className="px-4">
-        <h3 className="font-medium mb-4">Recent Activity</h3>
+        </TabsContent>
+
+        <TabsContent value="rewards">
+          <RewardFeatures greenCoins={greenCoins} />
+        </TabsContent>
+
+        <TabsContent value="history">
+          <h3 className="font-medium mb-4">Recent Activity</h3>
         
         {isLoading ? (
           <div className="space-y-3">
@@ -214,7 +261,8 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
             ))}
           </div>
         )}
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

@@ -518,23 +518,23 @@ function getBinColor(binType: string): string {
 function getCoinsReward(material: string, itemName: string): number {
   const name = itemName.toLowerCase();
   
-  // Higher rewards for valuable recyclables
-  if (material === 'metal' || name.includes('aluminum')) return 18;
-  if (material === 'plastic' || name.includes('bottle') || name.includes('bag')) return 15;
-  if (material === 'glass') return 12;
-  if (material === 'paper' || name.includes('cardboard')) return 8;
+  // Premium rewards for high-value recyclables
+  if (material === 'metal' || name.includes('aluminum')) return 45; // Increased from 18
+  if (material === 'plastic' || name.includes('bottle') || name.includes('bag')) return 35; // Increased from 15
+  if (material === 'glass') return 30; // Increased from 12
+  if (material === 'paper' || name.includes('cardboard')) return 20; // Increased from 8
   
-  // Medium rewards for compostable items
-  if (material === 'compost' || name.includes('organic') || name.includes('food')) return 6;
+  // Good rewards for compostable items
+  if (material === 'compost' || name.includes('organic') || name.includes('food')) return 15; // Increased from 6
   
-  // Small rewards for proper landfill disposal (better than littering!)
+  // Fair rewards for proper landfill disposal (better than littering!)
   if (name.includes('tobacco') || name.includes('cigarette') || name.includes('pack') ||
       material === 'landfill' || name.includes('trash') || name.includes('waste')) {
-    return 3; // Small reward for proper disposal
+    return 8; // Increased from 3
   }
   
   // Default reward for unknown but properly disposed items
-  return 5;
+  return 12; // Increased from 5
 }
 
 // Helper functions for statistics
