@@ -225,18 +225,22 @@ function getBinColor(itemName: string): string {
 function getCoinsReward(itemName: string): number {
   const name = itemName.toLowerCase();
   
-  // No coins for landfill/non-recyclable items
-  if (name.includes('tobacco') || name.includes('cigarette') || name.includes('trash') || 
-      name.includes('waste') || name.includes('garbage') || name.includes('pack')) {
-    return 0;
-  }
-  
+  // Higher rewards for valuable recyclables
   if (name.includes('plastic') || name.includes('bottle') || name.includes('bag')) return 15;
   if (name.includes('glass')) return 12;
   if (name.includes('metal') || name.includes('aluminum')) return 18;
   if (name.includes('paper') || name.includes('cardboard')) return 8;
   
-  return 5; // Small reward for unknown recyclables
+  // Medium rewards for compostable items
+  if (name.includes('organic') || name.includes('food') || name.includes('fruit')) return 6;
+  
+  // Small rewards for proper landfill disposal (better than littering!)
+  if (name.includes('tobacco') || name.includes('cigarette') || name.includes('trash') || 
+      name.includes('waste') || name.includes('garbage') || name.includes('pack')) {
+    return 3; // Small reward for proper disposal
+  }
+  
+  return 5; // Default reward for unknown items
 }
 
 function mapTeachableMachineClass(className: string): string {
