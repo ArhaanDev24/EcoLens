@@ -68,134 +68,171 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
   const equivalentValue = (greenCoins * 0.5).toFixed(2); // 1 coin = ₹0.5 (increased value!)
 
   return (
-    <div className="min-h-screen bg-dark-bg pb-24">
-      {/* Header */}
-      <div className="p-4 glassmorphic">
-        <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 bg-reward-yellow rounded-full flex items-center justify-center p-2">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="9" fill="#1A1A1A" stroke="#FFA000" strokeWidth="1"/>
-              <circle cx="12" cy="12" r="6" fill="none" stroke="#FFA000" strokeWidth="1"/>
-              <text x="12" y="16" textAnchor="middle" fill="#FFD500" fontFamily="Arial, sans-serif" fontSize="8" fontWeight="bold">$</text>
-              <ellipse cx="9" cy="9" rx="2" ry="3" fill="#FFEB3B" opacity="0.6" transform="rotate(-30 9 9)"/>
-            </svg>
-          </div>
-          <div>
-            <h2 className="text-xl font-bold">Green Wallet</h2>
-            <p className="text-sm text-text-secondary">Redeem your eco rewards</p>
+    <div className="min-h-screen bg-gradient-to-br from-dark-bg via-dark-surface to-dark-bg pb-24">
+      {/* Enhanced Header with Gradient Background */}
+      <div className="relative overflow-hidden">
+        {/* Background Gradient */}
+        <div className="absolute inset-0 bg-gradient-to-r from-eco-green/20 via-reward-yellow/10 to-eco-green/20"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-dark-bg/50"></div>
+        
+        {/* Header Content */}
+        <div className="relative p-6 pt-16">
+          <div className="flex items-center justify-between mb-8 slide-in-down">
+            <div className="flex items-center space-x-4">
+              <div className="w-16 h-16 bg-gradient-to-br from-eco-green to-reward-yellow rounded-2xl flex items-center justify-center shadow-xl floating-animation">
+                <span className="text-3xl">🪙</span>
+              </div>
+              <div>
+                <h1 className="text-2xl font-bold text-text-primary">Green Wallet</h1>
+                <p className="text-sm text-text-secondary">Redeem your eco rewards</p>
+              </div>
+            </div>
+            <div className="text-right">
+              <p className="text-xs text-text-secondary uppercase tracking-wider">Balance</p>
+              <p className="text-4xl font-bold text-reward-yellow count-up">{greenCoins}</p>
+              <p className="text-sm text-eco-green font-medium">≈ ₹{(greenCoins * 0.5).toFixed(0)}</p>
+            </div>
           </div>
         </div>
       </div>
 
-      <Tabs defaultValue="wallet" className="px-4">
-        <TabsList className="grid w-full grid-cols-3 glassmorphic border-dark-border mb-6 bg-dark-surface-variant">
-          <TabsTrigger value="wallet" className="text-sm text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20">Wallet</TabsTrigger>
-          <TabsTrigger value="rewards" className="text-sm text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20">Rewards</TabsTrigger>
-          <TabsTrigger value="history" className="text-sm text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20">History</TabsTrigger>
+      <Tabs defaultValue="wallet" className="px-6 -mt-4">
+        <TabsList className="grid w-full grid-cols-3 glassmorphic-intense border-2 border-eco-green/20 mb-8 bg-dark-surface-variant/80 backdrop-blur-xl rounded-2xl p-1">
+          <TabsTrigger 
+            value="wallet" 
+            className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-r data-[state=active]:from-eco-green/30 data-[state=active]:to-reward-yellow/20 data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
+          >
+            Wallet
+          </TabsTrigger>
+          <TabsTrigger 
+            value="rewards" 
+            className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-r data-[state=active]:from-eco-green/30 data-[state=active]:to-reward-yellow/20 data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
+          >
+            Rewards
+          </TabsTrigger>
+          <TabsTrigger 
+            value="history" 
+            className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-r data-[state=active]:from-eco-green/30 data-[state=active]:to-reward-yellow/20 data-[state=active]:shadow-lg rounded-xl transition-all duration-300"
+          >
+            History
+          </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="wallet">
-          {/* Balance Card */}
-          <div className="mb-6">
-            <GlassmorphicCard className="p-6 rounded-3xl bg-gradient-to-br from-eco-green to-reward-yellow bg-opacity-10">
-              <div className="text-center">
-                <div className="text-3xl font-bold text-reward-yellow mb-2">
+        <TabsContent value="wallet" className="space-y-6">
+          {/* Enhanced Balance Card */}
+          <GlassmorphicCard className="p-8 rounded-3xl bg-gradient-to-br from-eco-green/10 via-transparent to-reward-yellow/10 border-2 border-eco-green/20 shadow-2xl">
+            <div className="text-center space-y-6">
+              <div>
+                <p className="text-sm text-text-secondary uppercase tracking-wider mb-2">Available Balance</p>
+                <div className="text-5xl font-bold text-reward-yellow mb-3 count-up">
                   {greenCoins.toLocaleString()}
                 </div>
-                <div className="text-text-secondary mb-4">Green Coins Available</div>
-                
-                {/* Balance in currency */}
-                <div className="bg-dark-surface-variant p-3 rounded-xl">
-                  <div className="text-sm text-text-secondary">Equivalent Value</div>
-                  <div className="text-lg font-medium text-eco-green">₹{equivalentValue}</div>
+                <p className="text-text-secondary">Green Coins</p>
+              </div>
+              
+              {/* Equivalent Value with Better Design */}
+              <div className="bg-gradient-to-r from-dark-surface-variant/50 to-dark-surface/50 p-4 rounded-2xl border border-eco-green/20">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-text-secondary">Equivalent Value</p>
+                    <p className="text-2xl font-bold text-eco-green">₹{equivalentValue}</p>
+                  </div>
+                  <div className="w-12 h-12 bg-eco-green/20 rounded-full flex items-center justify-center">
+                    <span className="text-eco-green text-xl">💰</span>
+                  </div>
                 </div>
               </div>
-            </GlassmorphicCard>
-          </div>
+            </div>
+          </GlassmorphicCard>
           
-          {/* QR Code Generation */}
-          <div className="mb-6">
-            <GlassmorphicCard>
-              <CardContent className="p-4">
-                <h3 className="font-medium mb-4 flex items-center space-x-2">
-                  <i className="fas fa-qrcode text-eco-green" />
-                  <span>Generate QR Reward</span>
-                </h3>
-                
-                <div className="text-center">
-                  {qrCode ? (
-                    <div className="mb-4">
-                      <div className="w-48 h-48 mx-auto mb-4 bg-white rounded-2xl flex items-center justify-center p-4">
-                        <img src={qrCode} alt="QR Code" className="w-full h-full" />
-                      </div>
+          {/* Enhanced QR Code Generation */}
+          <GlassmorphicCard className="rounded-3xl border-2 border-dark-border shadow-xl">
+            <CardContent className="p-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-eco-green to-reward-yellow rounded-xl flex items-center justify-center">
+                  <span className="text-dark-bg text-xl">📱</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-text-primary">Generate QR Reward</h3>
+                  <p className="text-sm text-text-secondary">Redeem your coins at stores</p>
+                </div>
+              </div>
+              
+              <div className="space-y-4">
+                {qrCode ? (
+                  <div className="text-center space-y-4">
+                    <div className="w-56 h-56 mx-auto bg-white rounded-3xl flex items-center justify-center p-6 shadow-2xl">
+                      <img src={qrCode} alt="QR Code" className="w-full h-full" />
+                    </div>
+                    <div className="space-y-3">
                       <Button
                         onClick={resetQR}
                         variant="outline"
-                        className="mb-2"
+                        className="border-2 border-eco-green text-eco-green hover:bg-eco-green/10 rounded-xl px-6 py-3"
                       >
                         Generate New QR
                       </Button>
-                      <p className="text-xs text-text-secondary">
+                      <p className="text-sm text-text-secondary">
                         Present this QR code at participating stores
                       </p>
                     </div>
-                  ) : (
-                    <>
-                      <div className="space-y-3">
-                        {/* Small Reward Tier */}
-                        <Button
-                          onClick={() => generateQRCode('small')}
-                          disabled={isGeneratingQR || greenCoins < 100}
-                          className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white font-medium py-3 px-4 rounded-2xl"
-                        >
-                          {isGeneratingQR ? (
-                            <>
-                              <div className="animate-spin w-4 h-4 border-2 border-white border-t-transparent rounded-full mr-2" />
-                              Generating...
-                            </>
-                          ) : (
-                            '₹50 QR Code (100 coins)'
-                          )}
-                        </Button>
-                        
-                        {/* Medium Reward Tier */}
-                        <Button
-                          onClick={() => generateQRCode('medium')}
-                          disabled={isGeneratingQR || greenCoins < 250}
-                          className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-medium py-3 px-4 rounded-2xl"
-                        >
-                          ₹150 QR Code (250 coins)
-                        </Button>
-                        
-                        {/* Large Reward Tier - Best Value! */}
-                        <Button
-                          onClick={() => generateQRCode('large')}
-                          disabled={isGeneratingQR || greenCoins < 500}
-                          className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-medium py-3 px-4 rounded-2xl relative"
-                        >
-                          ₹350 QR Code (500 coins)
-                          <span className="absolute -top-2 -right-2 bg-reward-yellow text-dark-bg text-xs px-2 py-1 rounded-full font-bold">
-                            BEST VALUE!
-                          </span>
-                        </Button>
-                      </div>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    <div className="space-y-4">
+                      {/* Small Reward Tier */}
+                      <Button
+                        onClick={() => generateQRCode('small')}
+                        disabled={isGeneratingQR || greenCoins < 100}
+                        className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      >
+                        {isGeneratingQR ? (
+                          <div className="flex items-center justify-center">
+                            <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3" />
+                            Generating QR...
+                          </div>
+                        ) : (
+                          '₹50 QR Code (100 coins)'
+                        )}
+                      </Button>
                       
-                      <p className="text-xs text-text-secondary mt-3 text-center">
+                      {/* Medium Reward Tier */}
+                      <Button
+                        onClick={() => generateQRCode('medium')}
+                        disabled={isGeneratingQR || greenCoins < 250}
+                        className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      >
+                        ₹150 QR Code (250 coins)
+                      </Button>
+                      
+                      {/* Large Reward Tier - Best Value! */}
+                      <Button
+                        onClick={() => generateQRCode('large')}
+                        disabled={isGeneratingQR || greenCoins < 500}
+                        className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-4 px-6 rounded-2xl relative shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                      >
+                        ₹350 QR Code (500 coins)
+                        <span className="absolute -top-3 -right-3 bg-gradient-to-r from-reward-yellow to-yellow-400 text-dark-bg text-xs px-3 py-1 rounded-full font-black shadow-lg">
+                          BEST VALUE!
+                        </span>
+                      </Button>
+                    </div>
+                    
+                    <div className="p-4 bg-gradient-to-r from-eco-green/10 to-reward-yellow/10 rounded-2xl border border-eco-green/20">
+                      <p className="text-sm text-text-secondary text-center">
                         Present QR codes at participating stores, cafes, and online shops
                       </p>
-                      
                       {greenCoins < 100 && (
-                        <p className="text-xs text-red-400 mt-2 text-center">
+                        <p className="text-sm text-red-400 mt-2 text-center font-medium">
                           You need {100 - greenCoins} more coins for the smallest reward
                         </p>
                       )}
-                    </>
-                  )}
-                </div>
-              </CardContent>
-            </GlassmorphicCard>
-          </div>
-      
+                    </div>
+                  </div>
+                )}
+              </div>
+            </CardContent>
+          </GlassmorphicCard>
         </TabsContent>
 
         <TabsContent value="rewards" className="space-y-4">
