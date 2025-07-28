@@ -96,29 +96,30 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
         </div>
       </div>
 
-      <Tabs defaultValue="wallet" className="px-4 -mt-4">
-        <TabsList className="w-full max-w-full grid grid-cols-3 glassmorphic-intense border-2 border-eco-green/20 mb-8 bg-dark-surface-variant/80 backdrop-blur-xl rounded-2xl p-1 mx-auto">
-          <TabsTrigger 
-            value="wallet" 
-            className="text-xs sm:text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-r data-[state=active]:from-eco-green/30 data-[state=active]:to-reward-yellow/20 data-[state=active]:shadow-lg rounded-xl transition-all duration-300 px-2 py-2"
-          >
-            Wallet
-          </TabsTrigger>
-          <TabsTrigger 
-            value="rewards" 
-            className="text-xs sm:text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-r data-[state=active]:from-eco-green/30 data-[state=active]:to-reward-yellow/20 data-[state=active]:shadow-lg rounded-xl transition-all duration-300 px-2 py-2"
-          >
-            Rewards
-          </TabsTrigger>
-          <TabsTrigger 
-            value="history" 
-            className="text-xs sm:text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-gradient-to-r data-[state=active]:from-eco-green/30 data-[state=active]:to-reward-yellow/20 data-[state=active]:shadow-lg rounded-xl transition-all duration-300 px-2 py-2"
-          >
-            History
-          </TabsTrigger>
-        </TabsList>
+      <div className="px-2 -mt-4">
+        <Tabs defaultValue="wallet" className="w-full max-w-full">
+          <TabsList className="w-full grid grid-cols-3 glassmorphic border border-eco-green/20 mb-6 bg-dark-surface-variant/60 rounded-xl p-0.5 h-11 mx-0">
+            <TabsTrigger 
+              value="wallet" 
+              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-1 py-2 h-10"
+            >
+              Wallet
+            </TabsTrigger>
+            <TabsTrigger 
+              value="rewards" 
+              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-1 py-2 h-10"
+            >
+              Rewards
+            </TabsTrigger>
+            <TabsTrigger 
+              value="history" 
+              className="text-sm font-medium text-text-secondary data-[state=active]:text-text-primary data-[state=active]:bg-eco-green/20 rounded-lg transition-all duration-200 px-1 py-2 h-10"
+            >
+              History
+            </TabsTrigger>
+          </TabsList>
 
-        <TabsContent value="wallet" className="space-y-6 px-2">
+          <TabsContent value="wallet" className="space-y-6 px-2">
           {/* Enhanced Balance Card */}
           <GlassmorphicCard className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-eco-green/10 via-transparent to-reward-yellow/10 border-2 border-eco-green/20 shadow-2xl">
             <div className="text-center space-y-6">
@@ -298,8 +299,9 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
             ))}
           </div>
         )}
-        </TabsContent>
-      </Tabs>
+          </TabsContent>
+        </Tabs>
+      </div>
     </div>
   );
 }
