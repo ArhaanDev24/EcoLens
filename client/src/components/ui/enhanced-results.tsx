@@ -5,6 +5,63 @@ import { useAIDetection } from '@/hooks/use-ai-detection';
 import { Camera, ArrowLeft, Coins, Sparkles, CheckCircle, Trophy, Recycle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
+// Dynamic recycling tips based on detected items
+function getRecyclingTip(item: any): string {
+  const name = item.name.toLowerCase();
+  const binType = item.binType;
+  
+  // Specific tips for different item types
+  if (name.includes('bottle')) {
+    if (binType === 'recyclable') {
+      return "Remove the cap and label, rinse clean, then place in recycling bin. Plastic bottles can be recycled into new bottles, clothing, or carpeting!";
+    }
+  }
+  
+  if (name.includes('can') || name.includes('aluminum')) {
+    return "Rinse clean and crush if possible to save space. Aluminum cans can be recycled infinitely without losing quality - they could be back on shelves in just 60 days!";
+  }
+  
+  if (name.includes('glass')) {
+    return "Remove caps and lids, rinse clean. Glass can be recycled endlessly into new bottles and jars. Consider reusing glass containers for storage!";
+  }
+  
+  if (name.includes('paper') || name.includes('cardboard')) {
+    return "Keep dry and remove any tape or staples. Cardboard boxes should be flattened. Paper can be recycled 5-7 times before fibers become too short!";
+  }
+  
+  if (name.includes('bag') || name.includes('plastic')) {
+    if (binType === 'recyclable') {
+      return "Check recycling number on bottom. #1-2 are widely accepted. Clean bags can often be recycled at grocery store drop-offs!";
+    } else {
+      return "Most plastic bags aren't recyclable in regular bins. Take clean bags to grocery store collection points or reuse as trash liners!";
+    }
+  }
+  
+  if (name.includes('tobacco') || name.includes('cigarette')) {
+    return "Cigarette butts contain toxic chemicals and take 10+ years to decompose. Dispose in trash and consider quitting to help the environment!";
+  }
+  
+  if (name.includes('food') || name.includes('organic')) {
+    return "Perfect for composting! Food scraps create nutrient-rich soil. If composting isn't available, dispose in organic waste bin.";
+  }
+  
+  if (name.includes('snack')) {
+    return "Most snack packaging isn't recyclable due to mixed materials. Look for recyclable alternatives or buy in bulk to reduce packaging waste!";
+  }
+  
+  // General tips by bin type
+  switch (binType) {
+    case 'recyclable':
+      return "Clean and dry this item before recycling. Check local recycling guidelines as programs vary by location.";
+    case 'compost':
+      return "This organic material can be composted! Break into smaller pieces to speed decomposition and create rich soil.";
+    case 'landfill':
+      return "This item goes to landfill, but you're still helping by disposing properly instead of littering. Consider eco-friendly alternatives next time!";
+    default:
+      return "Proper disposal prevents environmental harm. Research local waste programs for the best disposal method.";
+  }
+}
+
 // Remove unused interface
 
 interface EnhancedResultsProps {
@@ -303,18 +360,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
             
             <div className="bg-dark-surface-variant p-4 rounded-xl">
               <p className="text-sm text-text-primary">
-                {detectionResult[0].binType === 'recyclable' && 
-                  "Clean and dry this item before placing it in the recycling bin. Remove any caps or labels if possible."
-                }
-                {detectionResult[0].binType === 'compost' && 
-                  "This organic material can be composted. Break it into smaller pieces to speed decomposition."
-                }
-                {detectionResult[0].binType === 'landfill' && 
-                  "Unfortunately, this item cannot be recycled. Consider reusing it or finding alternative eco-friendly options."
-                }
-                {detectionResult[0].binType === 'hazardous' && 
-                  "This item requires special disposal. Take it to a hazardous waste facility to prevent environmental damage."
-                }
+                {getRecyclingTip(detectionResult[0])}
               </p>
             </div>
           </div>
