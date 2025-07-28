@@ -98,9 +98,14 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
           const highValueThreshold = 12; // coins
           const needsVerify = totalCoins >= highValueThreshold;
           
-          if (needsVerify) {
-            // High-value items need verification - don't award coins yet
-            console.log('High-value detection requires verification:', totalCoins, 'coins');
+          // Only require verification for high-value RECYCLABLE items
+          // Landfill items get coins immediately regardless of value
+          const isRecyclable = results.some(item => item.binType === 'recyclable');
+          const requiresVerification = needsVerify && isRecyclable;
+          
+          if (requiresVerification) {
+            // High-value recyclable items need verification - don't award coins yet
+            console.log('High-value recyclable detection requires verification:', totalCoins, 'coins');
             
             // Save detection as pending verification
             const item = results[0]; // Take first result for simplicity
@@ -352,7 +357,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
               </div>
               
               {/* Reward/Verification Section */}
-              {needsVerification ? (
+              {needsVerification && detection.binType === 'recyclable' ? (
                 <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 p-4 rounded-xl border border-orange-500/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -372,9 +377,9 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                     
                     <div className="text-right">
                       <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-1">
-                        <span className="text-orange-500 text-lg">⚠️</span>
+                        <span className="text-orange-500 text-lg">♻️</span>
                       </div>
-                      <p className="text-xs text-text-secondary">High value</p>
+                      <p className="text-xs text-text-secondary">Recyclable</p>
                     </div>
                   </div>
                 </div>

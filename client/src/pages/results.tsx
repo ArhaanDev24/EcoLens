@@ -44,9 +44,10 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
     try {
       const totalCoins = results.reduce((sum, result) => sum + result.coinsReward, 0);
       
-      // Check if this is a high-value detection that needs verification  
+      // Check if this is a high-value RECYCLABLE detection that needs verification  
       const highValueThreshold = 12; // coins (lowered to catch more items)
-      const needsVerify = totalCoins >= highValueThreshold;
+      const hasRecyclable = results.some(result => result.binType === 'recyclable');
+      const needsVerify = totalCoins >= highValueThreshold && hasRecyclable;
       
       if (needsVerify) {
         // Save detection as pending verification
