@@ -98,14 +98,13 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
           const highValueThreshold = 12; // coins
           const needsVerify = totalCoins >= highValueThreshold;
           
-          // Only require verification for high-value RECYCLABLE items
-          // Landfill items get coins immediately regardless of value
-          const isRecyclable = results.some(item => item.binType === 'recyclable');
-          const requiresVerification = needsVerify && isRecyclable;
+          // All high-value items need disposal verification
+          // Users must take photo of item being disposed in correct bin
+          const requiresVerification = needsVerify;
           
           if (requiresVerification) {
-            // High-value recyclable items need verification - don't award coins yet
-            console.log('High-value recyclable detection requires verification:', totalCoins, 'coins');
+            // High-value items need disposal verification - don't award coins yet
+            console.log('High-value detection requires disposal verification:', totalCoins, 'coins');
             
             // Save detection as pending verification
             const item = results[0]; // Take first result for simplicity
@@ -357,29 +356,40 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
               </div>
               
               {/* Reward/Verification Section */}
-              {needsVerification && detection.binType === 'recyclable' ? (
-                <div className="bg-gradient-to-r from-orange-500/20 to-red-500/20 p-4 rounded-xl border border-orange-500/30">
+              {needsVerification ? (
+                <div className="bg-gradient-to-r from-orange-500/20 to-blue-500/20 p-4 rounded-xl border border-orange-500/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
                       <div className="w-10 h-10 bg-orange-500/20 rounded-full flex items-center justify-center">
                         <Camera className="w-5 h-5 text-orange-500" />
                       </div>
                       <div>
-                        <p className="text-sm text-text-secondary">Verification Required</p>
+                        <p className="text-sm text-text-secondary">Disposal Verification Required</p>
                         <p className="text-lg font-bold text-orange-500">
                           {detection.coinsReward} coins pending
                         </p>
                         <p className="text-xs text-text-secondary mt-1">
-                          Take photo of item in recycling bin to earn coins
+                          {detection.binType === 'recyclable' 
+                            ? "Take photo of item in recycling bin to earn coins"
+                            : detection.binType === 'compost'
+                            ? "Take photo of item in compost bin to earn coins"
+                            : "Take photo of item in trash bin to earn coins"
+                          }
                         </p>
                       </div>
                     </div>
                     
                     <div className="text-right">
                       <div className="w-8 h-8 bg-orange-500/20 rounded-full flex items-center justify-center mx-auto mb-1">
-                        <span className="text-orange-500 text-lg">♻️</span>
+                        <span className="text-orange-500 text-lg">
+                          {detection.binType === 'recyclable' ? '♻️' : 
+                           detection.binType === 'compost' ? '🌱' : '🗑️'}
+                        </span>
                       </div>
-                      <p className="text-xs text-text-secondary">Recyclable</p>
+                      <p className="text-xs text-text-secondary">
+                        {detection.binType === 'recyclable' ? 'Recyclable' :
+                         detection.binType === 'compost' ? 'Compost' : 'Trash'}
+                      </p>
                     </div>
                   </div>
                 </div>
