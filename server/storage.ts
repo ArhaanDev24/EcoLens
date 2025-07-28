@@ -35,6 +35,7 @@ export interface IStorage {
   createUser(user: InsertUser): Promise<User>;
   updateUserCoins(userId: number, coinsChange: number): Promise<void>;
   createDetection(detection: InsertDetection): Promise<Detection>;
+  updateDetection(id: number, updates: Partial<Detection>): Promise<Detection | null>;
   getUserDetections(userId: number): Promise<Detection[]>;
   createTransaction(transaction: InsertTransaction): Promise<Transaction>;
   getUserTransactions(userId: number): Promise<Transaction[]>;
@@ -214,10 +215,25 @@ export class MemStorage implements IStorage {
       detectedObjects: detectedObjects,
       confidenceScore: insertDetection.confidenceScore || null,
       coinsEarned: insertDetection.coinsEarned || 0,
+      isVerified: insertDetection.isVerified || false,
+      verificationImageUrl: insertDetection.verificationImageUrl || null,
+      verificationStatus: insertDetection.verificationStatus || 'pending',
+      verificationAttempts: insertDetection.verificationAttempts || 0,
       createdAt: new Date()
     };
     this.detections.set(id, detection);
     return detection;
+  }
+
+  async updateDetection(id: number, updates: Partial<Detection>): Promise<Detection | null> {
+    const detection = this.detections.get(id);
+    if (!detection) {
+      return null;
+    }
+    
+    const updatedDetection = { ...detection, ...updates };
+    this.detections.set(id, updatedDetection);
+    return updatedDetection;
   }
 
   async getUserDetections(userId: number): Promise<Detection[]> {
@@ -325,6 +341,20 @@ export class DatabaseStorage implements IStorage {
       })
       .returning();
     return detection;
+  }
+
+  async updateDetection(id: number, updates: Partial<Detection>): Promise<Detection | null> {
+    try {
+      const [detection] = await db
+        .update(detections)
+        .set(updates)
+        .where(eq(detections.id, id))
+        .returning();
+      return detection || null;
+    } catch (error) {
+      console.error('Update detection error:', error);
+      return null;
+    }
   }
 
   async getUserDetections(userId: number): Promise<Detection[]> {

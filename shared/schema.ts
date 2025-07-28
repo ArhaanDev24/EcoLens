@@ -19,6 +19,10 @@ export const detections = pgTable("detections", {
   detectedObjects: jsonb("detected_objects"),
   confidenceScore: integer("confidence_score"),
   coinsEarned: integer("coins_earned").notNull().default(0),
+  isVerified: boolean("is_verified").notNull().default(false),
+  verificationImageUrl: text("verification_image_url"),
+  verificationStatus: text("verification_status").default("pending"), // 'pending', 'verified', 'rejected'
+  verificationAttempts: integer("verification_attempts").notNull().default(0),
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -133,6 +137,10 @@ export const insertDetectionSchema = createInsertSchema(detections).pick({
   detectedObjects: true,
   confidenceScore: true,
   coinsEarned: true,
+  isVerified: true,
+  verificationImageUrl: true,
+  verificationStatus: true,
+  verificationAttempts: true,
 });
 
 export const insertPersonalGoalSchema = createInsertSchema(personalGoals).pick({
@@ -216,12 +224,7 @@ export const insertAchievementSchema = createInsertSchema(achievements).pick({
 });
 
 export type InsertUser = z.infer<typeof insertUserSchema>;
-export type User = typeof users.$inferSelect;
 export type InsertDetection = z.infer<typeof insertDetectionSchema>;
-export type Detection = typeof detections.$inferSelect;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
-export type Transaction = typeof transactions.$inferSelect;
 export type InsertStats = z.infer<typeof insertStatsSchema>;
-export type Stats = typeof stats.$inferSelect;
 export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
-export type Achievement = typeof achievements.$inferSelect;

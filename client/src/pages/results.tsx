@@ -4,6 +4,7 @@ import { GlassmorphicCard } from '@/components/ui/glassmorphic-card';
 import { CardContent } from '@/components/ui/card';
 import { Confetti } from '@/components/ui/confetti';
 import { useAIDetection, DetectionResult } from '@/hooks/use-ai-detection';
+import { useCamera } from '@/hooks/use-camera';
 import { apiRequest } from '@/lib/queryClient';
 
 interface ResultsPageProps {
@@ -17,6 +18,10 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
   const [results, setResults] = useState<DetectionResult[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
   const [isCollecting, setIsCollecting] = useState(false);
+  const [needsVerification, setNeedsVerification] = useState(false);
+  const [pendingDetection, setPendingDetection] = useState<any>(null);
+  const [isVerifying, setIsVerifying] = useState(false);
+  const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage } = useCamera();
 
   useEffect(() => {
     if (imageData) {
@@ -39,37 +44,65 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
     try {
       const totalCoins = results.reduce((sum, result) => sum + result.coinsReward, 0);
       
-      // Save each detection to backend
-      for (const result of results) {
-        try {
-          const response = await fetch('/api/detections', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              itemName: result.name,
-              confidence: result.confidence,
-              binType: result.binType,
-              coinsAwarded: result.coinsReward
-            })
-          });
-
-          if (!response.ok) {
-            console.error('Failed to save detection:', await response.text());
-          }
-        } catch (err) {
-          console.error('Detection save error:', err);
-        }
-      }
-
-      // Always show success animation
-      setShowConfetti(true);
-      onCoinsEarned(totalCoins);
+      // Check if this is a high-value detection that needs verification
+      const highValueThreshold = 20; // coins
+      const needsVerify = totalCoins >= highValueThreshold;
       
-      setTimeout(() => {
-        onBack();
-      }, 2000);
+      if (needsVerify) {
+        // Save detection as pending verification
+        const result = results[0]; // Take first result for simplicity
+        const response = await fetch('/api/detections', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            itemName: result.name,
+            confidence: result.confidence,
+            binType: result.binType,
+            coinsAwarded: result.coinsReward,
+            needsVerification: true
+          })
+        });
+
+        if (response.ok) {
+          const detection = await response.json();
+          setPendingDetection(detection);
+          setNeedsVerification(true);
+        }
+      } else {
+        // Process normally for low-value items
+        for (const result of results) {
+          try {
+            const response = await fetch('/api/detections', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                itemName: result.name,
+                confidence: result.confidence,
+                binType: result.binType,
+                coinsAwarded: result.coinsReward
+              })
+            });
+
+            if (!response.ok) {
+              console.error('Failed to save detection:', await response.text());
+            }
+          } catch (err) {
+            console.error('Detection save error:', err);
+          }
+        }
+
+        // Show success animation
+        setShowConfetti(true);
+        onCoinsEarned(totalCoins);
+        
+        setTimeout(() => {
+          onBack();
+        }, 2000);
+      }
     } catch (error) {
       console.error('Collection error:', error);
       // Still show success animation
@@ -82,6 +115,57 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
     } finally {
       setIsCollecting(false);
     }
+  };
+
+  const startVerification = async () => {
+    setIsVerifying(true);
+    await startCamera();
+  };
+
+  const captureVerificationPhoto = async () => {
+    const verificationImage = captureImage();
+    if (!verificationImage || !pendingDetection) return;
+
+    try {
+      const response = await fetch(`/api/detections/${pendingDetection.detection.id}/verify`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          verificationImageUrl: verificationImage
+        })
+      });
+
+      if (response.ok) {
+        // Verification successful
+        setShowConfetti(true);
+        const totalCoins = results.reduce((sum, result) => sum + result.coinsReward, 0);
+        onCoinsEarned(totalCoins);
+        
+        setTimeout(() => {
+          stopCamera();
+          onBack();
+        }, 2000);
+      } else {
+        alert('Verification failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Verification error:', error);
+      alert('Verification failed. Please try again.');
+    }
+  };
+
+  const skipVerification = () => {
+    setNeedsVerification(false);
+    setIsVerifying(false);
+    stopCamera();
+    // Award reduced coins for unverified detection
+    const reducedCoins = Math.floor(results.reduce((sum, result) => sum + result.coinsReward, 0) * 0.5);
+    onCoinsEarned(reducedCoins);
+    setTimeout(() => {
+      onBack();
+    }, 1000);
   };
 
   const openGoogleMaps = () => {
@@ -101,6 +185,113 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
           <h3 className="text-lg font-medium mb-2">Analyzing Image</h3>
           <p className="text-sm text-text-secondary">AI is detecting recyclable items...</p>
         </GlassmorphicCard>
+      </div>
+    );
+  }
+
+  // Verification Screen
+  if (needsVerification) {
+    return (
+      <div className="min-h-screen bg-dark-bg pb-24">
+        {/* Header */}
+        <div className="flex items-center p-4 glassmorphic">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setNeedsVerification(false)}
+            className="w-10 h-10 bg-dark-surface-variant rounded-full mr-4"
+          >
+            <i className="fas fa-arrow-left text-text-primary" />
+          </Button>
+          <div>
+            <h2 className="text-lg font-medium">Verify Recycling</h2>
+            <p className="text-sm text-text-secondary">Show us you actually recycled!</p>
+          </div>
+        </div>
+
+        {/* Instructions */}
+        <div className="p-4">
+          <GlassmorphicCard>
+            <CardContent className="p-4">
+              <div className="flex items-start space-x-3 mb-4">
+                <div className="w-10 h-10 bg-amber-500 rounded-xl flex items-center justify-center">
+                  <i className="fas fa-camera text-white" />
+                </div>
+                <div>
+                  <h3 className="font-medium mb-2">Anti-Fraud Verification Required</h3>
+                  <p className="text-sm text-text-secondary mb-2">
+                    High-value items need verification to prevent fraud. Please:
+                  </p>
+                  <ol className="text-sm text-text-secondary space-y-1 list-decimal list-inside">
+                    <li>Place the item in the correct recycling bin</li>
+                    <li>Take a photo showing the item going into the bin</li>
+                    <li>Submit for verification to earn full rewards</li>
+                  </ol>
+                </div>
+              </div>
+              
+              <div className="flex items-center justify-between p-3 bg-amber-500/10 rounded-xl border border-amber-500/20">
+                <div>
+                  <div className="text-amber-400 font-medium">Full Reward: +{results.reduce((sum, result) => sum + result.coinsReward, 0)} coins</div>
+                  <div className="text-xs text-text-secondary">Skip verification: +{Math.floor(results.reduce((sum, result) => sum + result.coinsReward, 0) * 0.5)} coins</div>
+                </div>
+              </div>
+            </CardContent>
+          </GlassmorphicCard>
+        </div>
+
+        {/* Camera View */}
+        {isVerifying && (
+          <div className="p-4">
+            <div className="w-full h-64 rounded-2xl border border-dark-surface-variant overflow-hidden bg-black relative">
+              <video 
+                ref={videoRef}
+                autoPlay 
+                playsInline 
+                className="w-full h-full object-cover"
+              />
+              <canvas ref={canvasRef} style={{ display: 'none' }} />
+              
+              {/* Overlay Guide */}
+              <div className="absolute inset-4 border-2 border-eco-green border-dashed rounded-xl flex items-center justify-center">
+                <div className="text-center text-white bg-black/50 p-3 rounded-xl">
+                  <i className="fas fa-recycle text-2xl mb-2 text-eco-green" />
+                  <p className="text-sm">Show item going into bin</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="p-4 space-y-3">
+          {!isVerifying ? (
+            <Button
+              onClick={startVerification}
+              className="w-full bg-eco-green text-dark-bg font-medium py-4 rounded-2xl flex items-center justify-center space-x-2"
+            >
+              <i className="fas fa-camera" />
+              <span>Start Verification</span>
+            </Button>
+          ) : (
+            <Button
+              onClick={captureVerificationPhoto}
+              disabled={!isStreaming}
+              className="w-full bg-eco-green text-dark-bg font-medium py-4 rounded-2xl flex items-center justify-center space-x-2"
+            >
+              <i className="fas fa-camera" />
+              <span>Capture Proof</span>
+            </Button>
+          )}
+          
+          <Button
+            onClick={skipVerification}
+            variant="secondary"
+            className="w-full bg-dark-surface-variant text-text-primary font-medium py-4 rounded-2xl"
+          >
+            Skip Verification (Half Rewards)
+          </Button>
+        </div>
       </div>
     );
   }

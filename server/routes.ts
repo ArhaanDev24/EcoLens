@@ -72,7 +72,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create detection record and award coins
   app.post("/api/detections", async (req, res) => {
     try {
-      const { itemName, confidence, binType, coinsAwarded } = req.body;
+      const { itemName, confidence, binType, coinsAwarded, needsVerification } = req.body;
       
       // Create detection record
       const detection = await storage.createDetection({
@@ -84,11 +84,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
           binType: binType || 'landfill',
           coinsReward: coinsAwarded || 0
         }]),
-        coinsEarned: coinsAwarded || 0
+        coinsEarned: coinsAwarded || 0,
+        isVerified: !needsVerification,
+        verificationStatus: needsVerification ? 'pending' : 'verified',
+        verificationAttempts: 0
       });
       
-      // Award coins to user
-      if (coinsAwarded > 0) {
+      // Only award coins if no verification needed
+      if (coinsAwarded > 0 && !needsVerification) {
         await storage.createTransaction({
           userId: 1,
           type: 'earn',
@@ -101,10 +104,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         await storage.updateUserCoins(1, coinsAwarded);
       }
       
-      res.json({ success: true, detection, coinsAwarded });
+      res.json({ success: true, detection, coinsAwarded: needsVerification ? 0 : coinsAwarded });
     } catch (error) {
       console.error('Create detection error:', error);
       res.status(500).json({ error: "Failed to create detection record" });
+    }
+  });
+
+  // Verify detection
+  app.post('/api/detections/:id/verify', async (req, res) => {
+    try {
+      const detectionId = parseInt(req.params.id);
+      const { verificationImageUrl } = req.body;
+      
+      // Update detection with verification
+      const detection = await storage.updateDetection(detectionId, {
+        isVerified: true,
+        verificationImageUrl,
+        verificationStatus: 'verified'
+      });
+      
+      if (detection) {
+        // Create transaction for verified coins
+        await storage.createTransaction({
+          userId: 1,
+          type: 'earn',
+          amount: detection.coinsEarned,
+          description: `Verified detection (${JSON.parse(detection.detectedObjects as string)[0].name})`,
+          detectionId: detection.id,
+        });
+        
+        // Update user's coin balance
+        await storage.updateUserCoins(1, detection.coinsEarned);
+      }
+
+      res.json({ success: true, detection });
+    } catch (error) {
+      console.error('Verify detection error:', error);
+      res.status(500).json({ error: 'Failed to verify detection' });
     }
   });
 
