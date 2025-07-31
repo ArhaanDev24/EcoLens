@@ -20,20 +20,14 @@ export default function Welcome() {
 
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
-      if (containerRef.current) {
-        const rect = containerRef.current.getBoundingClientRect();
-        setMousePosition({
-          x: (e.clientX - rect.left) / rect.width,
-          y: (e.clientY - rect.top) / rect.height,
-        });
-      }
+      setMousePosition({
+        x: e.clientX,
+        y: e.clientY,
+      });
     };
 
-    const container = containerRef.current;
-    if (container) {
-      container.addEventListener('mousemove', handleMouseMove);
-      return () => container.removeEventListener('mousemove', handleMouseMove);
-    }
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
   const features = [
@@ -71,68 +65,70 @@ export default function Welcome() {
       ref={containerRef}
       className="min-h-screen bg-gradient-to-br from-dark-bg via-dark-surface to-dark-bg overflow-hidden relative cursor-none"
       style={{ 
-        background: `radial-gradient(circle at ${mousePosition.x * 100}% ${mousePosition.y * 100}%, rgba(0,196,140,0.08) 0%, transparent 50%), linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 50%, #1A1A1A 100%)`
+        background: `radial-gradient(circle at ${(mousePosition.x / window.innerWidth) * 100}% ${(mousePosition.y / window.innerHeight) * 100}%, rgba(0,196,140,0.08) 0%, transparent 50%), linear-gradient(135deg, #1A1A1A 0%, #2D2D2D 50%, #1A1A1A 100%)`
       }}
     >
       {/* Custom Cursor */}
       <div 
-        className="fixed w-6 h-6 pointer-events-none z-50 mix-blend-difference transition-all duration-300 ease-out"
+        className="fixed w-4 h-4 pointer-events-none z-50 transition-all duration-200 ease-out"
         style={{
-          left: `${mousePosition.x * 100}%`,
-          top: `${mousePosition.y * 100}%`,
-          transform: `translate(-50%, -50%) scale(${isHovering ? 2 : 1})`,
+          left: mousePosition.x - 8,
+          top: mousePosition.y - 8,
+          transform: `scale(${isHovering ? 1.5 : 1})`,
         }}
       >
-        <div className="w-full h-full bg-eco-green rounded-full animate-pulse shadow-lg shadow-eco-green/50" />
+        <div className="w-full h-full bg-eco-green rounded-full shadow-lg shadow-eco-green/50" 
+             style={{
+               animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
+             }} />
       </div>
 
       {/* Interactive Background Elements */}
       <div className="absolute inset-0">
         {/* Primary Gradient Orbs */}
         <div 
-          className="absolute w-96 h-96 bg-gradient-to-br from-eco-green/15 to-reward-yellow/15 rounded-full blur-3xl transition-all duration-[3000ms] ease-out"
+          className="absolute w-96 h-96 bg-gradient-to-br from-eco-green/15 to-reward-yellow/15 rounded-full blur-3xl transition-all duration-1000 ease-out"
           style={{
-            top: `${-10 + mousePosition.y * 10}%`,
-            right: `${-10 + mousePosition.x * 10}%`,
-            transform: `scale(${1 + mousePosition.x * 0.2})`,
+            top: `${-10 + (mousePosition.y / window.innerHeight) * 10}%`,
+            right: `${-10 + (mousePosition.x / window.innerWidth) * 10}%`,
+            transform: `scale(${1 + (mousePosition.x / window.innerWidth) * 0.2})`,
           }}
         />
         <div 
-          className="absolute w-80 h-80 bg-gradient-to-br from-reward-yellow/15 to-eco-green/15 rounded-full blur-3xl transition-all duration-[3000ms] ease-out"
+          className="absolute w-80 h-80 bg-gradient-to-br from-reward-yellow/15 to-eco-green/15 rounded-full blur-3xl transition-all duration-1000 ease-out"
           style={{
-            bottom: `${-10 + (1 - mousePosition.y) * 10}%`,
-            left: `${-10 + (1 - mousePosition.x) * 10}%`,
-            transform: `scale(${1 + (1 - mousePosition.y) * 0.2})`,
+            bottom: `${-10 + (1 - mousePosition.y / window.innerHeight) * 10}%`,
+            left: `${-10 + (1 - mousePosition.x / window.innerWidth) * 10}%`,
+            transform: `scale(${1 + (1 - mousePosition.y / window.innerHeight) * 0.2})`,
           }}
         />
         
         {/* Dynamic Floating Particles */}
-        {[...Array(30)].map((_, i) => (
+        {[...Array(25)].map((_, i) => (
           <div
             key={i}
-            className="absolute rounded-full transition-all duration-1000 ease-out"
+            className="absolute rounded-full transition-all duration-500 ease-out"
             style={{
-              width: `${4 + (i % 3)}px`,
-              height: `${4 + (i % 3)}px`,
+              width: `${3 + (i % 2)}px`,
+              height: `${3 + (i % 2)}px`,
               left: `${10 + (i * 3) % 80}%`,
               top: `${15 + (i * 2.5) % 70}%`,
-              background: i % 2 === 0 ? 'rgba(0,196,140,0.4)' : 'rgba(255,213,0,0.4)',
-              transform: `translate(${mousePosition.x * 20 - 10}px, ${mousePosition.y * 20 - 10}px) scale(${1 + Math.sin(Date.now() * 0.001 + i) * 0.3})`,
-              animationDelay: `${i * 0.1}s`,
-              boxShadow: `0 0 ${8 + (i % 4) * 2}px currentColor`,
+              background: i % 2 === 0 ? 'rgba(0,196,140,0.3)' : 'rgba(255,213,0,0.3)',
+              transform: `translate(${(mousePosition.x / window.innerWidth) * 15 - 7.5}px, ${(mousePosition.y / window.innerHeight) * 15 - 7.5}px)`,
+              boxShadow: `0 0 ${6 + (i % 3) * 2}px currentColor`,
             }}
           />
         ))}
 
         {/* Mesh Gradient Effect */}
         <div 
-          className="absolute inset-0 opacity-30 transition-opacity duration-1000"
+          className="absolute inset-0 opacity-20 transition-opacity duration-700"
           style={{
-            background: `conic-gradient(from ${mousePosition.x * 360}deg at ${mousePosition.x * 100}% ${mousePosition.y * 100}%, 
+            background: `conic-gradient(from ${(mousePosition.x / window.innerWidth) * 180}deg at ${(mousePosition.x / window.innerWidth) * 100}% ${(mousePosition.y / window.innerHeight) * 100}%, 
               transparent 0deg, 
-              rgba(0,196,140,0.1) 90deg, 
+              rgba(0,196,140,0.08) 90deg, 
               transparent 180deg, 
-              rgba(255,213,0,0.1) 270deg, 
+              rgba(255,213,0,0.08) 270deg, 
               transparent 360deg)`
           }}
         />
@@ -145,10 +141,9 @@ export default function Welcome() {
           onMouseEnter={() => setIsHovering(true)}
           onMouseLeave={() => setIsHovering(false)}
         >
-          <div className="w-12 h-12 bg-gradient-to-br from-eco-green to-reward-yellow rounded-xl flex items-center justify-center shadow-xl transition-all duration-700 group-hover:shadow-2xl group-hover:shadow-eco-green/25 group-hover:scale-110" 
+          <div className="w-12 h-12 bg-gradient-to-br from-eco-green to-reward-yellow rounded-xl flex items-center justify-center shadow-xl transition-all duration-500 group-hover:shadow-2xl group-hover:shadow-eco-green/25 group-hover:scale-110" 
                style={{ 
-                 animation: 'spin 12s linear infinite',
-                 transform: `rotate(${mousePosition.x * 360}deg) scale(${isHovering ? 1.1 : 1})`
+                 transform: `rotate(${(mousePosition.x / window.innerWidth) * 45}deg) scale(${isHovering ? 1.1 : 1})`
                }}>
             <span className="text-2xl transition-transform duration-300 group-hover:scale-110">🌿</span>
           </div>
@@ -179,17 +174,16 @@ export default function Welcome() {
           <div className="relative group">
             {/* Main Hero Icon */}
             <div 
-              className="w-40 h-40 bg-gradient-to-br from-eco-green via-eco-green to-reward-yellow rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl transition-all duration-700 group-hover:shadow-4xl group-hover:shadow-eco-green/30 relative overflow-hidden"
+              className="w-40 h-40 bg-gradient-to-br from-eco-green via-eco-green to-reward-yellow rounded-3xl flex items-center justify-center mx-auto mb-8 shadow-2xl transition-all duration-500 group-hover:shadow-4xl group-hover:shadow-eco-green/30 relative overflow-hidden"
               style={{
-                transform: `perspective(1000px) rotateX(${mousePosition.y * 10 - 5}deg) rotateY(${mousePosition.x * 10 - 5}deg) scale(${isHovering ? 1.05 : 1})`,
+                transform: `perspective(1000px) rotateX(${(mousePosition.y / window.innerHeight) * 8 - 4}deg) rotateY(${(mousePosition.x / window.innerWidth) * 8 - 4}deg) scale(${isHovering ? 1.05 : 1})`,
               }}
               onMouseEnter={() => setIsHovering(true)}
               onMouseLeave={() => setIsHovering(false)}
             >
               <span 
-                className="text-7xl transition-all duration-500 relative z-10"
+                className="text-7xl transition-all duration-300 relative z-10"
                 style={{
-                  transform: `scale(${1 + Math.sin(Date.now() * 0.002) * 0.1})`,
                   filter: `drop-shadow(0 0 20px rgba(0,196,140,0.5))`
                 }}
               >
@@ -199,9 +193,6 @@ export default function Welcome() {
               {/* Animated Background Gradient */}
               <div 
                 className="absolute inset-0 bg-gradient-to-br from-reward-yellow/20 via-transparent to-eco-green/20 rounded-3xl opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-                style={{
-                  background: `conic-gradient(from ${Date.now() * 0.05}deg, rgba(0,196,140,0.2), rgba(255,213,0,0.2), rgba(0,196,140,0.2))`
-                }}
               />
             </div>
             
@@ -219,12 +210,11 @@ export default function Welcome() {
                   top: '50%',
                   left: '50%',
                   transformOrigin: `${100 + index * 15}px 0px`,
-                  transform: `translate(-50%, -50%) rotate(${index * 90 + mousePosition.x * 60}deg) scale(${1 + Math.sin(Date.now() * 0.001 + index) * 0.1})`,
+                  transform: `translate(-50%, -50%) rotate(${index * 90 + (mousePosition.x / window.innerWidth) * 30}deg)`,
                   background: `rgba(${item.color === 'eco-green' ? '0,196,140' : '255,213,0'}, 0.15)`,
                   borderColor: `rgba(${item.color === 'eco-green' ? '0,196,140' : '255,213,0'}, 0.3)`,
                   boxShadow: `0 0 20px rgba(${item.color === 'eco-green' ? '0,196,140' : '255,213,0'}, 0.2)`,
-                  animation: `spin ${15 + index * 3}s linear infinite reverse`,
-                  animationDelay: `${item.delay}s`
+                  animation: `spin ${15 + index * 3}s linear infinite reverse`
                 }}
                 onMouseEnter={() => setIsHovering(true)}
                 onMouseLeave={() => setIsHovering(false)}
@@ -237,14 +227,12 @@ export default function Welcome() {
             {[1, 2, 3].map((ring) => (
               <div
                 key={ring}
-                className="absolute top-1/2 left-1/2 border border-eco-green/10 rounded-full pointer-events-none"
+                className="absolute top-1/2 left-1/2 border border-eco-green/10 rounded-full pointer-events-none transition-opacity duration-300"
                 style={{
-                  width: `${200 + ring * 80}px`,
-                  height: `${200 + ring * 80}px`,
+                  width: `${200 + ring * 60}px`,
+                  height: `${200 + ring * 60}px`,
                   transform: 'translate(-50%, -50%)',
-                  animation: `pulse ${2 + ring * 0.5}s ease-in-out infinite`,
-                  animationDelay: `${ring * 0.3}s`,
-                  opacity: 0.6 - ring * 0.15
+                  opacity: (0.4 - ring * 0.1) * (1 + (mousePosition.x / window.innerWidth) * 0.3)
                 }}
               />
             ))}
@@ -349,17 +337,16 @@ export default function Welcome() {
           >
             {/* Animated Background */}
             <div 
-              className="absolute inset-0 opacity-30 transition-opacity duration-500 group-hover:opacity-50"
+              className="absolute inset-0 opacity-20 transition-opacity duration-500 group-hover:opacity-40"
               style={{
-                background: `conic-gradient(from ${currentFeature * 90}deg, rgba(0,196,140,0.1), rgba(255,213,0,0.1), rgba(0,196,140,0.1))`,
+                background: `conic-gradient(from ${currentFeature * 90}deg, rgba(0,196,140,0.05), rgba(255,213,0,0.05), rgba(0,196,140,0.05))`,
               }}
             />
             
             <div className="text-center relative z-10">
               <div 
-                className="text-6xl mb-4 transition-all duration-500"
+                className="text-6xl mb-4 transition-all duration-300"
                 style={{
-                  transform: `scale(${1 + Math.sin(Date.now() * 0.002) * 0.1})`,
                   filter: 'drop-shadow(0 0 20px rgba(0,196,140,0.3))',
                 }}
               >
@@ -460,9 +447,9 @@ export default function Welcome() {
         >
           {/* Animated Background Pattern */}
           <div 
-            className="absolute inset-0 opacity-20 transition-opacity duration-700 group-hover:opacity-40"
+            className="absolute inset-0 opacity-15 transition-opacity duration-500 group-hover:opacity-30"
             style={{
-              background: `radial-gradient(circle at ${mousePosition.x * 100}% ${mousePosition.y * 100}%, rgba(0,196,140,0.2) 0%, transparent 70%)`
+              background: `radial-gradient(circle at ${(mousePosition.x / window.innerWidth) * 100}% ${(mousePosition.y / window.innerHeight) * 100}%, rgba(0,196,140,0.15) 0%, transparent 70%)`
             }}
           />
           
