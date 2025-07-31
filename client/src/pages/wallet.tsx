@@ -4,13 +4,8 @@ import { GlassmorphicCard } from '@/components/ui/glassmorphic-card';
 import { CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { apiRequest } from '@/lib/queryClient';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { RewardFeatures } from '@/components/ui/reward-features';
-
-interface WalletPageProps {
-  greenCoins: number;
-  onCoinsSpent: (coins: number) => void;
-}
 
 interface Transaction {
   id: number;
@@ -20,15 +15,30 @@ interface Transaction {
   createdAt: string;
 }
 
-function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
+interface User {
+  id: number;
+  username: string;
+  email: string;
+  greenCoins: number;
+  totalEarned: number;
+}
+
+export default function WalletPage() {
+  const queryClient = useQueryClient();
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
+
+  const { data: user, isLoading: userLoading } = useQuery<User>({
+    queryKey: ['/api/user'],
+  });
 
   const { data: transactions = [], isLoading } = useQuery<Transaction[]>({
     queryKey: ['/api/transactions'],
   });
 
   const generateQRCode = async (rewardTier: 'small' | 'medium' | 'large') => {
+    if (!user) return;
+    
     const tiers = {
       small: { coins: 100, value: 50 },   // ₹50 for 100 coins
       medium: { coins: 250, value: 150 }, // ₹150 for 250 coins  
@@ -37,7 +47,7 @@ function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
 
     const tier = tiers[rewardTier];
     
-    if (greenCoins < tier.coins) {
+    if (user.greenCoins < tier.coins) {
       alert(`Insufficient coins! You need ${tier.coins} coins to generate a ₹${tier.value} QR code.`);
       return;
     }
@@ -52,7 +62,9 @@ function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
       
       const data = await response.json();
       setQrCode(data.qrCode);
-      onCoinsSpent(tier.coins);
+      
+      // Invalidate user query to refresh balance
+      queryClient.invalidateQueries({ queryKey: ['/api/user'] });
     } catch (error) {
       console.error('Failed to generate QR code:', error);
       alert('Failed to generate QR code. Please try again.');
@@ -65,6 +77,28 @@ function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
     setQrCode(null);
   };
 
+  if (userLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-dark-bg via-dark-surface to-dark-bg flex items-center justify-center">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-eco-green border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-text-secondary">Loading wallet...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-dark-bg via-dark-surface to-dark-bg flex items-center justify-center">
+        <div className="text-center">
+          <p className="text-text-secondary">Failed to load user data</p>
+        </div>
+      </div>
+    );
+  }
+
+  const greenCoins = user.greenCoins;
   const equivalentValue = (greenCoins * 0.5).toFixed(2); // 1 coin = ₹0.5 (increased value!)
 
   return (
@@ -73,25 +107,19 @@ function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
       <div className="relative overflow-hidden">
         {/* Background Gradient */}
         <div className="absolute inset-0 bg-gradient-to-r from-eco-green/20 via-reward-yellow/10 to-eco-green/20"></div>
-        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-dark-bg/50"></div>
         
-        {/* Header Content */}
-        <div className="relative p-6 pt-16">
-          <div className="flex items-center justify-between mb-8 slide-in-down">
-            <div className="flex items-center space-x-4">
-              <div className="w-16 h-16 bg-gradient-to-br from-eco-green to-reward-yellow rounded-2xl flex items-center justify-center shadow-xl floating-animation">
-                <span className="text-3xl">🪙</span>
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold text-text-primary">Green Wallet</h1>
-                <p className="text-sm text-text-secondary">Redeem your eco rewards</p>
-              </div>
+        {/* Floating Elements */}
+        <div className="absolute top-4 left-6 w-16 h-16 bg-eco-green/10 rounded-full animate-pulse"></div>
+        <div className="absolute top-12 right-8 w-8 h-8 bg-reward-yellow/10 rounded-full animate-pulse delay-300"></div>
+        <div className="absolute bottom-8 left-1/3 w-12 h-12 bg-eco-green/5 rounded-full animate-pulse delay-700"></div>
+        
+        <div className="relative z-10 p-6 pt-16">
+          <div className="text-center">
+            <div className="w-20 h-20 bg-gradient-to-br from-eco-green to-reward-yellow rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-2xl">
+              <span className="text-3xl">💰</span>
             </div>
-            <div className="text-right">
-              <p className="text-xs text-text-secondary uppercase tracking-wider">Balance</p>
-              <p className="text-4xl font-bold text-reward-yellow count-up">{greenCoins}</p>
-              <p className="text-sm text-eco-green font-medium">≈ ₹{(greenCoins * 0.5).toFixed(0)}</p>
-            </div>
+            <h1 className="text-3xl font-bold text-text-primary mb-2">My Wallet</h1>
+            <p className="text-text-secondary">Manage your Green Coins and rewards</p>
           </div>
         </div>
       </div>
@@ -126,7 +154,7 @@ function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
               <div>
                 <p className="text-sm text-text-secondary uppercase tracking-wider mb-2">Available Balance</p>
                 <div className="text-5xl font-bold text-reward-yellow mb-3 count-up">
-                  {greenCoins.toLocaleString()}
+                  {greenCoins?.toLocaleString() || '0'}
                 </div>
                 <p className="text-text-secondary">Green Coins</p>
               </div>
@@ -163,147 +191,153 @@ function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
                 {qrCode ? (
                   <div className="text-center space-y-4">
                     <div className="w-56 h-56 mx-auto bg-white rounded-3xl flex items-center justify-center p-6 shadow-2xl">
-                      <img src={qrCode} alt="QR Code" className="w-full h-full" />
+                      <div 
+                        className="w-full h-full" 
+                        dangerouslySetInnerHTML={{ __html: qrCode }}
+                      />
                     </div>
-                    <div className="space-y-3">
-                      <Button
-                        onClick={resetQR}
-                        variant="outline"
-                        className="border-2 border-eco-green text-eco-green hover:bg-eco-green/10 rounded-xl px-6 py-3"
-                      >
-                        Generate New QR
-                      </Button>
-                      <p className="text-sm text-text-secondary">
-                        Present this QR code at participating stores
-                      </p>
-                    </div>
+                    <p className="text-text-secondary text-sm">Show this QR code at any partner store to redeem your reward</p>
+                    <Button 
+                      onClick={resetQR}
+                      variant="outline"
+                      className="border-eco-green text-eco-green hover:bg-eco-green/10"
+                    >
+                      Generate New QR
+                    </Button>
                   </div>
                 ) : (
-                  <div className="space-y-6">
-                    <div className="space-y-4">
-                      {/* Small Reward Tier */}
-                      <Button
-                        onClick={() => generateQRCode('small')}
-                        disabled={isGeneratingQR || greenCoins < 100}
-                        className="w-full bg-gradient-to-r from-green-600 to-green-500 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
-                        {isGeneratingQR ? (
-                          <div className="flex items-center justify-center">
-                            <div className="animate-spin w-5 h-5 border-2 border-white border-t-transparent rounded-full mr-3" />
-                            Generating QR...
-                          </div>
-                        ) : (
-                          '₹50 QR Code (100 coins)'
-                        )}
-                      </Button>
-                      
-                      {/* Medium Reward Tier */}
-                      <Button
-                        onClick={() => generateQRCode('medium')}
-                        disabled={isGeneratingQR || greenCoins < 250}
-                        className="w-full bg-gradient-to-r from-blue-600 to-blue-500 text-white font-bold py-4 px-6 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
-                        ₹150 QR Code (250 coins)
-                      </Button>
-                      
-                      {/* Large Reward Tier - Best Value! */}
-                      <Button
-                        onClick={() => generateQRCode('large')}
-                        disabled={isGeneratingQR || greenCoins < 500}
-                        className="w-full bg-gradient-to-r from-purple-600 to-pink-500 text-white font-bold py-4 px-6 rounded-2xl relative shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
-                      >
-                        ₹350 QR Code (500 coins)
-                        <span className="absolute -top-3 -right-3 bg-gradient-to-r from-reward-yellow to-yellow-400 text-dark-bg text-xs px-3 py-1 rounded-full font-black shadow-lg">
-                          BEST VALUE!
-                        </span>
-                      </Button>
+                  <>
+                    <p className="text-text-secondary text-sm mb-4">Choose a reward tier to generate your QR code:</p>
+                    <div className="space-y-3">
+                      <RewardButton tier="small" coins={100} value="₹50" onClick={() => generateQRCode('small')} disabled={user.greenCoins < 100} />
+                      <RewardButton tier="medium" coins={250} value="₹150" onClick={() => generateQRCode('medium')} disabled={user.greenCoins < 250} />
+                      <RewardButton tier="large" coins={500} value="₹350" onClick={() => generateQRCode('large')} disabled={user.greenCoins < 500} />
                     </div>
-                    
-                    <div className="p-4 bg-gradient-to-r from-eco-green/10 to-reward-yellow/10 rounded-2xl border border-eco-green/20">
-                      <p className="text-sm text-text-secondary text-center">
-                        Present QR codes at participating stores, cafes, and online shops
-                      </p>
-                      {greenCoins < 100 && (
-                        <p className="text-sm text-red-400 mt-2 text-center font-medium">
-                          You need {100 - greenCoins} more coins for the smallest reward
-                        </p>
-                      )}
-                    </div>
-                  </div>
+                  </>
                 )}
               </div>
             </CardContent>
           </GlassmorphicCard>
         </TabsContent>
 
-        <TabsContent value="rewards" className="space-y-4">
-          <RewardFeatures greenCoins={greenCoins} />
+        <TabsContent value="rewards" className="space-y-6 px-2">
+          <RewardFeatures greenCoins={user.greenCoins} />
         </TabsContent>
 
-        <TabsContent value="history" className="space-y-4">
-          <h3 className="font-medium mb-4 text-text-primary">Recent Activity</h3>
-        
-        {isLoading ? (
-          <div className="space-y-3">
-            {[1, 2, 3].map((i) => (
-              <GlassmorphicCard key={i}>
-                <CardContent className="p-4">
-                  <div className="animate-pulse flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-gray-600 rounded-full" />
-                    <div className="flex-1">
-                      <div className="h-4 bg-gray-600 rounded mb-2" />
-                      <div className="h-3 bg-gray-600 rounded w-1/2" />
-                    </div>
+        <TabsContent value="history" className="space-y-6 px-2">
+          <GlassmorphicCard className="rounded-3xl border-2 border-dark-border shadow-xl">
+            <CardContent className="p-6 sm:p-8">
+              <div className="flex items-center space-x-3 mb-6">
+                <div className="w-12 h-12 bg-gradient-to-r from-eco-green to-reward-yellow rounded-xl flex items-center justify-center">
+                  <span className="text-dark-bg text-xl">📋</span>
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-text-primary">Transaction History</h3>
+                  <p className="text-sm text-text-secondary">Your recent activity</p>
+                </div>
+              </div>
+              
+              {isLoading ? (
+                <div className="text-center py-8">
+                  <div className="w-8 h-8 border-2 border-eco-green border-t-transparent rounded-full animate-spin mx-auto mb-2"></div>
+                  <p className="text-text-secondary text-sm">Loading transactions...</p>
+                </div>
+              ) : transactions.length === 0 ? (
+                <div className="text-center py-8">
+                  <div className="w-16 h-16 bg-dark-surface-variant rounded-full flex items-center justify-center mx-auto mb-4">
+                    <span className="text-2xl text-text-secondary">📝</span>
                   </div>
-                </CardContent>
-              </GlassmorphicCard>
-            ))}
-          </div>
-        ) : transactions.length === 0 ? (
-          <GlassmorphicCard>
-            <CardContent className="p-6 text-center">
-              <i className="fas fa-receipt text-4xl text-text-secondary mb-4" />
-              <h4 className="font-medium mb-2">No Transactions Yet</h4>
-              <p className="text-sm text-text-secondary">
-                Start recycling to earn your first green coins!
-              </p>
-            </CardContent>
-          </GlassmorphicCard>
-        ) : (
-          <div className="space-y-3">
-            {transactions.slice(0, 10).map((transaction) => (
-              <GlassmorphicCard key={transaction.id}>
-                <CardContent className="p-4 flex items-center justify-between">
-                  <div className="flex items-center space-x-3">
-                    <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                      transaction.type === 'earn' ? 'bg-eco-green' : 'bg-reward-yellow'
-                    }`}>
-                      <i className={`fas ${
-                        transaction.type === 'earn' ? 'fa-plus' : 'fa-minus'
-                      } text-dark-bg text-sm`} />
-                    </div>
-                    <div>
-                      <div className="font-medium">{transaction.description}</div>
-                      <div className="text-sm text-text-secondary">
-                        {new Date(transaction.createdAt).toLocaleDateString()}
+                  <p className="text-text-secondary">No transactions yet</p>
+                  <p className="text-text-secondary text-sm mt-1">Start recycling to see your activity here</p>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {transactions.map((transaction) => (
+                    <div
+                      key={transaction.id}
+                      className="flex items-center justify-between p-4 bg-dark-surface-variant/50 rounded-2xl border border-dark-border"
+                    >
+                      <div className="flex items-center space-x-3">
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
+                          transaction.type === 'earn' 
+                            ? 'bg-eco-green/20 text-eco-green' 
+                            : 'bg-reward-yellow/20 text-reward-yellow'
+                        }`}>
+                          <span className="text-sm">{transaction.type === 'earn' ? '📈' : '📱'}</span>
+                        </div>
+                        <div>
+                          <p className="font-medium text-text-primary">{transaction.description}</p>
+                          <p className="text-xs text-text-secondary">
+                            {new Date(transaction.createdAt).toLocaleDateString()}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className={`font-bold ${
+                          transaction.type === 'earn' ? 'text-eco-green' : 'text-reward-yellow'
+                        }`}>
+                          {transaction.type === 'earn' ? '+' : '-'}{transaction.amount}
+                        </p>
+                        <p className="text-xs text-text-secondary">coins</p>
                       </div>
                     </div>
-                  </div>
-                  <div className={`font-medium ${
-                    transaction.type === 'earn' ? 'text-eco-green' : 'text-reward-yellow'
-                  }`}>
-                    {transaction.type === 'earn' ? '+' : '-'}{transaction.amount} coins
-                  </div>
-                </CardContent>
-              </GlassmorphicCard>
-            ))}
-          </div>
-        )}
-          </TabsContent>
-        </Tabs>
-      </div>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </GlassmorphicCard>
+        </TabsContent>
+      </Tabs>
+    </div>
     </div>
   );
 }
 
-export default WalletPage;
+// Reward Button Component
+interface RewardButtonProps {
+  tier: string;
+  coins: number;
+  value: string;
+  onClick: () => void;
+  disabled: boolean;
+}
+
+function RewardButton({ tier, coins, value, onClick, disabled }: RewardButtonProps) {
+  const tierStyles = {
+    small: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
+    medium: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
+    large: 'from-amber-500/20 to-amber-600/20 border-amber-500/30'
+  };
+
+  const tierIcons = {
+    small: '🥉',
+    medium: '🥈', 
+    large: '🥇'
+  };
+
+  return (
+    <Button
+      onClick={onClick}
+      disabled={disabled}
+      className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
+        disabled 
+          ? 'bg-dark-surface-variant/30 border-dark-border text-text-secondary cursor-not-allowed' 
+          : `bg-gradient-to-r ${tierStyles[tier as keyof typeof tierStyles]} hover:shadow-lg`
+      }`}
+    >
+      <div className="flex items-center justify-between w-full">
+        <div className="flex items-center space-x-3">
+          <span className="text-2xl">{tierIcons[tier as keyof typeof tierIcons]}</span>
+          <div className="text-left">
+            <p className="font-bold text-text-primary capitalize">{tier} Reward</p>
+            <p className="text-sm text-text-secondary">{coins} coins → {value}</p>
+          </div>
+        </div>
+        <div className="text-right">
+          <p className="font-bold text-eco-green">{value}</p>
+          <p className="text-xs text-text-secondary">Redeem</p>
+        </div>
+      </div>
+    </Button>
+  );
+}

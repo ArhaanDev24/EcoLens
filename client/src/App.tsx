@@ -19,8 +19,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Welcome} />
       <Route path="/home" component={Home} />
-      <Route path="/camera" component={Camera} />
-      <Route path="/results" component={Results} />
+      <Route path="/camera" component={() => <Camera onCapture={() => {}} greenCoins={0} />} />
+      <Route path="/results" component={() => <Results imageData="" onBack={() => {}} onCoinsEarned={() => {}} />} />
       <Route path="/wallet" component={Wallet} />
       <Route path="/stats" component={Stats} />
       <Route path="/analytics" component={Analytics} />
