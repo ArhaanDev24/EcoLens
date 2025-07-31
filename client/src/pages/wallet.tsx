@@ -20,7 +20,7 @@ interface Transaction {
   createdAt: string;
 }
 
-export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
+function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
   const [qrCode, setQrCode] = useState<string | null>(null);
   const [isGeneratingQR, setIsGeneratingQR] = useState(false);
 
@@ -305,3 +305,5 @@ export function WalletPage({ greenCoins, onCoinsSpent }: WalletPageProps) {
     </div>
   );
 }
+
+export default WalletPage;

@@ -13,7 +13,7 @@ interface ResultsPageProps {
   onCoinsEarned: (coins: number) => void;
 }
 
-export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPageProps) {
+function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPageProps) {
   const { detect, isDetecting } = useAIDetection();
   const [results, setResults] = useState<DetectionResult[]>([]);
   const [showConfetti, setShowConfetti] = useState(false);
@@ -443,3 +443,5 @@ export function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPagePro
     </div>
   );
 }
+
+export default ResultsPage;

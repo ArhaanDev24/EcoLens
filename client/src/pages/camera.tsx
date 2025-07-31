@@ -10,7 +10,7 @@ interface CameraPageProps {
   greenCoins: number;
 }
 
-export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
+function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
   const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage, error, facingMode, switchCamera } = useCamera();
   const [isCapturing, setIsCapturing] = useState(false);
 
@@ -157,3 +157,5 @@ export function CameraPage({ onCapture, greenCoins }: CameraPageProps) {
     </div>
   );
 }
+
+export default CameraPage;

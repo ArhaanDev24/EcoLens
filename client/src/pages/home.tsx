@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { EnhancedCamera } from '@/components/ui/enhanced-camera';
 import { EnhancedResults } from '@/components/ui/enhanced-results';
-import { WalletPage } from './wallet';
+import WalletPage from './wallet';
 import EnhancedStatsPage from './enhanced-stats';
 import Profile from './profile';
 import AnalyticsPage from './analytics';
