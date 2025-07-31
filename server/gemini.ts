@@ -59,12 +59,16 @@ Only include items you can clearly identify with confidence above 70%.`;
       },
       contents: [
         {
-          inlineData: {
-            data: imageBase64,
-            mimeType: "image/jpeg"
-          }
-        },
-        prompt
+          parts: [
+            { text: prompt },
+            {
+              inlineData: {
+                data: imageBase64,
+                mimeType: "image/jpeg"
+              }
+            }
+          ]
+        }
       ]
     });
 
