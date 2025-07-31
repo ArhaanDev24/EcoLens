@@ -120,66 +120,10 @@ async function detectWithTeachableMachine(imageData: string): Promise<DetectionR
   }
 }
 
+// Clarifai detection is now handled server-side to avoid CORS issues
 async function detectWithClarifai(imageData: string): Promise<DetectionResult[]> {
-  try {
-    const apiKey = import.meta.env.VITE_CLARIFAI_API_KEY;
-    
-    if (!apiKey || apiKey === 'demo-key' || apiKey.startsWith('demo')) {
-      console.log('Clarifai API key not configured, using demo results...');
-      return getDemoResults();
-    }
-    
-    const base64Data = imageData.split(',')[1];
-    if (!base64Data) {
-      throw new Error('Invalid image data format');
-    }
-    
-    const response = await fetch('https://api.clarifai.com/v2/models/aaa03c23b3724a16a56b629203edc62c/outputs', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Key ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        inputs: [{
-          data: {
-            image: {
-              base64: base64Data
-            }
-          }
-        }]
-      })
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(`Clarifai API error: ${response.status} - ${errorData.status?.description || 'Unknown error'}`);
-    }
-
-    const data = await response.json();
-    const concepts = data.outputs?.[0]?.data?.concepts || [];
-    
-    if (concepts.length === 0) {
-      console.log('No items detected by Clarifai, using demo results...');
-      return getDemoResults();
-    }
-    
-    const results = concepts
-      .filter((concept: any) => concept.value > 0.6 && isRecyclableItem(concept.name))
-      .slice(0, 3)
-      .map((concept: any) => ({
-        name: concept.name,
-        confidence: Math.round(concept.value * 100),
-        binType: getBinType(concept.name),
-        binColor: getBinColor(concept.name),
-        coinsReward: getCoinsReward(concept.name)
-      }));
-
-    return results.length > 0 ? results : getDemoResults();
-  } catch (err) {
-    console.error('Clarifai detection failed:', err);
-    return getDemoResults();
-  }
+  console.log('Clarifai detection now handled server-side');
+  return [];
 }
 
 function isRecyclableItem(itemName: string): boolean {
