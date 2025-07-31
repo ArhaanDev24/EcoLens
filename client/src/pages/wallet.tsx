@@ -81,26 +81,26 @@ function EnhancedRewardButton({
         disabled={disabled}
         className={`w-full p-0 rounded-2xl border-2 transition-all duration-300 hover:scale-[1.02] overflow-hidden ${
           disabled 
-            ? 'bg-dark-surface-variant/30 border-dark-border cursor-not-allowed' 
+            ? 'bg-gray-800/50 border-gray-600 cursor-not-allowed' 
             : `bg-gradient-to-r border-2 hover:shadow-lg`
         } ${popular || premium ? 'mt-4' : ''}`}
         style={{
           background: disabled 
-            ? undefined 
+            ? 'rgba(55, 65, 81, 0.5)' 
             : `linear-gradient(135deg, ${
-                glowColor === 'blue' ? 'rgba(59, 130, 246, 0.1)' : 
-                glowColor === 'purple' ? 'rgba(168, 85, 247, 0.1)' : 
-                'rgba(245, 158, 11, 0.1)'
+                glowColor === 'blue' ? 'rgba(59, 130, 246, 0.2)' : 
+                glowColor === 'purple' ? 'rgba(168, 85, 247, 0.2)' : 
+                'rgba(245, 158, 11, 0.2)'
               }, ${
-                glowColor === 'blue' ? 'rgba(37, 99, 235, 0.1)' : 
-                glowColor === 'purple' ? 'rgba(147, 51, 234, 0.1)' : 
-                'rgba(217, 119, 6, 0.1)'
+                glowColor === 'blue' ? 'rgba(37, 99, 235, 0.15)' : 
+                glowColor === 'purple' ? 'rgba(147, 51, 234, 0.15)' : 
+                'rgba(217, 119, 6, 0.15)'
               })`,
           borderColor: disabled 
-            ? undefined 
-            : glowColor === 'blue' ? 'rgba(59, 130, 246, 0.3)' : 
-              glowColor === 'purple' ? 'rgba(168, 85, 247, 0.3)' : 
-              'rgba(245, 158, 11, 0.3)'
+            ? 'rgba(107, 114, 128, 0.3)' 
+            : glowColor === 'blue' ? 'rgba(59, 130, 246, 0.4)' : 
+              glowColor === 'purple' ? 'rgba(168, 85, 247, 0.4)' : 
+              'rgba(245, 158, 11, 0.4)'
         }}
       >
         <div className="w-full p-5">
@@ -108,7 +108,7 @@ function EnhancedRewardButton({
             <div className="flex items-center space-x-4">
               <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg ${
                 disabled 
-                  ? 'bg-dark-surface-variant' 
+                  ? 'bg-gray-600 text-gray-400' 
                   : `text-white`
               }`}
               style={{
@@ -123,18 +123,18 @@ function EnhancedRewardButton({
                 {icon}
               </div>
               <div className="text-left">
-                <h4 className="font-bold text-text-primary capitalize text-lg mb-1">{tier} Reward</h4>
+                <h4 className="font-bold text-white capitalize text-lg mb-1">{tier} Reward</h4>
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm text-text-secondary">{coins} coins</span>
-                  <span className="text-xs text-text-secondary">→</span>
+                  <span className="text-sm text-gray-200">{coins} coins</span>
+                  <span className="text-xs text-gray-300">→</span>
                   <span className="font-bold text-eco-green">{value}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs text-text-secondary line-through">{originalValue}</span>
+                  <span className="text-xs text-gray-300 line-through">{originalValue}</span>
                   <span className={`text-xs font-bold ${
-                    glowColor === 'blue' ? 'text-blue-400' : 
-                    glowColor === 'purple' ? 'text-purple-400' : 
-                    'text-amber-400'
+                    glowColor === 'blue' ? 'text-blue-300' : 
+                    glowColor === 'purple' ? 'text-purple-300' : 
+                    'text-amber-300'
                   }`}>{savings}</span>
                 </div>
               </div>
@@ -143,17 +143,17 @@ function EnhancedRewardButton({
             <div className="text-right">
               {!canAfford ? (
                 <div className="text-center">
-                  <p className="text-xs text-red-400 font-medium mb-1">Need {shortage} more</p>
-                  <div className="text-xs text-text-secondary">coins</div>
+                  <p className="text-xs text-red-300 font-medium mb-1">Need {shortage} more</p>
+                  <div className="text-xs text-gray-200">coins</div>
                 </div>
               ) : (
                 <div className="text-center">
                   <div className={`text-2xl font-bold ${
-                    glowColor === 'blue' ? 'text-blue-400' : 
-                    glowColor === 'purple' ? 'text-purple-400' : 
-                    'text-amber-400'
+                    glowColor === 'blue' ? 'text-blue-200' : 
+                    glowColor === 'purple' ? 'text-purple-200' : 
+                    'text-amber-200'
                   } mb-1`}>{value}</div>
-                  <div className="text-xs text-eco-green font-medium bg-eco-green/10 px-2 py-1 rounded-full">
+                  <div className="text-xs text-eco-green font-medium bg-eco-green/20 px-2 py-1 rounded-full">
                     ✨ Redeem
                   </div>
                 </div>
@@ -177,7 +177,7 @@ function EnhancedRewardButton({
                   }}
                 ></div>
               </div>
-              <p className="text-xs text-text-secondary mt-1 text-center">
+              <p className="text-xs text-gray-200 mt-1 text-center">
                 {userCoins} / {coins} coins ({Math.round((userCoins / coins) * 100)}%)
               </p>
             </div>

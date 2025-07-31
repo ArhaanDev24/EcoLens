@@ -122,6 +122,14 @@ The application uses a monorepo structure with shared TypeScript types and schem
 
 ## Recent Changes
 
+### July 31, 2025 - Enhanced QR Code Generation & Text Contrast Fix
+- **Premium QR Generation Interface**: Completely redesigned QR reward buttons with professional glassmorphic design, color-coded tiers (blue, purple, amber), and animated progress bars
+- **Enhanced Visual Design**: Added "MOST POPULAR" and "BEST VALUE" badges, bonus value highlighting, and smooth hover animations with scale effects
+- **Improved Text Contrast**: Fixed text visibility issues with bright white/gray colors against dark backgrounds for perfect readability
+- **Progress Tracking**: Visual progress bars show exact coins needed when user has insufficient funds, with percentage completion
+- **Premium Loading States**: Added smooth loading animations and better error handling for QR generation process
+- **Enhanced Reward Display**: QR codes now show with animated glowing borders and success messaging for better user experience
+
 ### July 31, 2025 - Complete App Setup & Navigation Fix
 - **Interactive Welcome Page**: Created comprehensive welcome page as landing page with eco-themed animations, floating particles, and orbital icons
 - **Complete Routing System**: Fixed all import/export issues and established proper routing for all app pages (welcome, home, camera, results, wallet, stats, analytics, database, profile)
