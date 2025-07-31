@@ -86,21 +86,21 @@ function EnhancedRewardButton({
         } ${popular || premium ? 'mt-4' : ''}`}
         style={{
           background: disabled 
-            ? 'rgba(55, 65, 81, 0.5)' 
+            ? 'rgba(75, 85, 99, 0.8)' 
             : `linear-gradient(135deg, ${
-                glowColor === 'blue' ? 'rgba(59, 130, 246, 0.2)' : 
-                glowColor === 'purple' ? 'rgba(168, 85, 247, 0.2)' : 
-                'rgba(245, 158, 11, 0.2)'
+                glowColor === 'blue' ? 'rgba(59, 130, 246, 0.3)' : 
+                glowColor === 'purple' ? 'rgba(168, 85, 247, 0.3)' : 
+                'rgba(245, 158, 11, 0.3)'
               }, ${
-                glowColor === 'blue' ? 'rgba(37, 99, 235, 0.15)' : 
-                glowColor === 'purple' ? 'rgba(147, 51, 234, 0.15)' : 
-                'rgba(217, 119, 6, 0.15)'
+                glowColor === 'blue' ? 'rgba(37, 99, 235, 0.25)' : 
+                glowColor === 'purple' ? 'rgba(147, 51, 234, 0.25)' : 
+                'rgba(217, 119, 6, 0.25)'
               })`,
           borderColor: disabled 
-            ? 'rgba(107, 114, 128, 0.3)' 
-            : glowColor === 'blue' ? 'rgba(59, 130, 246, 0.4)' : 
-              glowColor === 'purple' ? 'rgba(168, 85, 247, 0.4)' : 
-              'rgba(245, 158, 11, 0.4)'
+            ? 'rgba(156, 163, 175, 0.5)' 
+            : glowColor === 'blue' ? 'rgba(59, 130, 246, 0.6)' : 
+              glowColor === 'purple' ? 'rgba(168, 85, 247, 0.6)' : 
+              'rgba(245, 158, 11, 0.6)'
         }}
       >
         <div className="w-full p-5">
@@ -123,19 +123,19 @@ function EnhancedRewardButton({
                 {icon}
               </div>
               <div className="text-left">
-                <h4 className="font-bold text-white capitalize text-lg mb-1">{tier} Reward</h4>
+                <h4 className="font-bold text-white capitalize text-lg mb-1" style={{ color: '#ffffff' }}>{tier} Reward</h4>
                 <div className="flex items-center space-x-2 mb-1">
-                  <span className="text-sm text-gray-200">{coins} coins</span>
-                  <span className="text-xs text-gray-300">→</span>
-                  <span className="font-bold text-eco-green">{value}</span>
+                  <span className="text-sm font-medium" style={{ color: '#e5e7eb' }}>{coins} coins</span>
+                  <span className="text-xs" style={{ color: '#d1d5db' }}>→</span>
+                  <span className="font-bold" style={{ color: '#10b981' }}>{value}</span>
                 </div>
                 <div className="flex items-center space-x-2">
-                  <span className="text-xs text-gray-300 line-through">{originalValue}</span>
-                  <span className={`text-xs font-bold ${
-                    glowColor === 'blue' ? 'text-blue-300' : 
-                    glowColor === 'purple' ? 'text-purple-300' : 
-                    'text-amber-300'
-                  }`}>{savings}</span>
+                  <span className="text-xs line-through" style={{ color: '#d1d5db' }}>{originalValue}</span>
+                  <span className={`text-xs font-bold`} style={{ 
+                    color: glowColor === 'blue' ? '#93c5fd' : 
+                           glowColor === 'purple' ? '#c4b5fd' : 
+                           '#fde68a'
+                  }}>{savings}</span>
                 </div>
               </div>
             </div>
@@ -143,17 +143,20 @@ function EnhancedRewardButton({
             <div className="text-right">
               {!canAfford ? (
                 <div className="text-center">
-                  <p className="text-xs text-red-300 font-medium mb-1">Need {shortage} more</p>
-                  <div className="text-xs text-gray-200">coins</div>
+                  <p className="text-xs font-medium mb-1" style={{ color: '#fca5a5' }}>Need {shortage} more</p>
+                  <div className="text-xs" style={{ color: '#e5e7eb' }}>coins</div>
                 </div>
               ) : (
                 <div className="text-center">
-                  <div className={`text-2xl font-bold ${
-                    glowColor === 'blue' ? 'text-blue-200' : 
-                    glowColor === 'purple' ? 'text-purple-200' : 
-                    'text-amber-200'
-                  } mb-1`}>{value}</div>
-                  <div className="text-xs text-eco-green font-medium bg-eco-green/20 px-2 py-1 rounded-full">
+                  <div className={`text-2xl font-bold mb-1`} style={{ 
+                    color: glowColor === 'blue' ? '#dbeafe' : 
+                           glowColor === 'purple' ? '#ede9fe' : 
+                           '#fef3c7'
+                  }}>{value}</div>
+                  <div className="text-xs font-medium px-2 py-1 rounded-full" style={{ 
+                    color: '#10b981',
+                    backgroundColor: 'rgba(16, 185, 129, 0.2)'
+                  }}>
                     ✨ Redeem
                   </div>
                 </div>
@@ -177,7 +180,7 @@ function EnhancedRewardButton({
                   }}
                 ></div>
               </div>
-              <p className="text-xs text-gray-200 mt-1 text-center">
+              <p className="text-xs mt-1 text-center font-medium" style={{ color: '#e5e7eb' }}>
                 {userCoins} / {coins} coins ({Math.round((userCoins / coins) * 100)}%)
               </p>
             </div>
