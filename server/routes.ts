@@ -174,7 +174,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           confidence: item.confidence,
           binType: item.binType,
           binColor: getBinColor(item.binType),
-          coinsReward: getCoinsReward(item.material, item.name)
+          coinsReward: getServerCoinsReward(item.name)
         }));
         res.json(results);
       } else {
