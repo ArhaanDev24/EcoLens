@@ -23,6 +23,171 @@ interface User {
   totalEarned: number;
 }
 
+// Enhanced Reward Button Component
+interface EnhancedRewardButtonProps {
+  tier: string;
+  coins: number;
+  value: string;
+  originalValue: string;
+  savings: string;
+  icon: string;
+  gradient: string;
+  glowColor: string;
+  onClick: () => void;
+  disabled: boolean;
+  userCoins: number;
+  popular?: boolean;
+  premium?: boolean;
+}
+
+function EnhancedRewardButton({ 
+  tier, 
+  coins, 
+  value, 
+  originalValue, 
+  savings, 
+  icon, 
+  gradient, 
+  glowColor, 
+  onClick, 
+  disabled, 
+  userCoins,
+  popular,
+  premium 
+}: EnhancedRewardButtonProps) {
+  const canAfford = userCoins >= coins;
+  const shortage = coins - userCoins;
+
+  return (
+    <div className="relative">
+      {/* Popular/Premium Badge */}
+      {popular && (
+        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+            🔥 MOST POPULAR
+          </div>
+        </div>
+      )}
+      {premium && (
+        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 z-10">
+          <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
+            ⭐ BEST VALUE
+          </div>
+        </div>
+      )}
+
+      <Button
+        onClick={onClick}
+        disabled={disabled}
+        className={`w-full p-0 rounded-2xl border-2 transition-all duration-300 hover:scale-[1.02] overflow-hidden ${
+          disabled 
+            ? 'bg-dark-surface-variant/30 border-dark-border cursor-not-allowed' 
+            : `bg-gradient-to-r border-2 hover:shadow-lg`
+        } ${popular || premium ? 'mt-4' : ''}`}
+        style={{
+          background: disabled 
+            ? undefined 
+            : `linear-gradient(135deg, ${
+                glowColor === 'blue' ? 'rgba(59, 130, 246, 0.1)' : 
+                glowColor === 'purple' ? 'rgba(168, 85, 247, 0.1)' : 
+                'rgba(245, 158, 11, 0.1)'
+              }, ${
+                glowColor === 'blue' ? 'rgba(37, 99, 235, 0.1)' : 
+                glowColor === 'purple' ? 'rgba(147, 51, 234, 0.1)' : 
+                'rgba(217, 119, 6, 0.1)'
+              })`,
+          borderColor: disabled 
+            ? undefined 
+            : glowColor === 'blue' ? 'rgba(59, 130, 246, 0.3)' : 
+              glowColor === 'purple' ? 'rgba(168, 85, 247, 0.3)' : 
+              'rgba(245, 158, 11, 0.3)'
+        }}
+      >
+        <div className="w-full p-5">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-4">
+              <div className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl shadow-lg ${
+                disabled 
+                  ? 'bg-dark-surface-variant' 
+                  : `text-white`
+              }`}
+              style={{
+                background: disabled 
+                  ? undefined 
+                  : `linear-gradient(135deg, ${
+                      glowColor === 'blue' ? '#3B82F6, #2563EB' : 
+                      glowColor === 'purple' ? '#A855F7, #9333EA' : 
+                      '#F59E0B, #D97706'
+                    })`
+              }}>
+                {icon}
+              </div>
+              <div className="text-left">
+                <h4 className="font-bold text-text-primary capitalize text-lg mb-1">{tier} Reward</h4>
+                <div className="flex items-center space-x-2 mb-1">
+                  <span className="text-sm text-text-secondary">{coins} coins</span>
+                  <span className="text-xs text-text-secondary">→</span>
+                  <span className="font-bold text-eco-green">{value}</span>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-xs text-text-secondary line-through">{originalValue}</span>
+                  <span className={`text-xs font-bold ${
+                    glowColor === 'blue' ? 'text-blue-400' : 
+                    glowColor === 'purple' ? 'text-purple-400' : 
+                    'text-amber-400'
+                  }`}>{savings}</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="text-right">
+              {!canAfford ? (
+                <div className="text-center">
+                  <p className="text-xs text-red-400 font-medium mb-1">Need {shortage} more</p>
+                  <div className="text-xs text-text-secondary">coins</div>
+                </div>
+              ) : (
+                <div className="text-center">
+                  <div className={`text-2xl font-bold ${
+                    glowColor === 'blue' ? 'text-blue-400' : 
+                    glowColor === 'purple' ? 'text-purple-400' : 
+                    'text-amber-400'
+                  } mb-1`}>{value}</div>
+                  <div className="text-xs text-eco-green font-medium bg-eco-green/10 px-2 py-1 rounded-full">
+                    ✨ Redeem
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Progress bar for coins needed */}
+          {!canAfford && (
+            <div className="mt-4">
+              <div className="w-full bg-dark-surface-variant rounded-full h-2">
+                <div 
+                  className="h-2 rounded-full"
+                  style={{ 
+                    width: `${Math.min((userCoins / coins) * 100, 100)}%`,
+                    background: `linear-gradient(90deg, ${
+                      glowColor === 'blue' ? '#3B82F6, #2563EB' : 
+                      glowColor === 'purple' ? '#A855F7, #9333EA' : 
+                      '#F59E0B, #D97706'
+                    })`
+                  }}
+                ></div>
+              </div>
+              <p className="text-xs text-text-secondary mt-1 text-center">
+                {userCoins} / {coins} coins ({Math.round((userCoins / coins) * 100)}%)
+              </p>
+            </div>
+          )}
+        </div>
+      </Button>
+    </div>
+  );
+}
+
 export default function WalletPage() {
   const queryClient = useQueryClient();
   const [qrCode, setQrCode] = useState<string | null>(null);
@@ -175,44 +340,104 @@ export default function WalletPage() {
           </GlassmorphicCard>
           
           {/* Enhanced QR Code Generation */}
-          <GlassmorphicCard className="rounded-3xl border-2 border-dark-border shadow-xl">
+          <GlassmorphicCard className="rounded-3xl border-2 border-eco-green/20 shadow-2xl bg-gradient-to-br from-eco-green/5 via-transparent to-reward-yellow/5">
             <CardContent className="p-6 sm:p-8">
-              <div className="flex items-center space-x-3 mb-6">
-                <div className="w-12 h-12 bg-gradient-to-r from-eco-green to-reward-yellow rounded-xl flex items-center justify-center">
-                  <span className="text-dark-bg text-xl">📱</span>
+              <div className="flex items-center space-x-4 mb-8">
+                <div className="w-16 h-16 bg-gradient-to-br from-eco-green via-eco-green to-reward-yellow rounded-2xl flex items-center justify-center shadow-lg">
+                  <span className="text-white text-2xl">🎁</span>
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-text-primary">Generate QR Reward</h3>
-                  <p className="text-sm text-text-secondary">Redeem your coins at stores</p>
+                  <h3 className="text-2xl font-bold text-text-primary mb-1">Generate QR Reward</h3>
+                  <p className="text-text-secondary">Redeem your coins at partner stores</p>
                 </div>
               </div>
               
-              <div className="space-y-4">
+              <div className="space-y-6">
                 {qrCode ? (
-                  <div className="text-center space-y-4">
-                    <div className="w-56 h-56 mx-auto bg-white rounded-3xl flex items-center justify-center p-6 shadow-2xl">
-                      <div 
-                        className="w-full h-full" 
-                        dangerouslySetInnerHTML={{ __html: qrCode }}
-                      />
+                  <div className="text-center space-y-6">
+                    <div className="relative">
+                      <div className="w-64 h-64 mx-auto bg-white rounded-3xl flex items-center justify-center p-8 shadow-2xl border-4 border-eco-green/20">
+                        <div 
+                          className="w-full h-full" 
+                          dangerouslySetInnerHTML={{ __html: qrCode }}
+                        />
+                      </div>
+                      {/* Animated border glow */}
+                      <div className="absolute inset-0 w-64 h-64 mx-auto rounded-3xl border-2 border-eco-green animate-pulse"></div>
                     </div>
-                    <p className="text-text-secondary text-sm">Show this QR code at any partner store to redeem your reward</p>
-                    <Button 
-                      onClick={resetQR}
-                      variant="outline"
-                      className="border-eco-green text-eco-green hover:bg-eco-green/10"
-                    >
-                      Generate New QR
-                    </Button>
+                    
+                    <div className="bg-gradient-to-r from-eco-green/10 to-reward-yellow/10 p-4 rounded-2xl border border-eco-green/20">
+                      <p className="text-text-primary font-medium mb-1">✨ Ready to Redeem!</p>
+                      <p className="text-text-secondary text-sm">Show this QR code at any partner store to claim your reward</p>
+                    </div>
+                    
+                    <div className="flex gap-3 justify-center">
+                      <Button 
+                        onClick={resetQR}
+                        variant="outline"
+                        className="border-2 border-eco-green text-eco-green hover:bg-eco-green/10 hover:scale-105 transition-all duration-300 px-6 py-2 rounded-xl font-medium"
+                      >
+                        🔄 Generate New QR
+                      </Button>
+                    </div>
                   </div>
                 ) : (
                   <>
-                    <p className="text-text-secondary text-sm mb-4">Choose a reward tier to generate your QR code:</p>
-                    <div className="space-y-3">
-                      <RewardButton tier="small" coins={100} value="₹50" onClick={() => generateQRCode('small')} disabled={user.greenCoins < 100} />
-                      <RewardButton tier="medium" coins={250} value="₹150" onClick={() => generateQRCode('medium')} disabled={user.greenCoins < 250} />
-                      <RewardButton tier="large" coins={500} value="₹350" onClick={() => generateQRCode('large')} disabled={user.greenCoins < 500} />
+                    <div className="text-center mb-6">
+                      <h4 className="text-lg font-semibold text-text-primary mb-2">Choose Your Reward Tier</h4>
+                      <p className="text-text-secondary text-sm">Select the reward value you want to redeem</p>
                     </div>
+                    
+                    <div className="space-y-4">
+                      <EnhancedRewardButton 
+                        tier="small" 
+                        coins={100} 
+                        value="₹50" 
+                        originalValue="₹40"
+                        savings="₹10 bonus!"
+                        icon="🥉"
+                        gradient="from-blue-500 to-blue-600"
+                        glowColor="blue"
+                        onClick={() => generateQRCode('small')} 
+                        disabled={user.greenCoins < 100}
+                        userCoins={user.greenCoins}
+                      />
+                      <EnhancedRewardButton 
+                        tier="medium" 
+                        coins={250} 
+                        value="₹150" 
+                        originalValue="₹125"
+                        savings="₹25 bonus!"
+                        icon="🥈"
+                        gradient="from-purple-500 to-purple-600"
+                        glowColor="purple"
+                        onClick={() => generateQRCode('medium')} 
+                        disabled={user.greenCoins < 250}
+                        userCoins={user.greenCoins}
+                        popular={true}
+                      />
+                      <EnhancedRewardButton 
+                        tier="large" 
+                        coins={500} 
+                        value="₹350" 
+                        originalValue="₹250"
+                        savings="₹100 bonus!"
+                        icon="🥇"
+                        gradient="from-amber-500 to-amber-600"
+                        glowColor="amber"
+                        onClick={() => generateQRCode('large')} 
+                        disabled={user.greenCoins < 500}
+                        userCoins={user.greenCoins}
+                        premium={true}
+                      />
+                    </div>
+                    
+                    {isGeneratingQR && (
+                      <div className="text-center py-6">
+                        <div className="w-12 h-12 border-4 border-eco-green border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+                        <p className="text-text-secondary">Generating your QR reward...</p>
+                      </div>
+                    )}
                   </>
                 )}
               </div>
@@ -290,54 +515,5 @@ export default function WalletPage() {
       </Tabs>
     </div>
     </div>
-  );
-}
-
-// Reward Button Component
-interface RewardButtonProps {
-  tier: string;
-  coins: number;
-  value: string;
-  onClick: () => void;
-  disabled: boolean;
-}
-
-function RewardButton({ tier, coins, value, onClick, disabled }: RewardButtonProps) {
-  const tierStyles = {
-    small: 'from-blue-500/20 to-blue-600/20 border-blue-500/30',
-    medium: 'from-purple-500/20 to-purple-600/20 border-purple-500/30',
-    large: 'from-amber-500/20 to-amber-600/20 border-amber-500/30'
-  };
-
-  const tierIcons = {
-    small: '🥉',
-    medium: '🥈', 
-    large: '🥇'
-  };
-
-  return (
-    <Button
-      onClick={onClick}
-      disabled={disabled}
-      className={`w-full p-4 rounded-2xl border-2 transition-all duration-300 hover:scale-105 ${
-        disabled 
-          ? 'bg-dark-surface-variant/30 border-dark-border text-text-secondary cursor-not-allowed' 
-          : `bg-gradient-to-r ${tierStyles[tier as keyof typeof tierStyles]} hover:shadow-lg`
-      }`}
-    >
-      <div className="flex items-center justify-between w-full">
-        <div className="flex items-center space-x-3">
-          <span className="text-2xl">{tierIcons[tier as keyof typeof tierIcons]}</span>
-          <div className="text-left">
-            <p className="font-bold text-text-primary capitalize">{tier} Reward</p>
-            <p className="text-sm text-text-secondary">{coins} coins → {value}</p>
-          </div>
-        </div>
-        <div className="text-right">
-          <p className="font-bold text-eco-green">{value}</p>
-          <p className="text-xs text-text-secondary">Redeem</p>
-        </div>
-      </div>
-    </Button>
   );
 }
