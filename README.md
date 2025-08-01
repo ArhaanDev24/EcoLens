@@ -4,41 +4,79 @@ A React-based web application that uses AI to detect recyclable items through ca
 
 ## Features
 
-- 📱 **Mobile-First Design**: Optimized for mobile devices with responsive glassmorphic UI
-- 🤖 **AI Detection**: Uses Teachable Machine and Clarifai for smart waste recognition
-- 💰 **Reward System**: Earn green coins for identifying recyclable items
-- 🎯 **Smart Bin Recommendations**: Color-coded guidance for proper recycling
-- 📱 **QR Code Generation**: Redeem coins for real-world rewards
-- 🗺️ **Map Integration**: Find nearby recycling centers
-- ✨ **Smooth Animations**: Confetti effects and micro-interactions
+- 📱 **Mobile-First Design**: Optimized for mobile devices with a responsive glassmorphic UI  
+- 🤖 **AI Detection**: Utilizes Teachable Machine and Clarifai for smart waste recognition  
+- 💰 **Reward System**: Earn green coins for identifying recyclable items  
+- 🎯 **Smart Bin Recommendations**: Color-coded guidance for proper recycling  
+- 📱 **QR Code Generation**: Redeem coins for real-world rewards  
+- 🗺️ **Map Integration**: Find nearby recycling centers  
+- ✨ **Smooth Animations**: Confetti effects and micro-interactions for feedback
 
 ## Tech Stack
 
-- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite
-- **Backend**: Express.js, Node.js
-- **AI**: Teachable Machine, Clarifai API
-- **Database**: Firebase (optional), In-memory storage
-- **Hosting**: Replit Deployments or Firebase Hosting
+- **Frontend**: React 18, TypeScript, Tailwind CSS, Vite  
+- **Backend**: Express.js, Node.js  
+- **AI**: Teachable Machine, Clarifai API  
+- **Database**: Firebase (optional) or In-memory storage  
+- **Hosting**: Localhost / Firebase Hosting
 
 ## Deployment Options
 
-### 1. Replit Deployments (Recommended)
-- Simple one-click deployment from your Replit
-- Automatic SSL and domain management
-- No additional setup required
+### 🔧 Local Deployment (Recommended for Development)
 
-### 2. Firebase Hosting (Optional)
-If you want to use Firebase Hosting:
+1. **Clone the repository**  
+   ```bash
+   git clone https://github.com/your-username/ecolens.git
+   cd ecolens
+   ```
 
-1. Install Firebase CLI: `npm install -g firebase-tools`
-2. Login to Firebase: `firebase login`
+2. **Install frontend dependencies**  
+   ```bash
+   npm install
+   ```
+
+3. **Start the frontend server**  
+   ```bash
+   npm run dev
+   ```
+
+4. **Install and start the backend server**  
+   ```bash
+   cd server
+   npm install
+   npm run dev
+   ```
+
+5. **Visit the app**  
+   Open [http://localhost:5173](http://localhost:5173) in your browser. Make sure to allow camera access.
+
+### ☁️ Firebase Hosting (Optional)
+
+1. Install Firebase CLI  
+   ```bash
+   npm install -g firebase-tools
+   ```
+
+2. Login to Firebase  
+   ```bash
+   firebase login
+   ```
+
 3. Update `.firebaserc` with your project ID
-4. Build the project: `npm run build`
-5. Deploy: `firebase deploy`
+
+4. Build the project  
+   ```bash
+   npm run build
+   ```
+
+5. Deploy  
+   ```bash
+   firebase deploy
+   ```
 
 ## Environment Variables
 
-Create a `.env` file (if using Firebase):
+Create a `.env` file in the root directory:
 
 ```
 VITE_FIREBASE_API_KEY=your_firebase_api_key
@@ -48,20 +86,26 @@ VITE_TEACHABLE_MACHINE_MODEL_URL=your_model_url
 VITE_CLARIFAI_API_KEY=your_clarifai_key
 ```
 
-## Getting Started
+## Getting Started (Quick Commands)
 
-1. Clone the repository
-2. Install dependencies: `npm install`
-3. Start development server: `npm run dev`
-4. Open in browser and allow camera permissions
+```bash
+# Frontend
+npm install
+npm run dev
+
+# Backend
+cd server
+npm install
+npm run dev
+```
 
 ## Contributing
 
-1. Fork the repository
-2. Create a feature branch
-3. Make your changes
+1. Fork the repository  
+2. Create a new feature branch  
+3. Commit and push your changes  
 4. Submit a pull request
 
 ## License
 
-MIT License - feel free to use this project for your own recycling initiatives!
+MIT License — feel free to use this project for your own recycling initiatives!
