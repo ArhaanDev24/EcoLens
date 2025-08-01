@@ -411,11 +411,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         qrCode: redemptionCode
       });
 
-      res.json({
-        qrCode: qrCodeImage,
-        redemptionCode,
-        transaction
-      });
+      res.send(`
+        <html>
+          <body style="text-align:center;font-family:sans-serif">
+            <h2>Redeem Your Reward</h2>
+            <p>Scan the QR code below to redeem your reward of ₹${value}</p>
+            <img src="${qrCodeImage}" alt="QR Code" style="width:200px;height:200px;margin-top:20px" />
+            <p>Redemption Code: <strong>${redemptionCode}</strong></p>
+          </body>
+        </html>
+      `);
     } catch (error) {
       console.error('Generate QR error:', error);
       res.status(400).json({ error: error instanceof Error ? error.message : "Failed to generate QR code" });
