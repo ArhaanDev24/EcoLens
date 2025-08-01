@@ -26,7 +26,7 @@ A React-based web application that uses AI to detect recyclable items through ca
 
 1. **Clone the repository**  
    ```bash
-   git clone https://github.com/your-username/ecolens.git
+   git clone https://github.com/ArhaanDev24/ecolens.git
    cd ecolens
    ```
 
