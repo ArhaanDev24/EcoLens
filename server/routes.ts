@@ -410,7 +410,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         description: `QR code redeemed for ₹${value}`,
         qrCode: redemptionCode
       });
-
+      
       res.send(`
         <html>
           <body style="text-align:center;font-family:sans-serif">
