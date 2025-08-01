@@ -1,5 +1,9 @@
 # EcoLens - AI-Powered Recycling App
 
+![MIT License](https://img.shields.io/badge/license-MIT-blue.svg)
+![Made with React](https://img.shields.io/badge/built%20with-React-61DAFB?logo=react&logoColor=white)
+![Status](https://img.shields.io/badge/status-in%20development-yellow)
+
 A React-based web application that uses AI to detect recyclable items through camera input and rewards users with green coins for proper recycling.
 
 ## Features
@@ -130,4 +134,7 @@ npm run dev
 
 ## License
 
-MIT License — feel free to use this project for your own recycling initiatives!
+This project is licensed under the MIT License.  
+You're free to use, modify, and distribute this project as long as you include the original license.
+
+[![MIT License](https://img.shields.io/badge/License-MIT-blue.svg)](https://choosealicense.com/licenses/mit/)
