@@ -18,7 +18,7 @@ A React-based web application that uses AI to detect recyclable items through ca
 - **Backend**: Express.js, Node.js  
 - **AI**: Teachable Machine, Clarifai API  
 - **Database**: Firebase (optional) or In-memory storage  
-- **Hosting**: Localhost / Firebase Hosting
+- **Hosting**: Localhost / Firebase Hosting / Ngrok
 
 ## Deployment Options
 
@@ -26,7 +26,7 @@ A React-based web application that uses AI to detect recyclable items through ca
 
 1. **Clone the repository**  
    ```bash
-   git clone https://github.com/ArhaanDev24/ecolens.git
+   git clone https://github.com/your-username/ecolens.git
    cd ecolens
    ```
 
@@ -48,7 +48,29 @@ A React-based web application that uses AI to detect recyclable items through ca
    ```
 
 5. **Visit the app**  
-   Open [http://localhost:5173](http://localhost:5173) in your browser. Make sure to allow camera access.
+   Open [http://localhost:5173](http://localhost:5173) in your browser and allow camera access.
+
+### 🌐 Using Ngrok for Public Access
+
+Ngrok allows you to share your local development server over the internet — useful for mobile device testing with camera input.
+
+1. [Download Ngrok](https://ngrok.com/download) and install it  
+2. Authenticate (only once):  
+   ```bash
+   ngrok config add-authtoken <your_token>
+   ```
+
+3. Start tunneling your Vite dev server (default: port 5173):  
+   ```bash
+   ngrok http 5173
+   ```
+
+4. Ngrok will generate a public URL like `https://abcd1234.ngrok.io`.  
+   Open that link on your phone or share it for external testing.
+
+> ⚠️ Make sure your device allows camera access over Ngrok HTTPS links.
+
+---
 
 ### ☁️ Firebase Hosting (Optional)
 
