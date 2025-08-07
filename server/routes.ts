@@ -396,8 +396,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         generated: new Date().toISOString()
       };
 
-      // Use a free static QR code image with actual redemption data
-      const qrCodeImage = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(JSON.stringify(qrData))}`;
+      // Generate QR code image as Data URL using QRCode library
+      const qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrData));
 
       // Deduct coins from user
       await storage.updateUserCoins(1, -amount);
