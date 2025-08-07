@@ -375,6 +375,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Generate QR code for reward redemption
   app.post("/api/transactions/qr", async (req, res) => {
+    // Guard clause to ensure valid inputs
+    if (!req.body.amount || !req.body.value) {
+      return res.status(400).json({ error: "Amount and value are required." });
+    }
     try {
       const { amount, value } = z.object({
         amount: z.number(),
@@ -395,6 +399,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         currency: "INR",
         generated: new Date().toISOString()
       };
+
+      // Add QR data log
+      console.log("QR data:", qrData);
 
       // Generate QR code image as Data URL using QRCode library
       const qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrData));
