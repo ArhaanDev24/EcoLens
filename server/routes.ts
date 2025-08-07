@@ -403,8 +403,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Add QR data log
       console.log("QR data:", qrData);
 
-      // Generate QR code image as Data URL using QRCode library
-      const qrCodeImage = await QRCode.toDataURL(JSON.stringify(qrData));
+      // Generate QR code image using the dynamic redemption code
+      const qrCodeImage = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(redemptionCode)}`;
 
       // Deduct coins from user
       await storage.updateUserCoins(1, -amount);
