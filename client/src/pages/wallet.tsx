@@ -229,7 +229,7 @@ export default function WalletPage() {
       });
       
       const data = await response.json();
-      setQrCode(data.qrCode);
+      setQrCode(data.qrCodeImage);
       
       // Invalidate user query to refresh balance
       queryClient.invalidateQueries({ queryKey: ['/api/user'] });
@@ -360,9 +360,10 @@ export default function WalletPage() {
                   <div className="text-center space-y-6">
                     <div className="relative">
                       <div className="w-64 h-64 mx-auto bg-white rounded-3xl flex items-center justify-center p-8 shadow-2xl border-4 border-eco-green/20">
-                        <div 
-                          className="w-full h-full" 
-                          dangerouslySetInnerHTML={{ __html: qrCode }}
+                        <img 
+                          src={qrCode} 
+                          alt="QR Code" 
+                          className="w-full h-full object-contain" 
                         />
                       </div>
                       {/* Animated border glow */}

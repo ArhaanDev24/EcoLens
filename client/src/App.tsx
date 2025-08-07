@@ -8,7 +8,6 @@ import Home from "./pages/home";
 import Camera from "./pages/camera";
 import Results from "./pages/results";
 import Wallet from "./pages/wallet";
-import QRCodePage from "./pages/qrcode";
 import Stats from "./pages/stats";
 import Analytics from "./pages/analytics";
 import Database from "./pages/database";
@@ -27,7 +26,6 @@ function Router() {
       <Route path="/analytics" component={Analytics} />
       <Route path="/database" component={Database} />
       <Route path="/profile" component={Profile} />
-      <Route path="/qr" component={QRCodePage} />
       <Route component={NotFound} />
     </Switch>
   );
