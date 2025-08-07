@@ -430,9 +430,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
       `);
     } catch (error) {
       console.error('Generate QR error:', error);
+      if (error instanceof Error) {
+        console.error('Stack trace:', error.stack);
+      }
       res.status(400).json({ error: error instanceof Error ? error.message : "Failed to generate QR code" });
     }
   });
+
+  app.get("/qr-test", async (req, res) => {
+  try {
+    const sample = { test: "EcoLens", time: new Date().toISOString() };
+    const qr = await QRCode.toDataURL(JSON.stringify(sample));
+    res.send(`
+      <html>
+        <body style="text-align:center;font-family:sans-serif">
+          <h2>QR Code Test</h2>
+          <img src="${qr}" style="width:200px;height:200px;margin-top:20px;" />
+        </body>
+      </html>
+    `);
+  } catch (err) {
+    console.error("QR test failed:", err);
+    res.status(500).send("QR test failed");
+  }
+});
 
   // Personal Goals API
   app.get("/api/user/:userId/goals", async (req, res) => {
