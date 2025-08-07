@@ -10,7 +10,7 @@ import {
   insertHabitAnalyticsSchema
 } from "@shared/schema";
 import { z } from "zod";
-import QRCode from 'qrcode';
+import * as QRCode from 'qrcode';
 import { detectRecyclableItems } from './gemini';
 
 // Clarifai detection function
