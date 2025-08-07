@@ -29,6 +29,8 @@ interface Achievement {
 export default function StatsPage() {
   const { data: stats, isLoading: statsLoading } = useQuery<Stats>({
     queryKey: ['/api/stats'],
+    refetchOnWindowFocus: true,
+    refetchInterval: 3000,
   });
 
   const { data: achievements, isLoading: achievementsLoading } = useQuery<Achievement[]>({

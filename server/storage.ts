@@ -267,6 +267,9 @@ export class MemStorage implements IStorage {
 
 // Database Storage Implementation
 export class DatabaseStorage implements IStorage {
+  incrementUserStats(arg0: number, arg1: { [x: string]: any; totalDetections: number; totalCoinsEarned: any; }) {
+    throw new Error("Method not implemented.");
+  }
   async getUserById(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
