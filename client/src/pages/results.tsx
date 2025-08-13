@@ -73,7 +73,7 @@ function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPageProps) {
       const imageHash = await generateImageHash(imageData);
       
       // Check if this is a high-value detection that needs disposal verification  
-      const highValueThreshold = 25; // coins (increased due to higher rewards)
+      const highValueThreshold = 10; // coins (lowered for super anti-cheating)
       const needsVerify = totalCoins >= highValueThreshold;
       
       if (needsVerify) {
@@ -135,7 +135,15 @@ function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPageProps) {
               } else if (errorData.dailyLimitExceeded) {
                 alertMessage += "\n\nTip: Come back tomorrow to continue earning coins through recycling.";
               } else if (errorData.rapidScanningDetected) {
-                alertMessage += "\n\nTip: Take time between scans to properly dispose of each item.";
+                alertMessage += "\n\nTip: Take at least 5 minutes between scans to properly dispose of each item.";
+              } else if (errorData.unusualTimePattern) {
+                alertMessage += "\n\nTip: Regular recycling patterns during normal hours show authentic behavior.";
+              } else if (errorData.lowConfidenceHighValue) {
+                alertMessage += "\n\nTip: Take clearer photos with better lighting for high-value items.";
+              } else if (errorData.suspiciousConsistency) {
+                alertMessage += "\n\nTip: Real-world recycling shows natural variation in detection confidence.";
+              } else if (errorData.deviceOveruse) {
+                alertMessage += "\n\nTip: Share recycling activities with family/friends for more authentic usage.";
               }
               
               alert(alertMessage);

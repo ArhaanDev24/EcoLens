@@ -39,10 +39,10 @@ function getVerificationReason(fraudScore: number, coinsAwarded: number): string
   if (fraudScore >= 40) {
     return "Suspicious activity detected - verification required to ensure proper disposal";
   }
-  if (coinsAwarded >= 20) {
-    return "High-value item detected - please verify proper disposal";
+  if (coinsAwarded >= 10) {
+    return "High-value item detected - please verify proper disposal to prevent fraud";
   }
-  return "Verification required for quality assurance";
+  return "Verification required for quality assurance and fraud prevention";
 }
 
 function getBehaviorWarnings(recentCount: number, rapidCount: number, locationCount: number): string[] {
@@ -347,13 +347,61 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check for rapid scanning patterns (potential item reuse)
+      // Enhanced rapid scanning detection (super anti-cheating)
       const lastFiveMinutes = new Date(now.getTime() - 5 * 60 * 1000);
       const veryRecentDetections = await storage.getRecentDetections(userId, lastFiveMinutes);
-      if (veryRecentDetections.length >= 5) {
+      if (veryRecentDetections.length >= 2) { // Reduced to 2 for stricter fraud prevention
         return res.status(400).json({
-          error: "Scanning too quickly. Please take time between each item to ensure proper disposal.",
+          error: "Scanning too quickly. Please take at least 5 minutes between each item for proper disposal.",
           rapidScanningDetected: true
+        });
+      }
+      
+      // Super anti-cheating: Check for weekend/night patterns (unusual times)
+      const hour = now.getHours();
+      const dayOfWeek = now.getDay();
+      const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
+      const isNightTime = hour < 6 || hour > 22;
+      
+      if ((isWeekend || isNightTime) && todayDetections.length > 8) {
+        return res.status(400).json({
+          error: "Unusual recycling pattern detected. Most recycling happens during regular hours.",
+          unusualTimePattern: true
+        });
+      }
+      
+      // Enhanced confidence threshold for high-value items
+      if (coinsAwarded >= 10 && confidence < 75) {
+        return res.status(400).json({
+          error: "High-value item requires higher detection confidence for fraud prevention.",
+          lowConfidenceHighValue: true
+        });
+      }
+      
+      // Super anti-cheating: Check for perfect detection patterns (too consistent)
+      const lastTenDetections = todayDetections.slice(-10);
+      if (lastTenDetections.length >= 10) {
+        const avgConfidence = lastTenDetections.reduce((sum, d) => {
+          const objects = JSON.parse(d.detectedObjects);
+          return sum + (objects[0]?.confidence || 0);
+        }, 0) / lastTenDetections.length;
+        
+        // Flag suspiciously consistent high confidence (potential AI spoofing)
+        if (avgConfidence > 95) {
+          return res.status(400).json({
+            error: "Detection pattern appears artificial. Real-world scanning shows more variation.",
+            suspiciousConsistency: true
+          });
+        }
+      }
+      
+      // Anti-cheating: Check for device fingerprinting patterns
+      const deviceFingerprint = req.headers['user-agent'] + '_' + (req.headers['accept-language'] || '');
+      const sameDeviceToday = todayDetections.filter(d => d.userAgent === deviceFingerprint);
+      if (sameDeviceToday.length > 30) {
+        return res.status(400).json({
+          error: "Excessive scanning from same device. Please ensure authentic recycling behavior.",
+          deviceOveruse: true
         });
       }
       
@@ -385,8 +433,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         requiresVerification = true;
       }
       
-      // Require verification for high-value items
-      if (coinsAwarded >= 20) {
+      // Require verification for high-value items (enhanced anti-cheating)
+      if (coinsAwarded >= 10) {
         requiresVerification = true;
       }
       
