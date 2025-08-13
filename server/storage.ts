@@ -73,6 +73,7 @@ export interface IStorage {
   getRecentDetections(userId: number, since: Date): Promise<Detection[]>;
   getDetectionByImageHash(imageHash: string): Promise<Detection | undefined>;
   getRecentSameItemDetections(userId: number, itemName: string, since: Date): Promise<Detection[]>;
+  getRecentDetectionsByUserAgent(userId: number, userAgent: string, since: Date): Promise<Detection[]>;
   incrementUserStats(userId: number, increments: {
     totalDetections?: number;
     totalCoinsEarned?: number;
@@ -660,6 +661,19 @@ export class DatabaseStorage implements IStorage {
         eq(detections.userId, userId),
         gte(detections.createdAt, since),
         sql`${detections.detectedObjects}::text LIKE ${'%' + itemName + '%'}`
+      ))
+      .orderBy(desc(detections.createdAt));
+    return result;
+  }
+
+  async getRecentDetectionsByUserAgent(userId: number, userAgent: string, since: Date): Promise<Detection[]> {
+    const result = await db
+      .select()
+      .from(detections)
+      .where(and(
+        eq(detections.userId, userId),
+        eq(detections.userAgent, userAgent),
+        gte(detections.createdAt, since)
       ))
       .orderBy(desc(detections.createdAt));
     return result;

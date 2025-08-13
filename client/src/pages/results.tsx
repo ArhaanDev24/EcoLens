@@ -120,15 +120,45 @@ function ResultsPage({ imageData, onBack, onCoinsEarned }: ResultsPageProps) {
           if (!response.ok) {
             const errorData = await response.json();
             
-            // Handle anti-fraud errors gracefully
+            // Handle comprehensive anti-fraud errors gracefully
             if (response.status === 429) {
               alert(`Rate limit exceeded: ${errorData.error}\nPlease wait before scanning again.`);
               return;
             } else if (response.status === 400) {
-              alert(`Detection rejected: ${errorData.error}`);
+              let alertMessage = `Detection rejected: ${errorData.error}`;
+              
+              // Add specific guidance based on fraud type
+              if (errorData.suspiciousPattern) {
+                alertMessage += "\n\nTip: Try scanning different types of items to show varied recycling behavior.";
+              } else if (errorData.locationSuspicious) {
+                alertMessage += "\n\nTip: Try recycling from different locations to demonstrate real-world usage.";
+              } else if (errorData.dailyLimitExceeded) {
+                alertMessage += "\n\nTip: Come back tomorrow to continue earning coins through recycling.";
+              } else if (errorData.rapidScanningDetected) {
+                alertMessage += "\n\nTip: Take time between scans to properly dispose of each item.";
+              }
+              
+              alert(alertMessage);
               return;
             }
             throw new Error('Failed to submit detection');
+          }
+          
+          // Handle enhanced fraud prevention response
+          const responseData = await response.json();
+          
+          // Show behavior warnings to educate users
+          if (responseData.behaviorWarnings && responseData.behaviorWarnings.length > 0) {
+            const warningsText = responseData.behaviorWarnings.join('\n');
+            alert(`Helpful recycling tips:\n\n${warningsText}`);
+          }
+          
+          // Check if verification is required
+          if (responseData.requiresVerification) {
+            const detection = responseData.detection;
+            setPendingDetection({ detection, verificationReason: responseData.verificationReason });
+            setNeedsVerification(true);
+            return;
           }
         }
 
