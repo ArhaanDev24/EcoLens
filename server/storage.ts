@@ -68,6 +68,20 @@ export interface IStorage {
     favoriteTime: string;
     weeklyPattern: Record<string, number>;
   }>;
+  
+  // Anti-fraud methods
+  getRecentDetections(userId: number, since: Date): Promise<Detection[]>;
+  getDetectionByImageHash(imageHash: string): Promise<Detection | undefined>;
+  getRecentSameItemDetections(userId: number, itemName: string, since: Date): Promise<Detection[]>;
+  incrementUserStats(userId: number, increments: {
+    totalDetections?: number;
+    totalCoinsEarned?: number;
+    plasticItemsDetected?: number;
+    paperItemsDetected?: number;
+    glassItemsDetected?: number;
+    metalItemsDetected?: number;
+  }): Promise<void>;
+  updateUser(userId: number, updates: Partial<User>): Promise<User>;
 }
 
 export class MemStorage implements IStorage {
@@ -617,6 +631,106 @@ export class DatabaseStorage implements IStorage {
       favoriteTime,
       weeklyPattern
     };
+  }
+
+  // Anti-fraud methods implementation
+  async getRecentDetections(userId: number, since: Date): Promise<Detection[]> {
+    const result = await db
+      .select()
+      .from(detections)
+      .where(and(eq(detections.userId, userId), gte(detections.createdAt, since)))
+      .orderBy(desc(detections.createdAt));
+    return result;
+  }
+
+  async getDetectionByImageHash(imageHash: string): Promise<Detection | undefined> {
+    const result = await db
+      .select()
+      .from(detections)
+      .where(eq(detections.imageHash, imageHash))
+      .limit(1);
+    return result[0];
+  }
+
+  async getRecentSameItemDetections(userId: number, itemName: string, since: Date): Promise<Detection[]> {
+    const result = await db
+      .select()
+      .from(detections)
+      .where(and(
+        eq(detections.userId, userId),
+        gte(detections.createdAt, since),
+        sql`${detections.detectedObjects}::text LIKE ${'%' + itemName + '%'}`
+      ))
+      .orderBy(desc(detections.createdAt));
+    return result;
+  }
+
+  async incrementUserStats(userId: number, increments: {
+    totalDetections?: number;
+    totalCoinsEarned?: number;
+    plasticItemsDetected?: number;
+    paperItemsDetected?: number;
+    glassItemsDetected?: number;
+    metalItemsDetected?: number;
+  }): Promise<void> {
+    // First, try to get existing stats
+    let existingStats = await this.getUserStats(userId);
+    
+    if (!existingStats) {
+      // Create new stats record if none exists
+      await db.insert(stats).values({
+        userId: userId,
+        totalDetections: increments.totalDetections || 0,
+        totalCoinsEarned: increments.totalCoinsEarned || 0,
+        totalCoinsSpent: 0,
+        streakDays: 1,
+        plasticItemsDetected: increments.plasticItemsDetected || 0,
+        paperItemsDetected: increments.paperItemsDetected || 0,
+        glassItemsDetected: increments.glassItemsDetected || 0,
+        metalItemsDetected: increments.metalItemsDetected || 0
+      });
+    } else {
+      // Update existing stats
+      const updates: any = {};
+      if (increments.totalDetections) {
+        updates.totalDetections = sql`${stats.totalDetections} + ${increments.totalDetections}`;
+      }
+      if (increments.totalCoinsEarned) {
+        updates.totalCoinsEarned = sql`${stats.totalCoinsEarned} + ${increments.totalCoinsEarned}`;
+      }
+      if (increments.plasticItemsDetected) {
+        updates.plasticItemsDetected = sql`${stats.plasticItemsDetected} + ${increments.plasticItemsDetected}`;
+      }
+      if (increments.paperItemsDetected) {
+        updates.paperItemsDetected = sql`${stats.paperItemsDetected} + ${increments.paperItemsDetected}`;
+      }
+      if (increments.glassItemsDetected) {
+        updates.glassItemsDetected = sql`${stats.glassItemsDetected} + ${increments.glassItemsDetected}`;
+      }
+      if (increments.metalItemsDetected) {
+        updates.metalItemsDetected = sql`${stats.metalItemsDetected} + ${increments.metalItemsDetected}`;
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await db.update(stats)
+          .set(updates)
+          .where(eq(stats.userId, userId));
+      }
+    }
+  }
+
+  async updateUser(userId: number, updates: Partial<User>): Promise<User> {
+    const result = await db
+      .update(users)
+      .set(updates)
+      .where(eq(users.id, userId))
+      .returning();
+    
+    if (!result[0]) {
+      throw new Error('User not found');
+    }
+    
+    return result[0];
   }
 }
 

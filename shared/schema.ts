@@ -16,6 +16,7 @@ export const detections = pgTable("detections", {
   id: serial("id").primaryKey(),
   userId: integer("user_id").references(() => users.id),
   imageUrl: text("image_url"),
+  imageHash: text("image_hash"), // SHA-256 hash for duplicate prevention
   detectedObjects: jsonb("detected_objects"),
   confidenceScore: integer("confidence_score"),
   coinsEarned: integer("coins_earned").notNull().default(0),
@@ -23,6 +24,9 @@ export const detections = pgTable("detections", {
   verificationImageUrl: text("verification_image_url"),
   verificationStatus: text("verification_status").default("pending"), // 'pending', 'verified', 'rejected'
   verificationAttempts: integer("verification_attempts").notNull().default(0),
+  fraudScore: integer("fraud_score").notNull().default(0), // 0-100 fraud risk score
+  ipAddress: text("ip_address"), // User's IP for tracking
+  userAgent: text("user_agent"), // Browser fingerprint
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -34,6 +38,7 @@ export const transactions = pgTable("transactions", {
   description: text("description").notNull(),
   detectionId: integer("detection_id").references(() => detections.id),
   qrCode: text("qr_code"),
+  metadata: jsonb("metadata"), // Additional transaction metadata
   createdAt: timestamp("created_at").defaultNow(),
 });
 

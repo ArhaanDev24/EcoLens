@@ -23,13 +23,16 @@ export function useAIDetection(): AIDetectionHook {
     setError(null);
 
     try {
+      // Generate image hash for fraud prevention
+      const imageHash = await generateImageHash(imageData);
+      
       // Try server-side Gemini AI detection first (most reliable)
       const response = await fetch('/api/detect', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ imageData })
+        body: JSON.stringify({ imageData, imageHash })
       });
 
       if (response.ok) {
@@ -71,6 +74,31 @@ export function useAIDetection(): AIDetectionHook {
     isDetecting,
     error
   };
+}
+
+// Image hashing for fraud prevention
+async function generateImageHash(imageData: string): Promise<string> {
+  try {
+    // Remove data URL prefix
+    const base64Data = imageData.replace(/^data:image\/[a-z]+;base64,/, '');
+    
+    // Convert base64 to array buffer
+    const binaryString = atob(base64Data);
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    // Generate SHA-256 hash
+    const hashBuffer = await crypto.subtle.digest('SHA-256', bytes);
+    const hashArray = Array.from(new Uint8Array(hashBuffer));
+    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    
+    return hashHex;
+  } catch (error) {
+    console.warn('Failed to generate image hash:', error);
+    return '';
+  }
 }
 
 async function detectWithTeachableMachine(imageData: string): Promise<DetectionResult[]> {

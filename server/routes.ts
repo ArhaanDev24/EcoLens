@@ -13,6 +13,34 @@ import { z } from "zod";
 import * as QRCode from 'qrcode';
 import { detectRecyclableItems } from './gemini';
 
+// Anti-fraud helper functions
+function calculateFraudScore(confidence: number, recentCount: number, noImageHash: number): number {
+  let score = 0;
+  
+  // Low confidence increases fraud score
+  if (confidence < 70) score += 20;
+  if (confidence < 60) score += 30;
+  
+  // High frequency increases fraud score
+  if (recentCount > 5) score += 25;
+  if (recentCount > 8) score += 40;
+  
+  // Missing image hash is suspicious
+  if (noImageHash) score += 15;
+  
+  return Math.min(score, 100);
+}
+
+function getItemTypeField(binType: string): string {
+  switch (binType) {
+    case 'plastic': return 'plasticItemsDetected';
+    case 'paper': return 'paperItemsDetected';
+    case 'glass': return 'glassItemsDetected';
+    case 'metal': return 'metalItemsDetected';
+    default: return 'plasticItemsDetected';
+  }
+}
+
 // Clarifai detection function
 async function detectWithClarifai(base64Data: string) {
   try {
@@ -215,15 +243,59 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
-  // Create detection record and award coins
+  // Create detection record and award coins with anti-fraud measures
   app.post("/api/detections", async (req, res) => {
     try {
-      const { itemName, confidence, binType, coinsAwarded, needsVerification } = req.body;
+      const { itemName, confidence, binType, coinsAwarded, needsVerification, imageHash } = req.body;
       
-      // Create detection record
+      // Anti-fraud checks
+      const userId = 1;
+      const now = new Date();
+      const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
+      
+      // Check for rate limiting (max 10 detections per 10 minutes)
+      const recentDetections = await storage.getRecentDetections(userId, tenMinutesAgo);
+      if (recentDetections.length >= 10) {
+        return res.status(429).json({ 
+          error: "Rate limit exceeded. Please wait before scanning again.",
+          cooldownUntil: new Date(recentDetections[0].createdAt.getTime() + 10 * 60 * 1000)
+        });
+      }
+      
+      // Check for duplicate image hash (prevent same image reuse)
+      if (imageHash) {
+        const duplicateDetection = await storage.getDetectionByImageHash(imageHash);
+        if (duplicateDetection) {
+          return res.status(400).json({ 
+            error: "This image has already been processed. Please use a new photo.",
+            originalDetection: duplicateDetection.createdAt
+          });
+        }
+      }
+      
+      // Check confidence threshold (reject low confidence detections)
+      if (confidence < 60) {
+        return res.status(400).json({ 
+          error: "Detection confidence too low. Please try with better lighting or closer image.",
+          confidence: confidence,
+          minimumRequired: 60
+        });
+      }
+      
+      // Check for suspicious patterns (same item type repeatedly)
+      const recentSameItems = await storage.getRecentSameItemDetections(userId, itemName, tenMinutesAgo);
+      if (recentSameItems.length >= 3) {
+        return res.status(400).json({ 
+          error: "Too many similar items detected recently. Please try different items.",
+          suspiciousPattern: true
+        });
+      }
+      
+      // Create detection record with fraud prevention data
       const detection = await storage.createDetection({
-        userId: 1,
+        userId: userId,
         imageUrl: null,
+        imageHash: imageHash || null,
         detectedObjects: JSON.stringify([{
           name: itemName || 'Unknown Item',
           confidence: confidence || 80,
@@ -233,24 +305,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
         coinsEarned: coinsAwarded || 0,
         isVerified: !needsVerification,
         verificationStatus: needsVerification ? 'pending' : 'verified',
-        verificationAttempts: 0
+        verificationAttempts: 0,
+        fraudScore: calculateFraudScore(confidence, recentDetections.length, imageHash ? 0 : 1),
+        ipAddress: req.ip || 'unknown',
+        userAgent: req.headers['user-agent'] || 'unknown'
       });
       
-      // Only award coins if no verification needed
-      if (coinsAwarded > 0 && !needsVerification) {
+      // Only award coins if no verification needed and not flagged as suspicious
+      if (coinsAwarded > 0 && !needsVerification && detection.fraudScore < 50) {
         await storage.createTransaction({
-          userId: 1,
+          userId: userId,
           type: 'earn',
           amount: coinsAwarded,
           description: `Detected ${itemName}`,
-          detectionId: detection.id
+          detectionId: detection.id,
+          metadata: JSON.stringify({ confidence, fraudScore: detection.fraudScore })
         });
         
         // Update user's coin balance
-        await storage.updateUserCoins(1, coinsAwarded);
+        await storage.updateUserCoins(userId, coinsAwarded);
+        
+        // Update user stats
+        await storage.incrementUserStats(userId, {
+          totalDetections: 1,
+          totalCoinsEarned: coinsAwarded,
+          [getItemTypeField(binType)]: 1
+        });
       }
       
-      res.json({ success: true, detection, coinsAwarded: needsVerification ? 0 : coinsAwarded });
+      res.json({ 
+        success: true, 
+        detection, 
+        coinsAwarded: needsVerification ? 0 : coinsAwarded,
+        fraudScore: detection.fraudScore,
+        rateLimit: {
+          remaining: 10 - recentDetections.length - 1,
+          resetTime: new Date(now.getTime() + 10 * 60 * 1000)
+        }
+      });
     } catch (error) {
       console.error('Create detection error:', error);
       res.status(500).json({ error: "Failed to create detection record" });
