@@ -42,10 +42,7 @@ export default function Profile() {
 
   const updateProfileMutation = useMutation({
     mutationFn: async (data: { username: string; email: string }) => {
-      return await apiRequest(`/api/user/${user?.id}`, {
-        method: "PATCH",
-        body: JSON.stringify(data),
-      });
+      return await apiRequest("PATCH", `/api/user/${user?.id}`, data);
     },
     onSuccess: () => {
       toast({

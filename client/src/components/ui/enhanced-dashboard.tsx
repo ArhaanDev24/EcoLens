@@ -20,7 +20,19 @@ export function EnhancedDashboard() {
     queryKey: ['/api/user/1/stats'],
   });
 
-  if (isLoading || !stats) {
+  // Provide default values for undefined stats
+  const safeStats = stats ? {
+    totalDetections: stats.totalDetections || 0,
+    totalCoinsEarned: stats.totalCoinsEarned || 0,
+    totalCoinsSpent: stats.totalCoinsSpent || 0,
+    streakDays: stats.streakDays || 0,
+    plasticItemsDetected: stats.plasticItemsDetected || 0,
+    paperItemsDetected: stats.paperItemsDetected || 0,
+    glassItemsDetected: stats.glassItemsDetected || 0,
+    metalItemsDetected: stats.metalItemsDetected || 0,
+  } : null;
+
+  if (isLoading || !safeStats) {
     return (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 4k:gap-8 8k:gap-10">
         {[...Array(8)].map((_, i) => (
@@ -30,9 +42,9 @@ export function EnhancedDashboard() {
     );
   }
 
-  const totalRecycled = stats.plasticItemsDetected + stats.paperItemsDetected + 
-                       stats.glassItemsDetected + stats.metalItemsDetected;
-  const netCoins = stats.totalCoinsEarned - stats.totalCoinsSpent;
+  const totalRecycled = safeStats.plasticItemsDetected + safeStats.paperItemsDetected + 
+                       safeStats.glassItemsDetected + safeStats.metalItemsDetected;
+  const netCoins = safeStats.totalCoinsEarned - safeStats.totalCoinsSpent;
 
   return (
     <div className="space-y-8 4k:space-y-12 8k:space-y-16">
@@ -41,7 +53,7 @@ export function EnhancedDashboard() {
         <FadeIn delay={0}>
           <StatsCard
             title="Total Scans"
-            value={<CountUp end={stats.totalDetections} duration={1500} />}
+            value={safeStats.totalDetections.toString()}
             subtitle="AI detections completed"
             icon={Target}
             color="eco-green"
@@ -52,8 +64,8 @@ export function EnhancedDashboard() {
         <FadeIn delay={100}>
           <StatsCard
             title="Green Coins"
-            value={<CountUp end={netCoins} duration={1500} />}
-            subtitle={`${stats.totalCoinsEarned} earned • ${stats.totalCoinsSpent} spent`}
+            value={netCoins.toString()}
+            subtitle={`${safeStats.totalCoinsEarned} earned • ${safeStats.totalCoinsSpent} spent`}
             icon={Coins}
             color="reward-yellow"
             trend={{ value: 8, isPositive: true }}
@@ -63,7 +75,7 @@ export function EnhancedDashboard() {
         <FadeIn delay={200}>
           <StatsCard
             title="Items Recycled"
-            value={<CountUp end={totalRecycled} duration={1500} />}
+            value={totalRecycled.toString()}
             subtitle="Environmental impact made"
             icon={Recycle}
             color="cyan"
@@ -74,7 +86,7 @@ export function EnhancedDashboard() {
         <FadeIn delay={300}>
           <StatsCard
             title="Streak Days"
-            value={<CountUp end={stats.streakDays} duration={1500} />}
+            value={safeStats.streakDays.toString()}
             subtitle="Consecutive recycling days"
             icon={Zap}
             color="purple"
@@ -88,7 +100,7 @@ export function EnhancedDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 4k:gap-8 8k:gap-10">
           <ProgressStatsCard
             title="Weekly Goal"
-            current={stats.totalDetections % 7}
+            current={safeStats.totalDetections % 7}
             target={10}
             icon={Target}
             color="eco-green"
@@ -97,7 +109,7 @@ export function EnhancedDashboard() {
 
           <ProgressStatsCard
             title="Coin Milestone"
-            current={stats.totalCoinsEarned % 100}
+            current={safeStats.totalCoinsEarned % 100}
             target={100}
             icon={Trophy}
             color="reward-yellow"
@@ -132,7 +144,7 @@ export function EnhancedDashboard() {
                   <Recycle className="w-6 h-6 4k:w-8 4k:h-8 8k:w-10 8k:h-10 text-white" />
                 </div>
                 <div className="text-2xl 4k:text-3xl 8k:text-4xl font-bold text-blue-400">
-                  <CountUp end={stats.plasticItemsDetected} duration={2000} />
+                  <CountUp end={safeStats.plasticItemsDetected} duration={2000} />
                 </div>
                 <div className="text-sm 4k:text-base 8k:text-lg text-text-secondary">Plastic</div>
               </div>
@@ -142,7 +154,7 @@ export function EnhancedDashboard() {
                   <Recycle className="w-6 h-6 4k:w-8 4k:h-8 8k:w-10 8k:h-10 text-white" />
                 </div>
                 <div className="text-2xl 4k:text-3xl 8k:text-4xl font-bold text-green-400">
-                  <CountUp end={stats.paperItemsDetected} duration={2000} />
+                  <CountUp end={safeStats.paperItemsDetected} duration={2000} />
                 </div>
                 <div className="text-sm 4k:text-base 8k:text-lg text-text-secondary">Paper</div>
               </div>
@@ -152,7 +164,7 @@ export function EnhancedDashboard() {
                   <Recycle className="w-6 h-6 4k:w-8 4k:h-8 8k:w-10 8k:h-10 text-white" />
                 </div>
                 <div className="text-2xl 4k:text-3xl 8k:text-4xl font-bold text-cyan-400">
-                  <CountUp end={stats.glassItemsDetected} duration={2000} />
+                  <CountUp end={safeStats.glassItemsDetected} duration={2000} />
                 </div>
                 <div className="text-sm 4k:text-base 8k:text-lg text-text-secondary">Glass</div>
               </div>
@@ -162,7 +174,7 @@ export function EnhancedDashboard() {
                   <Recycle className="w-6 h-6 4k:w-8 4k:h-8 8k:w-10 8k:h-10 text-white" />
                 </div>
                 <div className="text-2xl 4k:text-3xl 8k:text-4xl font-bold text-amber-400">
-                  <CountUp end={stats.metalItemsDetected} duration={2000} />
+                  <CountUp end={safeStats.metalItemsDetected} duration={2000} />
                 </div>
                 <div className="text-sm 4k:text-base 8k:text-lg text-text-secondary">Metal</div>
               </div>
@@ -184,7 +196,7 @@ export function EnhancedDashboard() {
           </h2>
           <p className="text-xl 4k:text-2xl 8k:text-3xl text-text-secondary mb-6">
             You've helped recycle <CountUp end={totalRecycled} className="text-eco-green font-bold" /> items
-            and earned <CountUp end={stats.totalCoinsEarned} className="text-reward-yellow font-bold" /> Green Coins!
+            and earned <CountUp end={safeStats.totalCoinsEarned} className="text-reward-yellow font-bold" /> Green Coins!
           </p>
           <div className="flex justify-center space-x-8 4k:space-x-12 8k:space-x-16 text-sm 4k:text-base 8k:text-lg text-text-secondary">
             <div>🌱 Carbon footprint reduced</div>

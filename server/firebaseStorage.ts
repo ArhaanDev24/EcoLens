@@ -111,12 +111,12 @@ export class FirebaseStorage implements IStorage {
 
   async getUserTransactions(userId: number): Promise<Transaction[]> {
     const transactions = await this.queryDocs('transactions', 'userId', userId);
-    return transactions.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as Transaction[];
+    return transactions.filter(t => t.createdAt).sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()) as Transaction[];
   }
 
   async getUserStats(userId: number): Promise<Stats | undefined> {
     const stats = await this.queryDocs('stats', 'userId', userId);
-    return stats[0] as Stats | undefined;
+    return stats.length > 0 ? (stats[0] as any) as Stats : undefined;
   }
 
   async updateUserStats(userId: number, statsUpdate: Partial<InsertStats>): Promise<void> {
@@ -135,6 +135,6 @@ export class FirebaseStorage implements IStorage {
 
   async getUserAchievements(userId: number): Promise<Achievement[]> {
     const achievements = await this.queryDocs('achievements', 'userId', userId);
-    return achievements.sort((a, b) => new Date(b.unlockedAt || b.createdAt).getTime() - new Date(a.unlockedAt || a.createdAt).getTime()) as Achievement[];
+    return achievements.filter(a => a.unlockedAt || a.createdAt).sort((a: any, b: any) => new Date(b.unlockedAt || b.createdAt).getTime() - new Date(a.unlockedAt || a.createdAt).getTime()) as Achievement[];
   }
 }

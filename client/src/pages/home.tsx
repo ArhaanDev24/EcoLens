@@ -96,12 +96,7 @@ export default function Home() {
           />
         );
       case 'wallet':
-        return (
-          <WalletPage
-            greenCoins={greenCoins}
-            onCoinsSpent={handleCoinsSpent}
-          />
-        );
+        return <WalletPage />;
       case 'stats':
         return <EnhancedStatsPage />;
       case 'analytics':

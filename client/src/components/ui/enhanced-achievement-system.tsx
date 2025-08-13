@@ -47,7 +47,7 @@ interface AchievementCardProps {
 }
 
 function AchievementCard({ achievement, onClaim }: AchievementCardProps) {
-  const Icon = achievementIcons[achievement.achievementType] || achievementIcons.default;
+  const Icon = achievementIcons[achievement.achievementType as keyof typeof achievementIcons] || achievementIcons.default;
   const progressPercentage = Math.min((achievement.progress / achievement.requirement) * 100, 100);
   
   return (
@@ -130,7 +130,15 @@ export function EnhancedAchievementSystem({ className }: EnhancedAchievementSyst
     queryKey: ['/api/achievements'],
   });
 
-  const { data: stats } = useQuery({
+  const { data: stats } = useQuery<{
+    totalDetections: number;
+    totalCoinsEarned: number;
+    plasticItemsDetected: number;
+    paperItemsDetected: number;
+    glassItemsDetected: number;
+    metalItemsDetected: number;
+    streakDays: number;
+  }>({
     queryKey: ['/api/stats'],
   });
 
