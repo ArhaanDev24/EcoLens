@@ -57,13 +57,15 @@ export function useAIDetection(): AIDetectionHook {
         return teachableMachineResult;
       }
 
-      // Generate intelligent demo results based on the image
-      console.log('All AI services unavailable, generating demo results...');
-      return getDemoResults();
+      // No recyclable items detected
+      console.log('No recyclable items detected in image');
+      setError('No recyclable items detected in the image. Please take a photo of recyclable items like bottles, cans, paper, or cardboard.');
+      return [];
     } catch (err) {
       setError('Failed to analyze image. Please try again.');
       console.error('AI Detection error:', err);
-      return getDemoResults();
+      setError('No recyclable items detected. Please try taking a photo of recyclable items.');
+      return [];
     } finally {
       setIsDetecting(false);
     }

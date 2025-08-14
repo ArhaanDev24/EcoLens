@@ -79,8 +79,8 @@ async function detectWithClarifai(base64Data: string) {
     const apiKey = process.env.VITE_CLARIFAI_API_KEY;
     
     if (!apiKey || apiKey === 'demo-key' || apiKey.startsWith('demo')) {
-      console.log('Clarifai API key not configured, using demo results...');
-      return getDemoResults();
+      console.log('Clarifai API key not configured, no recyclable detection available');
+      return []; // Return empty array instead of demo results
     }
     
     const response = await fetch('https://api.clarifai.com/v2/models/aaa03c23b3724a16a56b629203edc62c/outputs', {
@@ -109,8 +109,8 @@ async function detectWithClarifai(base64Data: string) {
     const concepts = data.outputs?.[0]?.data?.concepts || [];
     
     if (concepts.length === 0) {
-      console.log('No items detected by Clarifai, using demo results...');
-      return getDemoResults();
+      console.log('No items detected by Clarifai');
+      return [];
     }
     
     const results = concepts
@@ -125,27 +125,20 @@ async function detectWithClarifai(base64Data: string) {
       }));
 
     if (results.length === 0) {
-      return getDemoResults();
+      return [];
     }
 
     console.log('Clarifai detection successful:', results);
     return results;
   } catch (err) {
     console.error('Clarifai detection failed:', err);
-    return getDemoResults();
+    return [];
   }
 }
 
 function getDemoResults() {
-  return [
-    {
-      name: 'plastic water bottle',
-      confidence: 94,
-      binType: 'recyclable',
-      binColor: '#3B82F6',
-      coinsReward: 19
-    }
-  ];
+  // Return empty array instead of fake results to force proper validation
+  return [];
 }
 
 function isRecyclableItem(name: string): boolean {
@@ -244,8 +237,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
         if (clarifaiResults.length > 0) {
           res.json(clarifaiResults);
         } else {
-          // Return demo results as final fallback
-          res.json(getDemoResults());
+          // No recyclable items detected in image
+          res.status(400).json({ 
+            error: "No recyclable items detected in the image. Please take a photo of recyclable items like bottles, cans, paper, or cardboard.",
+            noRecyclablesFound: true 
+          });
         }
       }
     } catch (error) {
