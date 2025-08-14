@@ -290,7 +290,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       if (recentDetections.length >= 10) {
         return res.status(429).json({ 
           error: "Rate limit exceeded. Please wait before scanning again.",
-          cooldownUntil: new Date(recentDetections[0].createdAt.getTime() + 10 * 60 * 1000)
+          cooldownUntil: new Date((recentDetections[0].createdAt?.getTime() ?? Date.now()) + 10 * 60 * 1000)
         });
       }
       
@@ -382,7 +382,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const lastTenDetections = todayDetections.slice(-10);
       if (lastTenDetections.length >= 10) {
         const avgConfidence = lastTenDetections.reduce((sum, d) => {
-          const objects = JSON.parse(d.detectedObjects);
+          const objects = JSON.parse(d.detectedObjects as string);
           return sum + (objects[0]?.confidence || 0);
         }, 0) / lastTenDetections.length;
         
@@ -487,7 +487,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const detectionId = parseInt(req.params.id);
       const { verificationImageUrl } = req.body;
       
-      const detection = await storage.getDetection(detectionId);
+      const userDetections = await storage.getUserDetections(1);
+      const detection = userDetections.find(d => d.id === detectionId);
       if (!detection) {
         return res.status(404).json({ error: 'Detection not found' });
       }

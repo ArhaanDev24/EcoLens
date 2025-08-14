@@ -139,6 +139,7 @@ export const insertUserSchema = createInsertSchema(users).pick({
 export const insertDetectionSchema = createInsertSchema(detections).pick({
   userId: true,
   imageUrl: true,
+  imageHash: true,
   detectedObjects: true,
   confidenceScore: true,
   coinsEarned: true,
@@ -146,6 +147,9 @@ export const insertDetectionSchema = createInsertSchema(detections).pick({
   verificationImageUrl: true,
   verificationStatus: true,
   verificationAttempts: true,
+  fraudScore: true,
+  ipAddress: true,
+  userAgent: true,
 });
 
 export const insertPersonalGoalSchema = createInsertSchema(personalGoals).pick({
@@ -193,6 +197,11 @@ export type EnvironmentalImpact = typeof environmentalImpact.$inferSelect;
 export type UserReminder = typeof userReminders.$inferSelect;
 export type HabitAnalytics = typeof habitAnalytics.$inferSelect;
 
+export type InsertUser = z.infer<typeof insertUserSchema>;
+export type InsertDetection = z.infer<typeof insertDetectionSchema>;
+export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
+export type InsertStats = z.infer<typeof insertStatsSchema>;
+export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
 export type InsertPersonalGoal = z.infer<typeof insertPersonalGoalSchema>;
 export type InsertEnvironmentalImpact = z.infer<typeof insertEnvironmentalImpactSchema>;
 export type InsertHabitAnalytics = z.infer<typeof insertHabitAnalyticsSchema>;
@@ -204,6 +213,7 @@ export const insertTransactionSchema = createInsertSchema(transactions).pick({
   description: true,
   detectionId: true,
   qrCode: true,
+  metadata: true,
 });
 
 export const insertStatsSchema = createInsertSchema(stats).pick({
@@ -228,8 +238,6 @@ export const insertAchievementSchema = createInsertSchema(achievements).pick({
   iconType: true,
 });
 
-export type InsertUser = z.infer<typeof insertUserSchema>;
-export type InsertDetection = z.infer<typeof insertDetectionSchema>;
 export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
 export type InsertStats = z.infer<typeof insertStatsSchema>;
 export type InsertAchievement = z.infer<typeof insertAchievementSchema>;

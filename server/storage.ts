@@ -83,6 +83,8 @@ export interface IStorage {
     metalItemsDetected?: number;
   }): Promise<void>;
   updateUser(userId: number, updates: Partial<User>): Promise<User>;
+  getDetection(id: number): Promise<Detection | undefined>;
+  getAllDetections(): Promise<Detection[]>;
 }
 
 export class MemStorage implements IStorage {
@@ -227,6 +229,7 @@ export class MemStorage implements IStorage {
       id,
       userId: insertDetection.userId || null,
       imageUrl: insertDetection.imageUrl || null,
+      imageHash: insertDetection.imageHash || null,
       detectedObjects: detectedObjects,
       confidenceScore: insertDetection.confidenceScore || null,
       coinsEarned: insertDetection.coinsEarned || 0,
@@ -234,6 +237,9 @@ export class MemStorage implements IStorage {
       verificationImageUrl: insertDetection.verificationImageUrl || null,
       verificationStatus: insertDetection.verificationStatus || 'pending',
       verificationAttempts: insertDetection.verificationAttempts || 0,
+      fraudScore: insertDetection.fraudScore || 0,
+      ipAddress: insertDetection.ipAddress || null,
+      userAgent: insertDetection.userAgent || null,
       createdAt: new Date()
     };
     this.detections.set(id, detection);
@@ -267,6 +273,7 @@ export class MemStorage implements IStorage {
       description: insertTransaction.description,
       detectionId: insertTransaction.detectionId || null,
       qrCode: insertTransaction.qrCode || null,
+      metadata: insertTransaction.metadata || null,
       createdAt: new Date()
     };
     this.transactions.set(id, transaction);
@@ -277,6 +284,70 @@ export class MemStorage implements IStorage {
     return Array.from(this.transactions.values())
       .filter((transaction) => transaction.userId === userId)
       .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  // Anti-fraud method implementations for MemStorage
+  async getRecentDetections(userId: number, since: Date): Promise<Detection[]> {
+    return Array.from(this.detections.values())
+      .filter((detection) => 
+        detection.userId === userId && 
+        new Date(detection.createdAt!) >= since
+      )
+      .sort((a, b) => new Date(b.createdAt!).getTime() - new Date(a.createdAt!).getTime());
+  }
+
+  async getDetectionByImageHash(imageHash: string): Promise<Detection | undefined> {
+    return Array.from(this.detections.values())
+      .find((detection) => detection.imageHash === imageHash);
+  }
+
+  async getRecentSameItemDetections(userId: number, itemName: string, since: Date): Promise<Detection[]> {
+    return Array.from(this.detections.values())
+      .filter((detection) => {
+        if (detection.userId !== userId || new Date(detection.createdAt!) < since) return false;
+        try {
+          const objects = JSON.parse(detection.detectedObjects as string);
+          return objects.some((obj: any) => obj.name?.toLowerCase().includes(itemName.toLowerCase()));
+        } catch {
+          return false;
+        }
+      });
+  }
+
+  async getRecentDetectionsByUserAgent(userId: number, userAgent: string, since: Date): Promise<Detection[]> {
+    return Array.from(this.detections.values())
+      .filter((detection) => 
+        detection.userId === userId && 
+        detection.userAgent === userAgent &&
+        new Date(detection.createdAt!) >= since
+      );
+  }
+
+  async incrementUserStats(userId: number, increments: {
+    totalDetections?: number;
+    totalCoinsEarned?: number;
+    plasticItemsDetected?: number;
+    paperItemsDetected?: number;
+    glassItemsDetected?: number;
+    metalItemsDetected?: number;
+  }): Promise<void> {
+    // For MemStorage, this is a stub
+  }
+
+  async updateUser(userId: number, updates: Partial<User>): Promise<User> {
+    const user = this.users.get(userId);
+    if (!user) throw new Error('User not found');
+    const updatedUser = { ...user, ...updates };
+    this.users.set(userId, updatedUser);
+    return updatedUser;
+  }
+
+  async getDetection(id: number): Promise<Detection | undefined> {
+    return this.detections.get(id);
+  }
+
+  async getAllDetections(): Promise<Detection[]> {
+    return Array.from(this.detections.values());
   }
 }
 
@@ -745,6 +816,22 @@ export class DatabaseStorage implements IStorage {
     }
     
     return result[0];
+  }
+
+  async getDetection(id: number): Promise<Detection | undefined> {
+    const result = await db
+      .select()
+      .from(detections)
+      .where(eq(detections.id, id))
+      .limit(1);
+    return result[0];
+  }
+
+  async getAllDetections(): Promise<Detection[]> {
+    return await db
+      .select()
+      .from(detections)
+      .orderBy(desc(detections.createdAt));
   }
 }
 
