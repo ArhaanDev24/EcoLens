@@ -98,7 +98,7 @@ export default function Home() {
             onCapture={handleCapture}
             greenCoins={greenCoins}
             dailyScansUsed={user?.dailyScansUsed || 0}
-            dailyScansLimit={6}
+            dailyScansLimit={10}
           />
         );
       case 'wallet':

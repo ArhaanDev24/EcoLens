@@ -11,7 +11,7 @@ interface EnhancedCameraProps {
   dailyScansLimit?: number;
 }
 
-export function EnhancedCamera({ onCapture, greenCoins, dailyScansUsed = 0, dailyScansLimit = 6 }: EnhancedCameraProps) {
+export function EnhancedCamera({ onCapture, greenCoins, dailyScansUsed = 0, dailyScansLimit = 10 }: EnhancedCameraProps) {
   const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage, error } = useCamera();
   const [isCapturing, setIsCapturing] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
@@ -178,6 +178,14 @@ export function EnhancedCamera({ onCapture, greenCoins, dailyScansUsed = 0, dail
           <div className="mx-4 mt-2 p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
             <p className="text-yellow-400 text-sm font-medium text-center">
               ⚡ One scan remaining today! Make it count!
+            </p>
+          </div>
+        )}
+        
+        {dailyScansUsed >= dailyScansLimit - 2 && dailyScansUsed < dailyScansLimit - 1 && (
+          <div className="mx-4 mt-2 p-3 bg-orange-500/20 border border-orange-500/30 rounded-lg">
+            <p className="text-orange-400 text-sm font-medium text-center">
+              🔥 Only {dailyScansLimit - dailyScansUsed} scans left today!
             </p>
           </div>
         )}

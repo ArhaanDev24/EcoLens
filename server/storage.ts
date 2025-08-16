@@ -190,6 +190,11 @@ export class MemStorage implements IStorage {
       firebaseUid: insertUser.firebaseUid || null,
       greenCoins: 0,
       totalEarned: 0,
+      dailyScansUsed: 0,
+      lastScanDate: null,
+      suspiciousActivity: false,
+      accountStatus: 'active',
+      securityLevel: 1,
       createdAt: new Date()
     };
     this.users.set(id, user);
@@ -333,6 +338,10 @@ export class MemStorage implements IStorage {
     metalItemsDetected?: number;
   }): Promise<void> {
     // For MemStorage, this is a stub
+  }
+
+  async incrementDailyScans(userId: number): Promise<void> {
+    // MemStorage stub - not implemented
   }
 
   async updateUser(userId: number, updates: Partial<User>): Promise<User> {

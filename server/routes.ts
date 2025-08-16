@@ -16,7 +16,7 @@ import crypto from 'crypto';
 
 // Professional anti-fraud constants
 const MIN_SCAN_INTERVAL = 5 * 60 * 1000; // 5 minutes between scans
-const MAX_DAILY_SCANS = 6; // Maximum 6 scans per day
+const MAX_DAILY_SCANS = 10; // Maximum 10 scans per day
 const DAILY_RESET_HOUR = 0; // Reset daily limit at midnight
 const BASE_COIN_REDUCTION = 0.7; // Reduce rewards by 30%
 const FRAUD_THRESHOLD = 50; // Suspend account if fraud score >= 50
