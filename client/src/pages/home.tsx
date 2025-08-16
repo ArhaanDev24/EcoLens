@@ -17,6 +17,10 @@ interface User {
   email: string;
   greenCoins: number;
   totalEarned: number;
+  dailyScansUsed?: number;
+  lastScanDate?: string;
+  accountStatus?: string;
+  securityLevel?: number;
 }
 
 export default function Home() {
@@ -93,6 +97,8 @@ export default function Home() {
           <EnhancedCamera
             onCapture={handleCapture}
             greenCoins={greenCoins}
+            dailyScansUsed={user?.dailyScansUsed || 0}
+            dailyScansLimit={6}
           />
         );
       case 'wallet':

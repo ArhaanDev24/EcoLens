@@ -7,9 +7,11 @@ import { cn } from '@/lib/utils';
 interface EnhancedCameraProps {
   onCapture: (imageData: string) => void;
   greenCoins: number;
+  dailyScansUsed?: number;
+  dailyScansLimit?: number;
 }
 
-export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
+export function EnhancedCamera({ onCapture, greenCoins, dailyScansUsed = 0, dailyScansLimit = 6 }: EnhancedCameraProps) {
   const { videoRef, canvasRef, isStreaming, startCamera, stopCamera, captureImage, error } = useCamera();
   const [isCapturing, setIsCapturing] = useState(false);
   const [showGrid, setShowGrid] = useState(true);
@@ -22,6 +24,11 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
   }, [startCamera, stopCamera]);
 
   const handleCapture = async () => {
+    // Check daily limit before capturing
+    if (dailyScansUsed >= dailyScansLimit) {
+      return;
+    }
+    
     setIsCapturing(true);
     
     // Enhanced capture animation
@@ -134,7 +141,20 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
               <p className="text-sm text-text-secondary">Detect recyclable items</p>
             </div>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-3">
+            {/* Daily Scan Counter */}
+            <div className="text-right">
+              <p className="text-xs text-text-secondary">Daily Scans</p>
+              <p className={`text-sm font-bold ${
+                dailyScansUsed >= dailyScansLimit ? 'text-red-400' : 
+                dailyScansUsed >= dailyScansLimit - 1 ? 'text-yellow-400' : 
+                'text-eco-green'
+              }`}>
+                {dailyScansUsed}/{dailyScansLimit}
+              </p>
+            </div>
+            
+            {/* Green Coins */}
             <div className="text-right">
               <p className="text-sm text-text-secondary">Green Coins</p>
               <p className="text-xl font-bold text-reward-yellow">{greenCoins}</p>
@@ -144,6 +164,23 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
             </div>
           </div>
         </div>
+        
+        {/* Daily Limit Warning */}
+        {dailyScansUsed >= dailyScansLimit && (
+          <div className="mx-4 mt-2 p-3 bg-red-500/20 border border-red-500/30 rounded-lg">
+            <p className="text-red-400 text-sm font-medium text-center">
+              ⚠️ Daily scan limit reached! Come back tomorrow to continue recycling.
+            </p>
+          </div>
+        )}
+        
+        {dailyScansUsed === dailyScansLimit - 1 && (
+          <div className="mx-4 mt-2 p-3 bg-yellow-500/20 border border-yellow-500/30 rounded-lg">
+            <p className="text-yellow-400 text-sm font-medium text-center">
+              ⚡ One scan remaining today! Make it count!
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Enhanced Camera Viewfinder */}
@@ -215,12 +252,13 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
             {/* Main Capture Button */}
             <Button
               onClick={handleCapture}
-              disabled={!isStreaming || isCapturing}
+              disabled={!isStreaming || isCapturing || dailyScansUsed >= dailyScansLimit}
               className={cn(
                 "w-20 h-20 rounded-full bg-eco-green hover:bg-eco-green/90 text-white shadow-lg",
                 "disabled:opacity-50 transition-all duration-300",
                 "hover:shadow-eco-green/50 hover:shadow-2xl hover:scale-105",
-                isCapturing && "animate-pulse"
+                isCapturing && "animate-pulse",
+                dailyScansUsed >= dailyScansLimit && "bg-gray-500 cursor-not-allowed"
               )}
               id="capture-btn"
             >
@@ -260,7 +298,8 @@ export function EnhancedCamera({ onCapture, greenCoins }: EnhancedCameraProps) {
                 isStreaming ? "bg-eco-green animate-pulse" : "bg-red-500"
               )} />
               <span className="text-sm text-text-secondary">
-                {isStreaming ? "Camera Active" : "Connecting..."}
+                {dailyScansUsed >= dailyScansLimit ? "Daily Limit Reached" :
+                 isStreaming ? "Camera Active" : "Connecting..."}
               </span>
             </div>
           </div>
