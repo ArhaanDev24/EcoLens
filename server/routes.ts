@@ -417,7 +417,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const todayDetections = await storage.getRecentDetections(userId, todayStart);
       
-      // ENHANCED DAILY LIMITS - Maximum 6 scans per day (Professional Security)
+      // ENHANCED DAILY LIMITS - Maximum 10 scans per day (Updated to match user requirement)
+      const MAX_DAILY_SCANS = 10;
       if (todayDetections.length >= MAX_DAILY_SCANS) {
         return res.status(400).json({
           error: `Daily scan limit reached (${MAX_DAILY_SCANS}/day). Please wait until tomorrow to continue recycling.`,
@@ -426,12 +427,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Enhanced rapid scanning detection (super anti-cheating)
-      const lastFiveMinutes = new Date(now.getTime() - 5 * 60 * 1000);
-      const veryRecentDetections = await storage.getRecentDetections(userId, lastFiveMinutes);
-      if (veryRecentDetections.length >= 2) { // Reduced to 2 for stricter fraud prevention
+      // Enhanced rapid scanning detection (reduced for testing)
+      const lastTwoMinutes = new Date(now.getTime() - 2 * 60 * 1000);
+      const veryRecentDetections = await storage.getRecentDetections(userId, lastTwoMinutes);
+      if (veryRecentDetections.length >= 3) { // Allow more scans for testing
         return res.status(400).json({
-          error: "Scanning too quickly. Please take at least 5 minutes between each item for proper disposal.",
+          error: "Scanning too quickly. Please take at least 2 minutes between each item for proper disposal.",
           rapidScanningDetected: true
         });
       }
@@ -507,13 +508,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Enhanced verification requirements based on fraud score and behavior
       let requiresVerification = needsVerification;
       
+      // ALWAYS require verification for Proof-in-Bin Check system
+      requiresVerification = true;
+      
       // Automatically require verification for high fraud scores
       if (detection.fraudScore >= 40) {
         requiresVerification = true;
       }
       
-      // Require verification for high-value items (enhanced anti-cheating)
-      if (coinsAwarded >= 10) {
+      // Require verification for ANY item (Proof-in-Bin Check for all items)
+      if (coinsAwarded >= 1) {
         requiresVerification = true;
       }
       
@@ -541,6 +545,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Increment daily scan counter for ALL successful detections (regardless of coins awarded)
       await storage.incrementDailyScans(userId);
+      
+      // Also increment stats for ALL detections (for daily counter display)
+      await storage.incrementUserStats(userId, {
+        totalDetections: 1,
+        totalCoinsEarned: 0 // Only count coins when verified/awarded
+      });
       
       // Return response with enhanced fraud prevention info
       res.json({ 

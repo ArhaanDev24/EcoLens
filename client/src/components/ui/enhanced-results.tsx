@@ -129,10 +129,22 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
               
               if (response.ok) {
                 const data = await response.json();
+                console.log('Detection response:', data);
                 setDetectionId(data.detectionId);
-                setNeedsVerification(true);
+                
+                // Check if verification is required from server response
+                if (data.requiresVerification) {
+                  setNeedsVerification(true);
+                  console.log('Verification required - showing Proof-in-Bin Check');
+                } else {
+                  // Award coins immediately if no verification needed
+                  onCoinsEarned(totalCoins);
+                  setCoinsAnimation(true);
+                  setShowConfetti(true);
+                }
+                
                 setShowResults(true);
-                return; // Don't award coins yet
+                return;
               }
             } catch (err) {
               console.error('Failed to save detection for verification:', err);
