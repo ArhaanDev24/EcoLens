@@ -99,7 +99,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
         
         if (results && results.length > 0) {
           const totalCoins = results.reduce((sum, item) => sum + item.coinsReward, 0);
-          const highValueThreshold = 25; // coins (increased due to higher rewards)
+          const highValueThreshold = 2; // coins (lowered for testing - any detection triggers proof-in-bin)
           const needsVerify = totalCoins >= highValueThreshold;
           
           // All high-value items need disposal verification

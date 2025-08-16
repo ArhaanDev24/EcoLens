@@ -356,7 +356,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Create detection record and award coins with anti-fraud measures
   app.post("/api/detections", async (req, res) => {
     try {
-      const { itemName, confidence, binType, coinsAwarded, needsVerification, imageHash } = req.body;
+      const { itemName, confidence, binType, coinsAwarded, needsVerification, imageHash, imageData } = req.body;
       
       // Anti-fraud checks
       const userId = 1;
@@ -487,7 +487,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Create detection record with fraud prevention data
       const detection = await storage.createDetection({
         userId: userId,
-        imageUrl: null,
+        imageUrl: imageData || null, // Store the image data for comparison
         imageHash: imageHash || null,
         detectedObjects: JSON.stringify([{
           name: itemName || 'Unknown Item',
@@ -546,6 +546,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ 
         success: true, 
         detection, 
+        detectionId: detection.id, // ADD THIS for frontend reference
         coinsAwarded: requiresVerification ? 0 : coinsAwarded,
         fraudScore: detection.fraudScore,
         requiresVerification: requiresVerification,
