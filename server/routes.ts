@@ -12,9 +12,23 @@ import {
 import { z } from "zod";
 import * as QRCode from 'qrcode';
 import { detectRecyclableItems } from './gemini';
+import crypto from 'crypto';
+
+// Professional anti-fraud constants
+const MIN_SCAN_INTERVAL = 5 * 60 * 1000; // 5 minutes between scans
+const MAX_DAILY_SCANS = 6; // Maximum 6 scans per day
+const DAILY_RESET_HOUR = 0; // Reset daily limit at midnight
+const BASE_COIN_REDUCTION = 0.7; // Reduce rewards by 30%
+const FRAUD_THRESHOLD = 50; // Suspend account if fraud score >= 50
+const SECURITY_PATTERNS = {
+  RAPID_SCANNING: 10, // fraud points for rapid scanning
+  DUPLICATE_IMAGE: 15, // fraud points for duplicate images
+  SUSPICIOUS_LOCATION: 5, // fraud points for unusual location patterns
+  HIGH_CONFIDENCE_BIAS: 8, // fraud points for consistently high confidence scores
+};
 
 // Anti-fraud helper functions
-function calculateFraudScore(confidence: number, recentCount: number, noImageHash: number, rapidScans: number = 0): number {
+function calculateFraudScore(confidence: number, recentCount: number, noImageHash: number, rapidScans: number = 0, dailyScans: number = 0): number {
   let score = 0;
   
   // Low confidence increases fraud score
@@ -22,17 +36,79 @@ function calculateFraudScore(confidence: number, recentCount: number, noImageHas
   if (confidence < 60) score += 30;
   
   // High frequency increases fraud score
-  if (recentCount > 5) score += 25;
-  if (recentCount > 8) score += 40;
+  if (recentCount > 3) score += 25;  // Reduced threshold
+  if (recentCount > 5) score += 40;
+  
+  // Daily scan limit violations
+  if (dailyScans >= MAX_DAILY_SCANS) score += 50;
+  if (dailyScans >= MAX_DAILY_SCANS - 1) score += 20;
   
   // Missing image hash is suspicious
   if (noImageHash) score += 15;
   
   // Rapid scanning behavior (potential item reuse without disposal)
-  if (rapidScans > 2) score += 30;
-  if (rapidScans > 4) score += 50;
+  if (rapidScans > 1) score += SECURITY_PATTERNS.RAPID_SCANNING;
+  if (rapidScans > 3) score += 50;
+  
+  // Consistently high confidence is suspicious (too perfect)
+  if (confidence > 95) score += SECURITY_PATTERNS.HIGH_CONFIDENCE_BIAS;
   
   return Math.min(score, 100);
+}
+
+// Check if user has exceeded daily scan limit
+function isWithinDailyLimit(user: any): boolean {
+  const today = new Date();
+  const lastScanDate = user.lastScanDate ? new Date(user.lastScanDate) : null;
+  
+  // Reset daily count if it's a new day
+  if (!lastScanDate || lastScanDate.getDate() !== today.getDate() || 
+      lastScanDate.getMonth() !== today.getMonth() || 
+      lastScanDate.getFullYear() !== today.getFullYear()) {
+    return true; // New day, reset limit
+  }
+  
+  return user.dailyScansUsed < MAX_DAILY_SCANS;
+}
+
+// Professional security checks
+function performSecurityAudit(user: any, imageHash: string, confidence: number): { 
+  fraudScore: number, 
+  securityFlags: string[], 
+  allowScan: boolean 
+} {
+  const securityFlags: string[] = [];
+  let fraudScore = user.fraudScore || 0;
+  
+  // Check account status
+  if (user.accountStatus === 'suspended') {
+    return { fraudScore: 100, securityFlags: ['Account suspended'], allowScan: false };
+  }
+  
+  if (user.accountStatus === 'flagged') {
+    securityFlags.push('Account flagged for review');
+    fraudScore += 10;
+  }
+  
+  // Daily limit check
+  if (!isWithinDailyLimit(user)) {
+    securityFlags.push(`Daily scan limit reached (${MAX_DAILY_SCANS}/day)`);
+    return { fraudScore: fraudScore + 30, securityFlags, allowScan: false };
+  }
+  
+  // Suspicious activity patterns
+  if (user.suspiciousActivity) {
+    securityFlags.push('Previous suspicious activity detected');
+    fraudScore += 15;
+  }
+  
+  // High fraud score check
+  if (fraudScore >= FRAUD_THRESHOLD) {
+    securityFlags.push('Fraud threshold exceeded - account requires verification');
+    return { fraudScore, securityFlags, allowScan: false };
+  }
+  
+  return { fraudScore, securityFlags, allowScan: true };
 }
 
 function getVerificationReason(fraudScore: number, coinsAwarded: number): string {
@@ -170,26 +246,31 @@ function getServerBinType(itemName: string): string {
   return 'general';
 }
 
-function getServerCoinsReward(itemName: string): number {
+function getServerCoinsReward(itemName: string, securityLevel: number = 1): number {
   const name = itemName.toLowerCase();
   
-  // Premium recyclables
+  // REDUCED REWARDS - Making it harder to earn points
+  // Premium recyclables (reduced by 60%)
   if (name.includes('glass') || name.includes('aluminum')) {
-    return Math.floor(Math.random() * 10) + 25; // 25-34 coins
+    return Math.floor((Math.floor(Math.random() * 4) + 10) * BASE_COIN_REDUCTION); // 10-13 → 7-9 coins
   }
   
-  // Standard recyclables
+  // Standard recyclables (reduced by 60%)
   if (name.includes('plastic') || name.includes('bottle') || name.includes('can')) {
-    return Math.floor(Math.random() * 8) + 15; // 15-22 coins
+    return Math.floor((Math.floor(Math.random() * 3) + 6) * BASE_COIN_REDUCTION); // 6-8 → 4-5 coins
   }
   
-  // Paper products
+  // Paper products (reduced by 60%)
   if (name.includes('paper') || name.includes('cardboard')) {
-    return Math.floor(Math.random() * 6) + 10; // 10-15 coins
+    return Math.floor((Math.floor(Math.random() * 2) + 4) * BASE_COIN_REDUCTION); // 4-5 → 2-3 coins
   }
   
-  // Default
-  return Math.floor(Math.random() * 5) + 8; // 8-12 coins
+  // Default (reduced by 60%)
+  const baseReward = Math.floor((Math.floor(Math.random() * 2) + 3) * BASE_COIN_REDUCTION); // 3-4 → 2-2 coins
+  
+  // Additional security reduction based on user's security level
+  const securityMultiplier = Math.max(0.5, 1 - (securityLevel - 1) * 0.1);
+  return Math.max(1, Math.floor(baseReward * securityMultiplier));
 }
 
 function getBinColor(binType: string): string {
@@ -227,7 +308,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           confidence: item.confidence,
           binType: item.binType,
           binColor: getBinColor(item.binType),
-          coinsReward: getServerCoinsReward(item.name)
+          coinsReward: getServerCoinsReward(item.name, 1)
         }));
         res.json(results);
       } else {
@@ -335,11 +416,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       const todayDetections = await storage.getRecentDetections(userId, todayStart);
       
-      // Daily limits based on realistic recycling behavior
-      if (todayDetections.length >= 50) {
+      // ENHANCED DAILY LIMITS - Maximum 6 scans per day (Professional Security)
+      if (todayDetections.length >= MAX_DAILY_SCANS) {
         return res.status(400).json({
-          error: "Daily detection limit reached. Normal recycling behavior doesn't exceed 50 items per day.",
-          dailyLimitExceeded: true
+          error: `Daily scan limit reached (${MAX_DAILY_SCANS}/day). Please wait until tomorrow to continue recycling.`,
+          dailyLimitExceeded: true,
+          nextScanAvailable: new Date(todayStart.getTime() + 24 * 60 * 60 * 1000)
         });
       }
       
@@ -366,8 +448,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Enhanced confidence threshold for high-value items
-      if (coinsAwarded >= 10 && confidence < 75) {
+      // Enhanced confidence threshold for high-value items (reduced threshold)
+      if (coinsAwarded >= 5 && confidence < 75) {
         return res.status(400).json({
           error: "High-value item requires higher detection confidence for fraud prevention.",
           lowConfidenceHighValue: true
@@ -412,7 +494,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           binType: binType || 'landfill',
           coinsReward: coinsAwarded || 0
         }]),
-        coinsEarned: coinsAwarded || 0,
+        coinsEarned: Math.max(1, Math.floor((coinsAwarded || 0) * BASE_COIN_REDUCTION)),
         isVerified: !needsVerification,
         verificationStatus: needsVerification ? 'pending' : 'verified',
         verificationAttempts: 0,
@@ -467,7 +549,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         rateLimit: {
           remaining: 10 - recentDetections.length - 1,
           resetTime: new Date(now.getTime() + 10 * 60 * 1000),
-          dailyRemaining: 50 - todayDetections.length - 1
+          dailyRemaining: MAX_DAILY_SCANS - todayDetections.length - 1
         },
         behaviorWarnings: getBehaviorWarnings(recentDetections.length, veryRecentDetections.length, sameLocationDetections.length)
       });

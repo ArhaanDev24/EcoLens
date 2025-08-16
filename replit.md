@@ -1,7 +1,7 @@
 # EcoLens - AI-Powered Recycling App
 
 ## Overview
-EcoLens is a React-based mobile-first application that leverages AI for real-time detection of recyclable items via camera input. Its core purpose is to encourage proper recycling habits by rewarding users with virtual "green coins" which can be redeemed through QR codes. The project aims to integrate AI-driven object recognition with a user-friendly reward system to foster environmental responsibility.
+EcoLens is a React-based mobile-first application with professional-grade anti-fraud security that leverages AI for real-time detection of recyclable items via camera input. The app enforces strict daily scan limits (6 scans/day) and reduced coin rewards to prevent cheating while encouraging proper recycling habits. Virtual "green coins" can be redeemed through QR codes after comprehensive fraud validation. The project integrates AI-driven object recognition with enterprise-level security measures to ensure authentic recycling behavior.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
@@ -26,7 +26,7 @@ Preferred communication style: Simple, everyday language.
     - **AI Detection System**: Primary integration with Teachable Machine for custom models, with Clarifai API as fallback. Features client-side image capture, base64 encoding, and multi-tier confidence thresholds.
     - **Camera System**: Real-time video streaming with WebRTC, canvas-based image capture, mobile optimization for back camera selection, and robust error handling for permissions.
     - **Reward System**: Tracks "green coins" as virtual currency, maintains transaction history, generates server-side QR codes for redemption, and provides real-time UI updates.
-    - **Anti-Cheating System**: Incorporates rate limiting, image hash verification (SHA-256), confidence thresholds, pattern detection, location tracking, rapid scanning detection, and a fraud scoring system. High-value items require disposal verification photos.
+    - **Professional Anti-Fraud System**: Comprehensive security with daily scan limits (6 scans/day), reduced coin rewards (30% reduction), fraud scoring, image hash verification, rapid scanning detection (5-minute intervals), suspicious pattern detection, device fingerprinting, time-based analysis, and account status monitoring. Enhanced verification requirements for high-value items.
     - **Database Schema**: Includes tables for Users (authentication, coin balance, profile), Detections (AI results, confidence, rewards), and Transactions (financial history).
     - **Analytics & Personalization**: Features an analytics dashboard with personal impact metrics, custom goals, smart reminders, habit analytics, and an achievement system.
     - **Performance Optimizations**: Utilizes code splitting, client-side image optimization, TanStack Query for caching, tree shaking, and modern JavaScript targeting.

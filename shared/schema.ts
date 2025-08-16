@@ -9,6 +9,11 @@ export const users = pgTable("users", {
   firebaseUid: text("firebase_uid").unique(),
   greenCoins: integer("green_coins").notNull().default(0),
   totalEarned: integer("total_earned").notNull().default(0),
+  dailyScansUsed: integer("daily_scans_used").notNull().default(0),
+  lastScanDate: timestamp("last_scan_date"),
+  suspiciousActivity: boolean("suspicious_activity").notNull().default(false),
+  accountStatus: text("account_status").default("active"), // 'active', 'flagged', 'suspended'
+  securityLevel: integer("security_level").notNull().default(1), // 1-5 security clearance
   createdAt: timestamp("created_at").defaultNow(),
 });
 
@@ -238,6 +243,4 @@ export const insertAchievementSchema = createInsertSchema(achievements).pick({
   iconType: true,
 });
 
-export type InsertTransaction = z.infer<typeof insertTransactionSchema>;
-export type InsertStats = z.infer<typeof insertStatsSchema>;
-export type InsertAchievement = z.infer<typeof insertAchievementSchema>;
+// Type definitions are already included above, no duplicates needed
