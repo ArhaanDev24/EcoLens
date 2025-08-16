@@ -91,13 +91,13 @@ Be strict in verification - only mark as matching if you're confident it's the S
             { text: prompt },
             {
               inlineData: {
-                data: itemImageBase64,
+                data: itemImageBase64 || '',
                 mimeType: "image/jpeg"
               }
             },
             {
               inlineData: {
-                data: binImageBase64,
+                data: binImageBase64 || '',
                 mimeType: "image/jpeg"
               }
             }
