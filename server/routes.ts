@@ -1291,6 +1291,63 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // NEW: Skip verification endpoint with 50% coin reduction
+  app.post('/api/detections/skip-verification', async (req, res) => {
+    try {
+      const { detectionId } = req.body;
+      
+      if (!detectionId) {
+        return res.status(400).json({ error: 'Detection ID required' });
+      }
+      
+      // Get the original detection
+      const userDetections = await storage.getUserDetections(1);
+      const detection = userDetections.find(d => d.id === detectionId);
+      if (!detection) {
+        return res.status(404).json({ error: 'Detection not found' });
+      }
+      
+      // Award 50% of original coins for skipping verification
+      const originalCoins = detection.coinsEarned || 0;
+      const reducedCoins = Math.floor(originalCoins * 0.5);
+      
+      // Create transaction for reduced coins
+      if (reducedCoins > 0) {
+        await storage.createTransaction({
+          userId: 1,
+          type: 'earn',
+          amount: reducedCoins,
+          description: `Skipped verification for ${detection.itemName} (-50% penalty)`,
+          detectionId: detection.id,
+          metadata: JSON.stringify({ 
+            skippedVerification: true,
+            originalCoins,
+            reductionApplied: '50%'
+          })
+        });
+        
+        // Update user's coin balance
+        await storage.updateUserCoins(1, reducedCoins);
+        
+        // Update user stats
+        await storage.incrementUserStats(1, {
+          totalCoinsEarned: reducedCoins
+        });
+      }
+      
+      res.json({ 
+        success: true, 
+        coinsAwarded: reducedCoins,
+        originalCoins,
+        message: `Verification skipped. Awarded ${reducedCoins} coins (50% of ${originalCoins})`
+      });
+      
+    } catch (error) {
+      console.error('Skip verification error:', error);
+      res.status(500).json({ error: "Failed to skip verification" });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

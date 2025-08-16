@@ -78,10 +78,46 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const [needsVerification, setNeedsVerification] = useState(false);
   const [showProofInBin, setShowProofInBin] = useState(false);
   const [detectionId, setDetectionId] = useState<number | null>(null);
+  const [isSkipping, setIsSkipping] = useState(false);
   const [isProcessingBinPhoto, setIsProcessingBinPhoto] = useState(false);
   
   const { detect, isDetecting, error } = useAIDetection();
   const [detectionResult, setDetectionResult] = useState<any[]>([]);
+
+  // Calculate total coins from all detections
+  const totalCoins = detectionResult?.reduce((total, detection) => total + detection.coinsReward, 0) || 0;
+
+  const handleSkipVerification = async () => {
+    if (!detectionId) return;
+    
+    setIsSkipping(true);
+    try {
+      const response = await fetch('/api/detections/skip-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ detectionId })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log('Verification skipped, reduced coins awarded:', data.coinsAwarded);
+        
+        // Award the reduced coins (50% of original)
+        const reducedCoins = Math.floor(totalCoins * 0.5);
+        setNeedsVerification(false);
+        onCoinsEarned(reducedCoins);
+        setCoinsAnimation(true);
+        setShowConfetti(true);
+      } else {
+        const error = await response.json();
+        console.error('Skip verification failed:', error);
+      }
+    } catch (error) {
+      console.error('Error skipping verification:', error);
+    } finally {
+      setIsSkipping(false);
+    }
+  };
 
   // Run detection on mount - only once
   useEffect(() => {
@@ -423,10 +459,11 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={onBack}
+                      onClick={() => handleSkipVerification()}
+                      disabled={isSkipping}
                       className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
                     >
-                      Skip (-50% coins)
+                      {isSkipping ? 'Processing...' : 'Skip (-50% coins)'}
                     </Button>
                   </div>
                 </div>
