@@ -1308,11 +1308,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Award 50% of original coins for skipping verification
-      const originalCoins = detection.coinsEarned || 0;
-      const reducedCoins = Math.floor(originalCoins * 0.5);
+      // Since verification is required, coinsEarned is 0, but we need to get the potential coins
+      const detectedObjects = typeof detection.detectedObjects === 'string' 
+        ? JSON.parse(detection.detectedObjects) 
+        : detection.detectedObjects;
       
-      // Create transaction for reduced coins
-      if (reducedCoins > 0) {
+      const originalCoins = detectedObjects[0]?.coinsReward || detection.coinsEarned || 2; // Default to 2 if not found
+      const reducedCoins = Math.max(1, Math.floor(originalCoins * 0.5)); // Ensure at least 1 coin
+      
+      // Always create transaction for reduced coins (skip always awards something)
+      if (reducedCoins >= 1) {
         await storage.createTransaction({
           userId: 1,
           type: 'earn',
