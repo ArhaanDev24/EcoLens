@@ -12,6 +12,7 @@ import {
 import { z } from "zod";
 import * as QRCode from 'qrcode';
 import { detectRecyclableItems } from './gemini';
+import { compareItemToBinPhoto, calculateBinVerificationFraudScore } from './proof-in-bin';
 import crypto from 'crypto';
 
 // Professional anti-fraud constants
@@ -771,6 +772,118 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error) {
       console.error('Get achievements error:', error);
       res.status(500).json({ error: "Failed to get achievements" });
+    }
+  });
+
+  // NEW: Proof-in-Bin Check verification endpoint
+  app.post('/api/detections/verify-bin', async (req, res) => {
+    try {
+      const { detectionId, binImageData } = req.body;
+      
+      if (!detectionId || !binImageData) {
+        return res.status(400).json({ error: 'Detection ID and bin image data required' });
+      }
+      
+      // Get the original detection
+      const userDetections = await storage.getUserDetections(1);
+      const detection = userDetections.find(d => d.id === detectionId);
+      if (!detection) {
+        return res.status(404).json({ error: 'Detection not found' });
+      }
+      
+      // Extract base64 data
+      const itemImageBase64 = detection.imageUrl?.split(',')[1];
+      const binImageBase64 = binImageData.split(',')[1];
+      
+      if (!itemImageBase64 || !binImageBase64) {
+        return res.status(400).json({ error: 'Invalid image format' });
+      }
+      
+      // Get detected objects for comparison
+      const detectedObjects = JSON.parse(detection.detectedObjects as string);
+      
+      // Calculate time between photos for fraud detection
+      const now = new Date();
+      const detectionTime = new Date(detection.createdAt!);
+      const timeBetweenPhotos = Math.floor((now.getTime() - detectionTime.getTime()) / 1000);
+      
+      // AI comparison using Gemini
+      const comparison = await compareItemToBinPhoto(
+        itemImageBase64,
+        binImageBase64,
+        detectedObjects
+      );
+      
+      // Calculate enhanced fraud score
+      const binFraudScore = calculateBinVerificationFraudScore(
+        comparison,
+        detection.binVerificationAttempts || 0,
+        timeBetweenPhotos
+      );
+      
+      // Generate bin photo hash for duplicate prevention
+      const binPhotoHash = crypto.createHash('sha256').update(binImageBase64).digest('hex');
+      
+      let coinsAwarded = 0;
+      let verified = false;
+      
+      if (comparison.isMatchingObject && comparison.matchScore >= 70 && binFraudScore < 70) {
+        // Verification successful - award full coins
+        verified = true;
+        coinsAwarded = detection.coinsEarned;
+        
+        // Create transaction for successful verification
+        await storage.createTransaction({
+          userId: detection.userId!,
+          type: 'earn',
+          amount: coinsAwarded,
+          description: `Verified disposal: ${detectedObjects[0]?.name || 'item'}`,
+          detectionId: detectionId,
+          metadata: JSON.stringify({
+            proofInBinVerified: true,
+            matchScore: comparison.matchScore,
+            fraudScore: binFraudScore
+          })
+        });
+        
+        // Update user coins
+        await storage.updateUserCoins(detection.userId!, coinsAwarded);
+        
+      } else if (comparison.matchScore >= 50) {
+        // Partial match - award reduced coins (50% penalty)
+        verified = false;
+        coinsAwarded = Math.floor(detection.coinsEarned * 0.5);
+        
+        if (coinsAwarded > 0) {
+          await storage.createTransaction({
+            userId: detection.userId!,
+            type: 'earn',
+            amount: coinsAwarded,
+            description: `Partial verification: ${detectedObjects[0]?.name || 'item'}`,
+            detectionId: detectionId,
+            metadata: JSON.stringify({
+              proofInBinPartial: true,
+              matchScore: comparison.matchScore,
+              penalty: '50% reduction for incomplete verification'
+            })
+          });
+          
+          await storage.updateUserCoins(detection.userId!, coinsAwarded);
+        }
+      }
+      
+      res.json({
+        verified,
+        coinsAwarded,
+        matchScore: comparison.matchScore,
+        fraudScore: binFraudScore,
+        reason: comparison.reasoning,
+        timeBetweenPhotos
+      });
+      
+    } catch (error) {
+      console.error('Bin verification error:', error);
+      res.status(500).json({ error: 'Bin verification failed' });
     }
   });
 

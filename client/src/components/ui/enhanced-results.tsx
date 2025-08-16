@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { useAIDetection } from '@/hooks/use-ai-detection';
 import { Camera, ArrowLeft, Coins, Sparkles, CheckCircle, Trophy, Recycle } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { ProofInBinCamera } from './proof-in-bin-camera';
 
 // Dynamic recycling tips based on detected items
 function getRecyclingTip(item: any): string {
@@ -75,6 +76,9 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const [showResults, setShowResults] = useState(false);
   const [coinsAnimation, setCoinsAnimation] = useState(false);
   const [needsVerification, setNeedsVerification] = useState(false);
+  const [showProofInBin, setShowProofInBin] = useState(false);
+  const [detectionId, setDetectionId] = useState<number | null>(null);
+  const [isProcessingBinPhoto, setIsProcessingBinPhoto] = useState(false);
   
   const { detect, isDetecting, error } = useAIDetection();
   const [detectionResult, setDetectionResult] = useState<any[]>([]);
@@ -106,26 +110,29 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
             // High-value items need disposal verification - don't award coins yet
             console.log('High-value detection requires disposal verification:', totalCoins, 'coins');
             
-            // Save detection as pending verification
+            // Save detection as pending verification with Proof-in-Bin Check
             const item = results[0]; // Take first result for simplicity
             try {
               const response = await fetch('/api/detections', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
+                  imageData,
                   itemName: item.name,
                   confidence: item.confidence,
                   binType: item.binType,
                   coinsAwarded: item.coinsReward,
-                  needsVerification: true
+                  needsVerification: true,
+                  proofInBinRequired: true
                 })
               });
               
               if (response.ok) {
-                // Show verification required message instead of coins
+                const data = await response.json();
+                setDetectionId(data.detectionId);
                 setNeedsVerification(true);
                 setShowResults(true);
-                return; // Don't award coins or show confetti
+                return; // Don't award coins yet
               }
             } catch (err) {
               console.error('Failed to save detection for verification:', err);
@@ -392,6 +399,24 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                       </p>
                     </div>
                   </div>
+                  
+                  {/* Proof-in-Bin Check Buttons */}
+                  <div className="mt-4 flex space-x-3">
+                    <Button
+                      onClick={() => setShowProofInBin(true)}
+                      className="flex-1 bg-eco-green hover:bg-eco-green/90 text-white"
+                    >
+                      <Camera className="w-4 h-4 mr-2" />
+                      Take Bin Photo
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={onBack}
+                      className="border-yellow-500/50 text-yellow-400 hover:bg-yellow-500/10"
+                    >
+                      Skip (-50% coins)
+                    </Button>
+                  </div>
                 </div>
               ) : (
                 <div className={cn(
@@ -466,6 +491,61 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
           </Button>
         </div>
       </div>
+
+      {/* Proof-in-Bin Check Camera Modal */}
+      {showProofInBin && detectionResult && detectionResult.length > 0 && (
+        <ProofInBinCamera
+          detectedItem={detectionResult[0].name}
+          isProcessing={isProcessingBinPhoto}
+          onBinPhotoCapture={handleBinPhotoCapture}
+          onCancel={() => setShowProofInBin(false)}
+        />
+      )}
     </div>
   );
+
+  // Handler for bin photo capture
+  async function handleBinPhotoCapture(binImageData: string) {
+    if (!detectionId) return;
+    
+    setIsProcessingBinPhoto(true);
+    
+    try {
+      const response = await fetch('/api/detections/verify-bin', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          detectionId,
+          binImageData
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        
+        if (data.verified) {
+          // Award full coins if verification successful
+          onCoinsEarned(data.coinsAwarded);
+          setNeedsVerification(false);
+          setShowConfetti(true);
+          setCoinsAnimation(true);
+        } else {
+          // Show verification failed message
+          alert(`Verification failed: ${data.reason}. Coins awarded: ${data.coinsAwarded}`);
+          if (data.coinsAwarded > 0) {
+            onCoinsEarned(data.coinsAwarded);
+          }
+        }
+        
+        setShowProofInBin(false);
+      } else {
+        alert('Verification failed. Please try again.');
+      }
+    } catch (error) {
+      console.error('Bin verification error:', error);
+      alert('Technical error during verification. Please try again.');
+    } finally {
+      setIsProcessingBinPhoto(false);
+    }
+  }
 }

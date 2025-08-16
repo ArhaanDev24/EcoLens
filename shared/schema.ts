@@ -29,6 +29,12 @@ export const detections = pgTable("detections", {
   verificationImageUrl: text("verification_image_url"),
   verificationStatus: text("verification_status").default("pending"), // 'pending', 'verified', 'rejected'
   verificationAttempts: integer("verification_attempts").notNull().default(0),
+  // Proof-in-Bin Check System
+  binPhotoUrl: text("bin_photo_url"), // Photo of item inside recycling bin
+  binPhotoHash: text("bin_photo_hash"), // SHA-256 hash of bin photo
+  proofInBinStatus: text("proof_in_bin_status").default("pending"), // 'pending', 'verified', 'failed', 'skipped'
+  objectMatchScore: integer("object_match_score").notNull().default(0), // 0-100 similarity score between item and bin photos
+  binVerificationAttempts: integer("bin_verification_attempts").notNull().default(0),
   fraudScore: integer("fraud_score").notNull().default(0), // 0-100 fraud risk score
   ipAddress: text("ip_address"), // User's IP for tracking
   userAgent: text("user_agent"), // Browser fingerprint

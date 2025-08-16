@@ -72,6 +72,7 @@ export interface IStorage {
   // Anti-fraud methods
   getRecentDetections(userId: number, since: Date): Promise<Detection[]>;
   getDetectionByImageHash(imageHash: string): Promise<Detection | undefined>;
+  getDetectionByBinPhotoHash?(binPhotoHash: string): Promise<Detection | undefined>;
   getRecentSameItemDetections(userId: number, itemName: string, since: Date): Promise<Detection[]>;
   incrementDailyScans(userId: number): Promise<void>;
   getRecentDetectionsByUserAgent(userId: number, userAgent: string, since: Date): Promise<Detection[]>;
@@ -731,7 +732,17 @@ export class DatabaseStorage implements IStorage {
       .from(detections)
       .where(eq(detections.imageHash, imageHash))
       .limit(1);
-    return result[0];
+    return result[0] || undefined;
+  }
+
+  // NEW: Method for Proof-in-Bin Check fraud prevention
+  async getDetectionByBinPhotoHash(binPhotoHash: string): Promise<Detection | undefined> {
+    const result = await db
+      .select()
+      .from(detections)
+      .where(eq(detections.binPhotoHash, binPhotoHash))
+      .limit(1);
+    return result[0] || undefined;
   }
 
   async getRecentSameItemDetections(userId: number, itemName: string, since: Date): Promise<Detection[]> {
