@@ -62,14 +62,14 @@ function EnhancedRewardButton({
     <div className="relative">
       {/* Popular/Premium Badge */}
       {popular && (
-        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 z-10">
           <div className="bg-gradient-to-r from-purple-500 to-purple-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
             🔥 MOST POPULAR
           </div>
         </div>
       )}
       {premium && (
-        <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 z-10">
+        <div className="absolute -top-1 left-1/2 transform -translate-x-1/2 z-10">
           <div className="bg-gradient-to-r from-amber-500 to-amber-600 text-white px-3 py-1 rounded-full text-xs font-bold shadow-lg">
             ⭐ BEST VALUE
           </div>
@@ -83,7 +83,7 @@ function EnhancedRewardButton({
           disabled 
             ? 'bg-gray-800/50 border-gray-600 cursor-not-allowed' 
             : `bg-gradient-to-r border-2 hover:shadow-lg`
-        } ${popular || premium ? 'mt-4' : ''}`}
+        } ${popular || premium ? 'mt-6' : ''}`}
         style={{
           background: disabled 
             ? 'rgba(75, 85, 99, 0.8)' 
@@ -315,7 +315,7 @@ export default function WalletPage() {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="wallet" className="space-y-6 px-2">
+          <TabsContent value="wallet" className="space-y-6 px-2 pt-4">
           {/* Enhanced Balance Card */}
           <GlassmorphicCard className="p-6 sm:p-8 rounded-3xl bg-gradient-to-br from-eco-green/10 via-transparent to-reward-yellow/10 border-2 border-eco-green/20 shadow-2xl">
             <div className="text-center space-y-6">
@@ -392,7 +392,7 @@ export default function WalletPage() {
                       <p className="text-text-secondary text-sm">Select the reward value you want to redeem</p>
                     </div>
                     
-                    <div className="space-y-4">
+                    <div className="space-y-6 pt-2">
                       <EnhancedRewardButton 
                         tier="small" 
                         coins={100} 
