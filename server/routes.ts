@@ -538,6 +538,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Increment daily scan counter for ALL successful detections (regardless of coins awarded)
+      await storage.incrementDailyScans(userId);
+      
       // Return response with enhanced fraud prevention info
       res.json({ 
         success: true, 

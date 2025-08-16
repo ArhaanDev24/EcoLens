@@ -73,6 +73,7 @@ export interface IStorage {
   getRecentDetections(userId: number, since: Date): Promise<Detection[]>;
   getDetectionByImageHash(imageHash: string): Promise<Detection | undefined>;
   getRecentSameItemDetections(userId: number, itemName: string, since: Date): Promise<Detection[]>;
+  incrementDailyScans(userId: number): Promise<void>;
   getRecentDetectionsByUserAgent(userId: number, userAgent: string, since: Date): Promise<Detection[]>;
   incrementUserStats(userId: number, increments: {
     totalDetections?: number;
@@ -832,6 +833,34 @@ export class DatabaseStorage implements IStorage {
       .select()
       .from(detections)
       .orderBy(desc(detections.createdAt));
+  }
+
+  async incrementDailyScans(userId: number): Promise<void> {
+    const today = new Date();
+    const user = await this.getUserById(userId);
+    
+    if (!user) {
+      throw new Error('User not found');
+    }
+    
+    const lastScanDate = user.lastScanDate ? new Date(user.lastScanDate) : null;
+    let dailyScansUsed = user.dailyScansUsed || 0;
+    
+    // Reset daily count if it's a new day
+    if (!lastScanDate || 
+        lastScanDate.getDate() !== today.getDate() || 
+        lastScanDate.getMonth() !== today.getMonth() || 
+        lastScanDate.getFullYear() !== today.getFullYear()) {
+      dailyScansUsed = 0;
+    }
+    
+    // Increment the daily scan count
+    await db.update(users)
+      .set({
+        dailyScansUsed: dailyScansUsed + 1,
+        lastScanDate: today
+      })
+      .where(eq(users.id, userId));
   }
 }
 
