@@ -4,12 +4,12 @@
 EcoLens is a React-based mobile-first application with professional-grade anti-fraud security that leverages AI for real-time detection of recyclable items via camera input. The app enforces strict daily scan limits (10 scans/day) and reduced coin rewards to prevent cheating while encouraging proper recycling habits. Virtual "green coins" can be redeemed through QR codes after comprehensive fraud validation. The project integrates AI-driven object recognition with enterprise-level security measures to ensure authentic recycling behavior.
 
 ## Recent Changes (August 17, 2025)
-- ✅ Fixed critical API routing bugs - all endpoints now return JSON instead of HTML
-- ✅ Fixed skip verification system - properly awards 50% coins (1 instead of 2) when users bypass Proof-in-Bin Check
-- ✅ Fixed daily scan count system - correctly resets to 0 for new day and tracks properly
-- ✅ Resolved database inconsistencies between snake_case fields and camelCase API responses
-- ✅ Eliminated duplicate error handling in AI detection system
-- ✅ All anti-fraud features confirmed functional: daily limits, reduced rewards, fraud scoring
+- ✅ Fixed critical verification bug where verified items only awarded 1 coin instead of 2 coins
+- ✅ Fixed anti-fraud "unusual recycling pattern" detection - adjusted weekend/evening thresholds to be more reasonable
+- ✅ Verification system now consistently awards exactly 2 coins for verified items and 1 coin for skipped verification
+- ✅ Evening recycling allowed until 11 PM (was 10 PM), weekend scanning threshold increased to 15 scans (was 8)
+- ✅ All anti-fraud features working properly: daily limits (10 scans/day), rapid scanning detection, fraud scoring
+- ✅ Fixed crypto import errors and JSON parsing issues in verification endpoint
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.
