@@ -820,6 +820,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
           lastScanDate.getMonth() !== today.getMonth() || 
           lastScanDate.getFullYear() !== today.getFullYear()) {
         dailyScansUsed = 0;
+        
+        // Update the database to reset the daily scan count for the new day
+        await storage.updateUser(userId, { 
+          dailyScansUsed: 0
+        });
       }
       
       res.json({
