@@ -248,30 +248,9 @@ function getServerBinType(itemName: string): string {
 }
 
 function getServerCoinsReward(itemName: string, securityLevel: number = 1): number {
-  const name = itemName.toLowerCase();
-  
-  // REDUCED REWARDS - Making it harder to earn points
-  // Premium recyclables (reduced by 60%)
-  if (name.includes('glass') || name.includes('aluminum')) {
-    return Math.floor((Math.floor(Math.random() * 4) + 10) * BASE_COIN_REDUCTION); // 10-13 → 7-9 coins
-  }
-  
-  // Standard recyclables (reduced by 60%)
-  if (name.includes('plastic') || name.includes('bottle') || name.includes('can')) {
-    return Math.floor((Math.floor(Math.random() * 3) + 6) * BASE_COIN_REDUCTION); // 6-8 → 4-5 coins
-  }
-  
-  // Paper products (reduced by 60%)
-  if (name.includes('paper') || name.includes('cardboard')) {
-    return Math.floor((Math.floor(Math.random() * 2) + 4) * BASE_COIN_REDUCTION); // 4-5 → 2-3 coins
-  }
-  
-  // Default (reduced by 60%)
-  const baseReward = Math.floor((Math.floor(Math.random() * 2) + 3) * BASE_COIN_REDUCTION); // 3-4 → 2-2 coins
-  
-  // Additional security reduction based on user's security level
-  const securityMultiplier = Math.max(0.5, 1 - (securityLevel - 1) * 0.1);
-  return Math.max(1, Math.floor(baseReward * securityMultiplier));
+  // FIXED: All recyclable items give exactly 2 coins
+  // When verification is skipped, it gives exactly 1 coin (50% reduction)
+  return 2;
 }
 
 function getBinColor(binType: string): string {
@@ -1394,13 +1373,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Award 50% of original coins for skipping verification
-      // Since verification is required, coinsEarned is 0, but we need to get the potential coins
-      const detectedObjects = typeof detection.detectedObjects === 'string' 
-        ? JSON.parse(detection.detectedObjects) 
-        : detection.detectedObjects;
-      
-      const originalCoins = detectedObjects[0]?.coinsReward || detection.coinsEarned || 2; // Default to 2 if not found
-      const reducedCoins = Math.max(1, Math.floor(originalCoins * 0.5)); // Ensure at least 1 coin
+      // FIXED: All recyclable items should give 2 coins, so 50% reduction = 1 coin
+      const originalCoins = 2; // Fixed: always 2 coins for any recyclable item
+      const reducedCoins = 1;  // Fixed: always 1 coin when verification is skipped (50% of 2)
       
       // Always create transaction for reduced coins (skip always awards something)
       if (reducedCoins >= 1) {
