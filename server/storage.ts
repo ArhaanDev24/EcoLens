@@ -244,6 +244,11 @@ export class MemStorage implements IStorage {
       verificationImageUrl: insertDetection.verificationImageUrl || null,
       verificationStatus: insertDetection.verificationStatus || 'pending',
       verificationAttempts: insertDetection.verificationAttempts || 0,
+      binPhotoUrl: insertDetection.binPhotoUrl || null,
+      binPhotoHash: insertDetection.binPhotoHash || null,
+      proofInBinStatus: insertDetection.proofInBinStatus || 'pending',
+      objectMatchScore: insertDetection.objectMatchScore || 0,
+      binVerificationAttempts: insertDetection.binVerificationAttempts || 0,
       fraudScore: insertDetection.fraudScore || 0,
       ipAddress: insertDetection.ipAddress || null,
       userAgent: insertDetection.userAgent || null,
@@ -364,9 +369,6 @@ export class MemStorage implements IStorage {
 
 // Database Storage Implementation
 export class DatabaseStorage implements IStorage {
-  incrementUserStats(arg0: number, arg1: { [x: string]: any; totalDetections: number; totalCoinsEarned: any; }) {
-    throw new Error("Method not implemented.");
-  }
   async getUserById(id: number): Promise<User | undefined> {
     const [user] = await db.select().from(users).where(eq(users.id, id));
     return user || undefined;
@@ -532,14 +534,7 @@ export class DatabaseStorage implements IStorage {
       .orderBy(desc(achievements.unlockedAt));
   }
 
-  async updateUser(id: number, updates: Partial<InsertUser>): Promise<User> {
-    const [updatedUser] = await db
-      .update(users)
-      .set(updates)
-      .where(eq(users.id, id))
-      .returning();
-    return updatedUser;
-  }
+
 
   // Personal Goals Implementation
   async createPersonalGoal(goal: InsertPersonalGoal): Promise<PersonalGoal> {
