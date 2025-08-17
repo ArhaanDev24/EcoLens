@@ -613,40 +613,48 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // FIXED: Award full 2 coins for successful verification
+      const fullCoinsReward = 2; // Always 2 coins for verified recyclable items
+      
       // Update detection with successful verification
       const updatedDetection = await storage.updateDetection(detectionId, {
         verificationImageUrl,
         verificationStatus: 'verified',
         isVerified: true,
+        coinsEarned: fullCoinsReward, // Update to full reward amount
         verificationAttempts: detection.verificationAttempts + 1
       });
       
-      // Award coins after successful verification
-      if (detection.coinsEarned > 0) {
-        await storage.createTransaction({
-          userId: detection.userId!,
-          type: 'earn',
-          amount: detection.coinsEarned,
-          description: `Recycling reward (verified): ${JSON.parse(detection.detectedObjects as string)[0]?.name || 'item'}`,
-          detectionId: detectionId,
-          metadata: { verificationPassed: true, verificationNotes }
-        });
-        
-        // Update user's coin balance
-        await storage.updateUserCoins(detection.userId!, detection.coinsEarned);
-        
-        // Update user stats for verified detections
-        await storage.incrementUserStats(detection.userId!, {
-          totalDetections: 1,
-          totalCoinsEarned: detection.coinsEarned
-        });
-      }
+      // Award coins after successful verification using the FULL reward amount
+      await storage.createTransaction({
+        userId: detection.userId!,
+        type: 'earn',
+        amount: fullCoinsReward, // Use full 2 coins, not the old detection.coinsEarned
+        description: `Verified disposal: ${typeof detection.detectedObjects === 'string' ? JSON.parse(detection.detectedObjects)[0]?.name : (detection.detectedObjects as any)?.[0]?.name || 'item'}`,
+        detectionId: detectionId,
+        metadata: JSON.stringify({ 
+          proofInBinVerified: true, 
+          verificationPassed: true, 
+          verificationNotes,
+          originalCoins: detection.coinsEarned,
+          fullReward: fullCoinsReward
+        })
+      });
+      
+      // Update user's coin balance with FULL reward
+      await storage.updateUserCoins(detection.userId!, fullCoinsReward);
+      
+      // Update user stats for verified detections with FULL reward
+      await storage.incrementUserStats(detection.userId!, {
+        totalCoinsEarned: fullCoinsReward
+      });
       
       res.json({ 
         success: true, 
         detection: updatedDetection,
-        coinsAwarded: detection.coinsEarned,
-        verificationNotes
+        coinsAwarded: fullCoinsReward, // Return the correct amount awarded
+        verificationNotes,
+        message: `Verification successful! Awarded ${fullCoinsReward} coins for verified recycling.`
       });
     } catch (error) {
       console.error('Verification error:', error);
@@ -692,7 +700,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // In a real implementation, you'd decode the image and generate a hash
       // For now, we'll use a simple hash of the image data
-      return require('crypto').createHash('sha256').update(imageUrl).digest('hex');
+      const crypto = await import('crypto');
+      return crypto.createHash('sha256').update(imageUrl).digest('hex');
     } catch (error) {
       console.error('Hash generation error:', error);
       return '';
