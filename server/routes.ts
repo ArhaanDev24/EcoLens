@@ -775,6 +775,65 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user transactions with user ID parameter
+  app.get("/api/user/:userId/transactions", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const transactions = await storage.getUserTransactions(userId);
+      res.json(transactions);
+    } catch (error) {
+      console.error('Get user transactions error:', error);
+      res.status(500).json({ error: "Failed to get transactions" });
+    }
+  });
+
+  // Get user detections
+  app.get("/api/user/:userId/detections", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const detections = await storage.getUserDetections(userId);
+      res.json(detections);
+    } catch (error) {
+      console.error('Get user detections error:', error);
+      res.status(500).json({ error: "Failed to get detections" });
+    }
+  });
+
+  // Get daily scan count - MISSING ENDPOINT FIX
+  app.get("/api/user/:userId/daily-scan-count", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      const user = await storage.getUserById(userId);
+      
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
+      // Check if it's a new day to reset the daily scan count
+      const today = new Date();
+      const lastScanDate = user.lastScanDate ? new Date(user.lastScanDate) : null;
+      let dailyScansUsed = user.dailyScansUsed || 0;
+      
+      // Reset daily count if it's a new day
+      if (!lastScanDate || 
+          lastScanDate.getDate() !== today.getDate() || 
+          lastScanDate.getMonth() !== today.getMonth() || 
+          lastScanDate.getFullYear() !== today.getFullYear()) {
+        dailyScansUsed = 0;
+      }
+      
+      res.json({
+        dailyScansUsed: dailyScansUsed,
+        dailyScansLimit: 10,
+        remainingScans: Math.max(0, 10 - dailyScansUsed),
+        lastScanDate: user.lastScanDate
+      });
+    } catch (error) {
+      console.error('Get daily scan count error:', error);
+      res.status(500).json({ error: "Failed to get daily scan count" });
+    }
+  });
+
   // Get user achievements
   app.get("/api/achievements", async (req, res) => {
     try {
@@ -1322,7 +1381,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           userId: 1,
           type: 'earn',
           amount: reducedCoins,
-          description: `Skipped verification for ${detection.itemName} (-50% penalty)`,
+          description: `Skipped verification for item (-50% penalty)`,
           detectionId: detection.id,
           metadata: JSON.stringify({ 
             skippedVerification: true,

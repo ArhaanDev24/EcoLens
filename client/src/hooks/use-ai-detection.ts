@@ -62,7 +62,6 @@ export function useAIDetection(): AIDetectionHook {
       setError('No recyclable items detected in the image. Please take a photo of recyclable items like bottles, cans, paper, or cardboard.');
       return [];
     } catch (err) {
-      setError('Failed to analyze image. Please try again.');
       console.error('AI Detection error:', err);
       setError('No recyclable items detected. Please try taking a photo of recyclable items.');
       return [];
