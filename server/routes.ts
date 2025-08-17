@@ -416,13 +416,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Super anti-cheating: Check for weekend/night patterns (unusual times)
+      // Super anti-cheating: Check for weekend/night patterns (unusual times) - ADJUSTED for reasonable usage
       const hour = now.getHours();
       const dayOfWeek = now.getDay();
       const isWeekend = dayOfWeek === 0 || dayOfWeek === 6;
-      const isNightTime = hour < 6 || hour > 22;
+      const isNightTime = hour < 5 || hour > 23; // More reasonable hours: 5 AM to 11 PM is normal
       
-      if ((isWeekend || isNightTime) && todayDetections.length > 8) {
+      // Only flag if user has excessive scans (15+) during unusual hours
+      if ((isWeekend || isNightTime) && todayDetections.length > 15) {
         return res.status(400).json({
           error: "Unusual recycling pattern detected. Most recycling happens during regular hours.",
           unusualTimePattern: true
