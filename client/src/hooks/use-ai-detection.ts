@@ -213,6 +213,11 @@ function getCoinsReward(itemName: string): number {
     return 3; // Small reward for proper disposal
   }
   
+  // Special case for monster energy drink cans (aluminum can = high reward)
+  if (name.includes('monster')) {
+    return 4; // Consistent 4 coins for monster cans
+  }
+  
   return 5; // Default reward for unknown items
 }
 

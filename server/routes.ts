@@ -250,24 +250,28 @@ function getServerBinType(itemName: string): string {
 function getServerCoinsReward(itemName: string, securityLevel: number = 1): number {
   const name = itemName.toLowerCase();
   
-  // REDUCED REWARDS - Making it harder to earn points
-  // Premium recyclables (reduced by 60%)
+  // Special case for monster energy drink cans (aluminum can = high reward)
+  if (name.includes('monster')) {
+    return 4; // Consistent 4 coins for monster cans
+  }
+  
+  // Premium recyclables 
   if (name.includes('glass') || name.includes('aluminum')) {
-    return Math.floor((Math.floor(Math.random() * 4) + 10) * BASE_COIN_REDUCTION); // 10-13 → 7-9 coins
+    return Math.floor(Math.random() * 4) + 10; // 10-13 coins
   }
   
-  // Standard recyclables (reduced by 60%)
+  // Standard recyclables
   if (name.includes('plastic') || name.includes('bottle') || name.includes('can')) {
-    return Math.floor((Math.floor(Math.random() * 3) + 6) * BASE_COIN_REDUCTION); // 6-8 → 4-5 coins
+    return Math.floor(Math.random() * 3) + 6; // 6-8 coins
   }
   
-  // Paper products (reduced by 60%)
+  // Paper products
   if (name.includes('paper') || name.includes('cardboard')) {
-    return Math.floor((Math.floor(Math.random() * 2) + 4) * BASE_COIN_REDUCTION); // 4-5 → 2-3 coins
+    return Math.floor(Math.random() * 2) + 4; // 4-5 coins
   }
   
-  // Default (reduced by 60%)
-  const baseReward = Math.floor((Math.floor(Math.random() * 2) + 3) * BASE_COIN_REDUCTION); // 3-4 → 2-2 coins
+  // Default reward
+  const baseReward = Math.floor(Math.random() * 2) + 3; // 3-4 coins
   
   // Additional security reduction based on user's security level
   const securityMultiplier = Math.max(0.5, 1 - (securityLevel - 1) * 0.1);
@@ -496,7 +500,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           binType: binType || 'landfill',
           coinsReward: coinsAwarded || 0
         }]),
-        coinsEarned: Math.max(1, Math.floor((coinsAwarded || 0) * BASE_COIN_REDUCTION)),
+        coinsEarned: coinsAwarded || 0,
         isVerified: !needsVerification,
         verificationStatus: needsVerification ? 'pending' : 'verified',
         verificationAttempts: 0,
