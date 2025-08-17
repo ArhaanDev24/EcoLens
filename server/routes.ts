@@ -850,6 +850,28 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Get user stats - MISSING ROUTE
+  app.get("/api/stats", async (req, res) => {
+    try {
+      const stats = await storage.getUserStats(1);
+      if (!stats) {
+        // Create initial stats if none exist
+        await storage.updateUserStats(1, {
+          totalDetections: 0,
+          totalCoinsEarned: 0,
+          totalCoinsSpent: 0,
+          streakDays: 0
+        });
+        const newStats = await storage.getUserStats(1);
+        return res.json(newStats);
+      }
+      res.json(stats);
+    } catch (error) {
+      console.error('Get stats error:', error);
+      res.status(500).json({ error: "Failed to get stats" });
+    }
+  });
+
   // NEW: Proof-in-Bin Check verification endpoint
   app.post('/api/detections/verify-bin', async (req, res) => {
     try {
