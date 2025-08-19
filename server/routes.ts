@@ -523,6 +523,23 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
+      // Check for daily reset before incrementing (FIX for daily scan reset)
+      const currentUser = await storage.getUserById(userId);
+      const today = new Date();
+      const lastScanDate = currentUser?.lastScanDate ? new Date(currentUser.lastScanDate) : null;
+      
+      // Reset daily count if it's a new day
+      if (lastScanDate && (
+          lastScanDate.getDate() !== today.getDate() || 
+          lastScanDate.getMonth() !== today.getMonth() || 
+          lastScanDate.getFullYear() !== today.getFullYear())) {
+        
+        // Reset daily scan count for new day
+        await storage.updateUser(userId, { 
+          dailyScansUsed: 0
+        });
+      }
+      
       // Increment daily scan counter for ALL successful detections (regardless of coins awarded)
       await storage.incrementDailyScans(userId);
       
