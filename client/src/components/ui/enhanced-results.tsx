@@ -80,6 +80,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const [detectionId, setDetectionId] = useState<number | null>(null);
   const [isSkipping, setIsSkipping] = useState(false);
   const [isProcessingBinPhoto, setIsProcessingBinPhoto] = useState(false);
+  const [actualCoinsAwarded, setActualCoinsAwarded] = useState<number | null>(null);
   
   const { detect, isDetecting, error } = useAIDetection();
   const [detectionResult, setDetectionResult] = useState<any[]>([]);
@@ -102,10 +103,11 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
         const data = await response.json();
         console.log('Verification skipped, reduced coins awarded:', data.coinsAwarded);
         
-        // Award the reduced coins (50% of original)
-        const reducedCoins = Math.floor(totalCoins * 0.5);
+        // Use the actual coins awarded from the backend response
+        const coinsFromBackend = data.coinsAwarded; // This will be 1 from backend
+        setActualCoinsAwarded(coinsFromBackend); // Store the actual amount
         setNeedsVerification(false);
-        onCoinsEarned(reducedCoins);
+        onCoinsEarned(coinsFromBackend);
         setCoinsAnimation(true);
         setShowConfetti(true);
       } else {
@@ -481,7 +483,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                       <div>
                         <p className="text-sm text-text-secondary">Reward Earned</p>
                         <p className="text-lg font-bold text-reward-yellow">
-                          +{detection.coinsReward} Green Coins
+                          +{actualCoinsAwarded !== null ? actualCoinsAwarded : detection.coinsReward} Green Coins
                         </p>
                       </div>
                     </div>
