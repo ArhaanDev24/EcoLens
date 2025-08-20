@@ -1245,6 +1245,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Basic Analytics API (missing endpoint fix)
+  app.get("/api/user/:userId/analytics", async (req, res) => {
+    try {
+      const userId = parseInt(req.params.userId);
+      
+      // Get basic analytics data
+      const [userDetections, transactions] = await Promise.all([
+        storage.getUserDetections(userId),
+        storage.getUserTransactions(userId)
+      ]);
+
+      // Calculate basic stats
+      const totalScans = userDetections.length;
+      const verifiedScans = userDetections.filter(d => d.verificationStatus === 'verified').length;
+      const totalCoinsEarned = transactions.filter(t => t.type === 'earn').reduce((sum, t) => sum + t.amount, 0);
+      const averageConfidence = userDetections.length > 0 
+        ? userDetections.reduce((sum, d) => {
+            const detectedObjs = typeof d.detectedObjects === 'string' 
+              ? JSON.parse(d.detectedObjects) 
+              : d.detectedObjects as any[];
+            return sum + (detectedObjs[0]?.confidence || 0);
+          }, 0) / userDetections.length 
+        : 0;
+
+      res.json({
+        totalScans,
+        verifiedScans,
+        totalCoinsEarned,
+        averageConfidence: Math.round(averageConfidence),
+        verificationRate: totalScans > 0 ? Math.round((verifiedScans / totalScans) * 100) : 0,
+        recentDetections: userDetections.slice(-5).reverse()
+      });
+    } catch (error) {
+      console.error('Get analytics error:', error);
+      res.status(500).json({ error: "Failed to get analytics data" });
+    }
+  });
+
   // Enhanced Analytics Dashboard API
   app.get("/api/user/:userId/analytics-dashboard", async (req, res) => {
     try {
