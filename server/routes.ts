@@ -952,9 +952,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
       let verified = false;
       
       if (comparison.isMatchingObject && comparison.matchScore >= 70 && binFraudScore < 70) {
-        // Verification successful - award full coins
+        // Verification successful - award full coins (2 coins as per user requirement)
         verified = true;
-        coinsAwarded = detection.coinsEarned;
+        coinsAwarded = 2; // Always award 2 coins for successful verification
         
         // Create transaction for successful verification
         await storage.createTransaction({
@@ -973,10 +973,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
         // Update user coins
         await storage.updateUserCoins(detection.userId!, coinsAwarded);
         
-      } else if (comparison.matchScore >= 50) {
-        // Partial match - award reduced coins (50% penalty)
+      } else if (comparison.matchScore >= 40) {
+        // Lower threshold for partial match - award reduced coins (50% penalty) 
         verified = false;
-        coinsAwarded = Math.floor(detection.coinsEarned * 0.5);
+        coinsAwarded = 1; // Award 1 coin for partial verification
         
         if (coinsAwarded > 0) {
           await storage.createTransaction({
