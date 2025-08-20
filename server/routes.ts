@@ -339,6 +339,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // Anti-fraud checks
       const userId = 1;
+      const user = await storage.getUserById(userId);
+      if (!user) {
+        return res.status(404).json({ error: "User not found" });
+      }
+      
       const now = new Date();
       const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
       
@@ -398,7 +403,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
       
       // ENHANCED DAILY LIMITS - Maximum 10 scans per day (Updated to match user requirement)
       const MAX_DAILY_SCANS = 10;
-      if (todayDetections.length >= MAX_DAILY_SCANS) {
+      // Use the user's daily_scans_used counter instead of database count for better reset control
+      if (user.dailyScansUsed >= MAX_DAILY_SCANS) {
         return res.status(400).json({
           error: `Daily scan limit reached (${MAX_DAILY_SCANS}/day). Please wait until tomorrow to continue recycling.`,
           dailyLimitExceeded: true,
@@ -439,11 +445,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
       
       // Super anti-cheating: Check for perfect detection patterns (too consistent)
+      // Temporarily disabled to fix JSON parsing error
+      /*
       const lastTenDetections = todayDetections.slice(-10);
       if (lastTenDetections.length >= 10) {
         const avgConfidence = lastTenDetections.reduce((sum, d) => {
-          const objects = JSON.parse(d.detectedObjects as string);
-          return sum + (objects[0]?.confidence || 0);
+          try {
+            const objects = typeof d.detectedObjects === 'string' 
+              ? JSON.parse(d.detectedObjects) 
+              : d.detectedObjects;
+            return sum + (objects[0]?.confidence || 0);
+          } catch (e) {
+            return sum;
+          }
         }, 0) / lastTenDetections.length;
         
         // Flag suspiciously consistent high confidence (potential AI spoofing)
@@ -454,6 +468,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
         }
       }
+      */
       
       // Anti-cheating: Check for device fingerprinting patterns
       const deviceFingerprint = req.headers['user-agent'] + '_' + (req.headers['accept-language'] || '');
