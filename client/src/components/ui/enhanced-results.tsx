@@ -171,6 +171,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                 // Check if verification is required from server response
                 if (data.requiresVerification) {
                   setNeedsVerification(true);
+                  setShowProofInBin(true); // Automatically show the verification UI
                   console.log('Verification required - showing Proof-in-Bin Check');
                 } else {
                   // Award coins immediately if no verification needed
