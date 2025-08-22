@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useAIDetection } from '@/hooks/use-ai-detection';
-import { Camera, ArrowLeft, Coins, Sparkles, CheckCircle, Trophy, Recycle } from 'lucide-react';
+import { Camera, ArrowLeft, Coins, Sparkles, CheckCircle, Trophy, Recycle, X, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ProofInBinCamera } from './proof-in-bin-camera';
 
@@ -81,6 +81,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const [isSkipping, setIsSkipping] = useState(false);
   const [isProcessingBinPhoto, setIsProcessingBinPhoto] = useState(false);
   const [actualCoinsAwarded, setActualCoinsAwarded] = useState<number | null>(null);
+  const [verificationFailed, setVerificationFailed] = useState(false);
   
   const { detect, isDetecting, error } = useAIDetection();
   const [detectionResult, setDetectionResult] = useState<any[]>([]);
@@ -414,7 +415,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
               </div>
               
               {/* Reward/Verification Section */}
-              {needsVerification ? (
+              {needsVerification && !verificationFailed ? (
                 <div className="bg-gradient-to-r from-orange-500/20 to-blue-500/20 p-4 rounded-xl border border-orange-500/30">
                   <div className="flex items-center justify-between">
                     <div className="flex items-center space-x-3">
@@ -468,6 +469,30 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                     >
                       {isSkipping ? 'Processing...' : 'Skip (-50% coins)'}
                     </Button>
+                  </div>
+                </div>
+              ) : verificationFailed ? (
+                <div className="bg-gradient-to-r from-red-500/20 to-gray-500/20 p-4 rounded-xl border border-red-500/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
+                        <X className="w-5 h-5 text-red-400" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-text-secondary">Verification Failed</p>
+                        <p className="text-lg font-bold text-red-400">
+                          +0 Green Coins
+                        </p>
+                        <p className="text-xs text-text-secondary mt-1">
+                          Item could not be verified. Scan still counts toward daily limit.
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-1" />
+                      <p className="text-xs text-text-secondary">Try again!</p>
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -582,11 +607,20 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
           setShowConfetti(true);
           setCoinsAnimation(true);
         } else {
+          // Set failed verification state and update UI
+          setVerificationFailed(true);
+          setNeedsVerification(false);  // Hide verification UI
+          setActualCoinsAwarded(data.coinsAwarded); // Should be 0 for failed verification
+          
           // Show verification failed message
-          alert(`Verification failed: ${data.reason}. Coins awarded: ${data.coinsAwarded}`);
+          console.log(`Verification failed: ${data.reason}. Coins awarded: ${data.coinsAwarded}`);
+          
           if (data.coinsAwarded > 0) {
             onCoinsEarned(data.coinsAwarded);
           }
+          
+          // Show completion UI with 0 coins
+          setCoinsAnimation(true);
         }
         
         setShowProofInBin(false);
