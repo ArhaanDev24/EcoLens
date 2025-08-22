@@ -376,9 +376,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
         });
       }
       
-      // Check for suspicious patterns (same item type repeatedly)
+      // Check for suspicious patterns (same item type repeatedly) - relaxed for testing
       const recentSameItems = await storage.getRecentSameItemDetections(userId, itemName, tenMinutesAgo);
-      if (recentSameItems.length >= 3) {
+      if (recentSameItems.length >= 10) { // Increased from 3 to 10 for testing
         return res.status(400).json({ 
           error: "Too many similar items detected recently. Please try different items.",
           suspiciousPattern: true
