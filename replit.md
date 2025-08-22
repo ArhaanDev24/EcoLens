@@ -6,7 +6,7 @@ EcoLens is a React-based mobile-first application with professional-grade anti-f
 ## Recent Changes (August 22, 2025)
 - ✅ Fixed critical frontend display bug: Skip verification now shows "+1 Green Coins" instead of "+2 Green Coins"
 - ✅ Updated failed verification logic: Users now get 0 coins for failed verification but scan still counts toward daily limit
-- ✅ Enhanced verification system with proper status tracking (verified/partial/failed)
+- ✅ Enhanced verification system with proper status tracking (verified/partial/failed/skipped)
 - ✅ Daily scan limit reset functionality working properly (0/10 scans available)
 - ✅ Proof-in-Bin verification system implemented with AI-powered comparison
 - ✅ Verification UI appears correctly when high-value items are detected
@@ -15,6 +15,12 @@ EcoLens is a React-based mobile-first application with professional-grade anti-f
   * Skipped verification: 1 coin ✅  
   * Failed verification: 0 coins ✅
 - ✅ Transaction history properly records all verification outcomes
+- ✅ Fixed UI bugs in verification system (August 22, 2025):
+  * Added distinct "Verification Skipped" UI with yellow theme and penalty message
+  * Fixed animation logic: No coin animation for 0-coin awards (failed verification)
+  * Enhanced error handling: Network errors properly set failed verification state
+  * Added processing states: Disabled buttons and loading text during verification
+  * Improved fraud score logic: High fraud (≥70) now correctly awards 0 coins
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

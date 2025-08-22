@@ -82,6 +82,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
   const [isProcessingBinPhoto, setIsProcessingBinPhoto] = useState(false);
   const [actualCoinsAwarded, setActualCoinsAwarded] = useState<number | null>(null);
   const [verificationFailed, setVerificationFailed] = useState(false);
+  const [verificationSkipped, setVerificationSkipped] = useState(false);
   
   const { detect, isDetecting, error } = useAIDetection();
   const [detectionResult, setDetectionResult] = useState<any[]>([]);
@@ -108,6 +109,7 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
         const coinsFromBackend = data.coinsAwarded; // This will be 1 from backend
         setActualCoinsAwarded(coinsFromBackend); // Store the actual amount
         setNeedsVerification(false);
+        setVerificationSkipped(true); // Mark as skipped for special UI
         onCoinsEarned(coinsFromBackend);
         setCoinsAnimation(true);
         setShowConfetti(true);
@@ -456,10 +458,11 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                   <div className="mt-4 flex space-x-3">
                     <Button
                       onClick={() => setShowProofInBin(true)}
-                      className="flex-1 bg-eco-green hover:bg-eco-green/90 text-white"
+                      disabled={isProcessingBinPhoto}
+                      className="flex-1 bg-eco-green hover:bg-eco-green/90 text-white disabled:opacity-50"
                     >
                       <Camera className="w-4 h-4 mr-2" />
-                      Take Bin Photo
+                      {isProcessingBinPhoto ? 'Processing...' : 'Take Bin Photo'}
                     </Button>
                     <Button
                       variant="outline"
@@ -492,6 +495,30 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
                     <div className="text-right">
                       <AlertTriangle className="w-8 h-8 text-red-400 mx-auto mb-1" />
                       <p className="text-xs text-text-secondary">Try again!</p>
+                    </div>
+                  </div>
+                </div>
+              ) : verificationSkipped ? (
+                <div className="bg-gradient-to-r from-yellow-500/20 to-orange-500/20 p-4 rounded-xl border border-yellow-500/30">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-10 h-10 bg-yellow-500/20 rounded-full flex items-center justify-center">
+                        <Coins className="w-5 h-5 text-yellow-500" />
+                      </div>
+                      <div>
+                        <p className="text-sm text-text-secondary">Verification Skipped</p>
+                        <p className="text-lg font-bold text-yellow-500">
+                          +{actualCoinsAwarded !== null ? actualCoinsAwarded : 1} Green Coins
+                        </p>
+                        <p className="text-xs text-text-secondary mt-1">
+                          Reduced reward (50% penalty). Verification improves accuracy!
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="text-right">
+                      <Trophy className="w-8 h-8 text-yellow-500 mx-auto mb-1" />
+                      <p className="text-xs text-text-secondary">Good job!</p>
                     </div>
                   </div>
                 </div>
@@ -619,17 +646,29 @@ export function EnhancedResults({ imageData, onBack, onCoinsEarned }: EnhancedRe
             onCoinsEarned(data.coinsAwarded);
           }
           
-          // Show completion UI with 0 coins
-          setCoinsAnimation(true);
+          // Only show animation if coins were actually awarded
+          if (data.coinsAwarded > 0) {
+            setCoinsAnimation(true);
+          }
         }
         
         setShowProofInBin(false);
       } else {
-        alert('Verification failed. Please try again.');
+        // Handle HTTP error responses
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('Verification failed with error:', errorData);
+        setVerificationFailed(true);
+        setNeedsVerification(false);
+        setActualCoinsAwarded(0);
+        setShowProofInBin(false);
       }
     } catch (error) {
       console.error('Bin verification error:', error);
-      alert('Technical error during verification. Please try again.');
+      // Handle network/technical errors
+      setVerificationFailed(true);
+      setNeedsVerification(false);
+      setActualCoinsAwarded(0);
+      setShowProofInBin(false);
     } finally {
       setIsProcessingBinPhoto(false);
     }
