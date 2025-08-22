@@ -995,8 +995,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isVerified: true
         });
         
-      } else if (comparison.matchScore >= 40) {
-        // Lower threshold for partial match - award reduced coins (50% penalty) 
+      } else if (comparison.matchScore >= 40 && binFraudScore < 70) {
+        // Lower threshold for partial match - award reduced coins (50% penalty) only if low fraud risk
         verified = false;
         coinsAwarded = 1; // Award 1 coin for partial verification
         
