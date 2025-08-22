@@ -3,13 +3,18 @@
 ## Overview
 EcoLens is a React-based mobile-first application with professional-grade anti-fraud security that leverages AI for real-time detection of recyclable items via camera input. The app enforces strict daily scan limits (10 scans/day) and reduced coin rewards to prevent cheating while encouraging proper recycling habits. Virtual "green coins" can be redeemed through QR codes after comprehensive fraud validation. The project integrates AI-driven object recognition with enterprise-level security measures to ensure authentic recycling behavior.
 
-## Recent Changes (August 17, 2025)
-- ✅ Fixed critical verification bug where verified items only awarded 1 coin instead of 2 coins
-- ✅ Fixed anti-fraud "unusual recycling pattern" detection - adjusted weekend/evening thresholds to be more reasonable
-- ✅ Verification system now consistently awards exactly 2 coins for verified items and 1 coin for skipped verification
-- ✅ Evening recycling allowed until 11 PM (was 10 PM), weekend scanning threshold increased to 15 scans (was 8)
-- ✅ All anti-fraud features working properly: daily limits (10 scans/day), rapid scanning detection, fraud scoring
-- ✅ Fixed crypto import errors and JSON parsing issues in verification endpoint
+## Recent Changes (August 22, 2025)
+- ✅ Fixed critical frontend display bug: Skip verification now shows "+1 Green Coins" instead of "+2 Green Coins"
+- ✅ Updated failed verification logic: Users now get 0 coins for failed verification but scan still counts toward daily limit
+- ✅ Enhanced verification system with proper status tracking (verified/partial/failed)
+- ✅ Daily scan limit reset functionality working properly (0/10 scans available)
+- ✅ Proof-in-Bin verification system implemented with AI-powered comparison
+- ✅ Verification UI appears correctly when high-value items are detected
+- ✅ All coin award logic synchronized between frontend and backend:
+  * Successful verification: 2 coins ✅
+  * Skipped verification: 1 coin ✅  
+  * Failed verification: 0 coins ✅
+- ✅ Transaction history properly records all verification outcomes
 
 ## User Preferences
 Preferred communication style: Simple, everyday language.

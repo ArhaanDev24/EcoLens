@@ -985,8 +985,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
           })
         });
         
-        // Update user coins
+        // Update user coins and detection status
         await storage.updateUserCoins(detection.userId!, coinsAwarded);
+        
+        // Update detection as verified
+        await storage.updateDetection(detectionId, {
+          verificationStatus: 'verified',
+          coinsEarned: coinsAwarded,
+          isVerified: true
+        });
         
       } else if (comparison.matchScore >= 40) {
         // Lower threshold for partial match - award reduced coins (50% penalty) 
@@ -1008,7 +1015,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           });
           
           await storage.updateUserCoins(detection.userId!, coinsAwarded);
+          
+          // Update detection as partially verified
+          await storage.updateDetection(detectionId, {
+            verificationStatus: 'partial',
+            coinsEarned: coinsAwarded,
+            isVerified: false
+          });
         }
+      } else {
+        // Verification failed completely - award 0 coins but still count toward daily scan
+        verified = false;
+        coinsAwarded = 0;
+        
+        // Create transaction record for failed verification (0 coins)
+        await storage.createTransaction({
+          userId: detection.userId!,
+          type: 'earn',
+          amount: 0,
+          description: `Verification failed: ${detectedObjects[0]?.name || 'item'}`,
+          detectionId: detectionId,
+          metadata: JSON.stringify({
+            proofInBinFailed: true,
+            matchScore: comparison.matchScore,
+            fraudScore: binFraudScore,
+            reason: 'Verification failed - insufficient match'
+          })
+        });
+        
+        // Update detection as failed verification
+        await storage.updateDetection(detectionId, {
+          verificationStatus: 'failed',
+          coinsEarned: 0,
+          isVerified: false
+        });
+        
+        // No coins awarded, but daily scan is still counted
       }
       
       res.json({
