@@ -1050,7 +1050,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           isVerified: false
         });
         
-        // No coins awarded, but daily scan is still counted
+        // No coins awarded, but daily scan was already counted during initial detection
       }
       
       res.json({
